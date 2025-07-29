@@ -122,6 +122,27 @@ void AMainCharacter::Fire(const FInputActionValue& Value)
 
 void AMainCharacter::Dash(const FInputActionValue& Value)
 {
+	/*if (GetWorldTimerManager().IsTimerActive(DashTimer))
+	{
+		return;
+	}
+	
+	if ( GetCharacterMovement()->IsFalling() && CurrentStaminaCharge > 0)
+	{
+		FVector ForwardVector = GetActorForwardVector();
+		FVector DashVector = FVector(ForwardVector.X, ForwardVector.Y, 0) * DashPower;
+
+		LaunchCharacter(DashVector, true, false);
+
+		UseStamina();
+
+		GetWorldTimerManager().SetTimer(
+		DashTimer,
+		this,
+		&ATechProjectCharacter::DoNothing,
+		0.3f,
+		false);
+	}*/
 }
 
 void AMainCharacter::StartJump(const FInputActionValue& Value)

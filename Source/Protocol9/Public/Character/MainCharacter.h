@@ -20,6 +20,9 @@ public:
 
 protected:
 
+	FTimerHandle DashTimer;
+
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComponent;
 
