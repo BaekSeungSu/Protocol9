@@ -9,7 +9,8 @@ AMainPlayerController::AMainPlayerController()
 	MoveAction(nullptr),
 	LookAction(nullptr),
 	JumpAction(nullptr),
-	DashAction(nullptr)
+	DashAction(nullptr),
+	FireAction(nullptr)
 {
 }
 

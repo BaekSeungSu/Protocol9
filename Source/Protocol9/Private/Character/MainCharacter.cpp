@@ -39,7 +39,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 					&AMainCharacter::Move);
 			}
 
-			if (PlayerController->MoveAction)
+			if (PlayerController->LookAction)
 			{
 				EnhancedInput->BindAction(
 					PlayerController->LookAction,
@@ -48,7 +48,16 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 					&AMainCharacter::Look);
 			}
 
-			if (PlayerController->MoveAction)
+			if (PlayerController->FireAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->FireAction,
+					ETriggerEvent::Triggered,
+					this,
+					&AMainCharacter::Fire);
+			}
+
+			if (PlayerController->JumpAction)
 			{
 				EnhancedInput->BindAction(
 					PlayerController->JumpAction,
@@ -57,7 +66,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 					&AMainCharacter::StartJump);
 			}
 
-			if (PlayerController->MoveAction)
+			if (PlayerController->JumpAction)
 			{
 				EnhancedInput->BindAction(
 					PlayerController->JumpAction,
@@ -66,7 +75,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 					&AMainCharacter::StopJumping);
 			}
 
-			if (PlayerController->MoveAction)
+			if (PlayerController->DashAction)
 			{
 				EnhancedInput->BindAction(
 					PlayerController->DashAction,
@@ -103,6 +112,10 @@ void AMainCharacter::Look(const FInputActionValue& Value)
 
 	AddControllerYawInput(LookInput.X);
 	AddControllerPitchInput(-LookInput.Y);
+}
+
+void AMainCharacter::Fire(const FInputActionValue& Value)
+{
 }
 
 void AMainCharacter::Dash(const FInputActionValue& Value)

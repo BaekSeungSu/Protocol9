@@ -14,6 +14,7 @@ class PROTOCOL9_API AMainCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+	
 public:
 	AMainCharacter();
 
@@ -33,6 +34,8 @@ public:
 	void Move(const FInputActionValue& Value);
 	UFUNCTION()
 	void Look(const FInputActionValue& Value);
+	UFUNCTION()
+	void Fire(const FInputActionValue& Value);
 	UFUNCTION()
 	void Dash(const FInputActionValue& Value);
 	UFUNCTION()
