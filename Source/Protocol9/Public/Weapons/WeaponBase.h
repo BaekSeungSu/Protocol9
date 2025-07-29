@@ -4,6 +4,8 @@
 #include "GameFramework/Actor.h"
 #include "WeaponBase.generated.h"
 
+class UStaticMeshComponent;
+
 UCLASS()
 class PROTOCOL9_API AWeaponBase : public AActor
 {
@@ -15,6 +17,9 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UStaticMeshComponent* StaticMeshComp;
+	
 public:	
 	virtual void Tick(float DeltaTime) override;
 
