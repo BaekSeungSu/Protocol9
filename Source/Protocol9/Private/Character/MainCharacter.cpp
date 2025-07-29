@@ -116,6 +116,8 @@ void AMainCharacter::Look(const FInputActionValue& Value)
 
 void AMainCharacter::Fire(const FInputActionValue& Value)
 {
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Fire"));
+
 }
 
 void AMainCharacter::Dash(const FInputActionValue& Value)
