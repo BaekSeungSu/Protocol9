@@ -3,6 +3,7 @@
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
 
+class AWeaponBase;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROTOCOL9_API UInventoryComponent : public UActorComponent
@@ -11,12 +12,20 @@ class PROTOCOL9_API UInventoryComponent : public UActorComponent
 
 public:	
 	UInventoryComponent();
-
+	void AddWeapon(TSubclassOf<AWeaponBase> WeaponClass);
+	AWeaponBase* GetCurrentWeapon();
+	void SwapToNextWeapon();
+	void SwapWeaponSlots();
+	
 protected:
 	virtual void BeginPlay() override;
 
-public:	
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	UPROPERTY(VisibleInstanceOnly, Category="Inventory")
+	TArray<AWeaponBase*> WeaponSlots;
 
-		
+	UPROPERTY(VisibleInstanceOnly, Category="Inventory")
+	int32 CurrentWeaponIndex;
+	
+private:
+	
 };
