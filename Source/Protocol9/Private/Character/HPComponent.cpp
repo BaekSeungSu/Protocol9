@@ -20,16 +20,6 @@ UHPComponent* UHPComponent::GetHPComponent()
 	return this;
 }
 
-float UHPComponent::GetMaxHP() const
-{
-	return MaxHP;
-}
-
-float UHPComponent::GetCurrentHP() const
-{
-	return CurrentHP;
-}
-
 void UHPComponent::SetMaxHP(float NewMaxHP)
 {
 	MaxHP = NewMaxHP;

@@ -19,11 +19,10 @@ public:
 protected:
 	AMainCharacter* Owner;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Control")
 	float DashPower;
-
-	int MaxJumpCount = 2;
-	int JumpCount = 0;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Control")
+	float MaxSpeed;
 	
 	FTimerHandle DashTimer;
 	

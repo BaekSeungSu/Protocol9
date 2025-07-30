@@ -9,6 +9,7 @@ UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROTOCOL9_API UHPComponent : public UActorComponent
 {
 	GENERATED_BODY()
+	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "HP")
 	float MaxHP;
@@ -22,10 +23,12 @@ public:
 
 	UHPComponent* GetHPComponent();
 
-	UFUNCTION(BlueprintCallable, Category = "HP")
-	float GetMaxHP() const;
-	UFUNCTION(BlueprintCallable, Category = "HP")
-	float GetCurrentHP() const;
+	UFUNCTION(BlueprintPure, Category = "HP")
+	float GetMaxHP() const {return MaxHP;};
+	UFUNCTION(BlueprintPure, Category = "HP")
+	float GetCurrentHP() const {return CurrentHP;};
+	UFUNCTION(BlueprintPure, Category = "HP")
+	bool GetIsDead() const {return bIsDead;}
 
 	UFUNCTION(BlueprintCallable, Category = "HP")
 	void SetMaxHP(float NewMaxHP);
@@ -38,7 +41,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "HP")
 	bool IsDead();
-
 
 protected:
 	virtual void BeginPlay() override;

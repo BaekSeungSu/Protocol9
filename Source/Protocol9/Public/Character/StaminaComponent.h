@@ -17,10 +17,11 @@ public:
 
 protected:
 
-	class ACharacter* Owner;
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
 	int MaxStaminaCount;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
 	int CurrentStaminaCount;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
 	float StaminaChargeTime;
 	
 	FTimerHandle StaminaChargeTimer;
@@ -29,15 +30,22 @@ protected:
 
 public:
 
+	UFUNCTION(BlueprintPure, Category = "Stamina")
 	int GetMaxStaminaCount() const;
+	UFUNCTION(BlueprintPure, Category = "Stamina")
 	int GetCurrentStaminaCount() const;
+	UFUNCTION(BlueprintPure, Category = "Stamina")
 	float GetStaminaChargeTime() const;
 
+	UFUNCTION(BlueprintCallable, Category = "Stamina")
 	void SetMaxStaminaCount(int NewMaxStaminaCount);
-	void SetCurrentStaminaCount(int NewCurremStaminaCount);
+	UFUNCTION(BlueprintCallable, Category = "Stamina")
+	void SetCurrentStaminaCount(int SetCurrentStaminaCount);
+	UFUNCTION(BlueprintCallable, Category = "Stamina")
 	void SetStaminaChargeTime(float NewStaminaChargeTime);
-	
-	void UseStamina();
 
+	UFUNCTION(BlueprintCallable, Category = "Stamina")
+	void UseStamina();
+	UFUNCTION(BlueprintCallable, Category = "Stamina")
 	void ChargeStamina();
 };

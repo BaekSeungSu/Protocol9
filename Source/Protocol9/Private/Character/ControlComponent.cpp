@@ -8,7 +8,8 @@
 
 
 UControlComponent::UControlComponent()
-	:DashPower(2000.0f)
+	:DashPower(1500.0f),
+	MaxSpeed(600.0f)
 {
 
 	PrimaryComponentTick.bCanEverTick = false;
@@ -22,6 +23,11 @@ UControlComponent::UControlComponent()
 void UControlComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (Owner)
+	{
+		Owner->GetCharacterMovement()->MaxWalkSpeed = MaxSpeed;
+	}
 }
 
 void UControlComponent::Move(const FInputActionValue& Value)
@@ -86,10 +92,7 @@ void UControlComponent::StartJump(const FInputActionValue& Value)
 {
 	if (Value.Get<bool>())
 	{
-		if (JumpCount < MaxJumpCount)
-		{
-			Owner->Jump();
-		}
+		Owner->Jump();
 	}
 }
 
