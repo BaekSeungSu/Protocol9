@@ -42,7 +42,6 @@ void AItemBase::OnItemEndOverlap(
 }
 void AItemBase::ActivateItem(AActor* Activator)
 {
-	
 }
 FName AItemBase::GetItemType() const 
 {

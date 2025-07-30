@@ -8,5 +8,8 @@ AHealingItem::AHealingItem()
 
 void AHealingItem::ActivateItem(AActor* Activator)
 {
-	
+	if (Activator && Activator ->ActorHasTag("Player"))
+	{
+		DestroyItem();
+	}
 }
