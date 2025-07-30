@@ -8,9 +8,9 @@ AMainPlayerController::AMainPlayerController()
 	: InputMappingContext(nullptr),
 	MoveAction(nullptr),
 	LookAction(nullptr),
+	FireAction(nullptr),
 	JumpAction(nullptr),
-	DashAction(nullptr),
-	FireAction(nullptr)
+	DashAction(nullptr)
 {
 }
 
