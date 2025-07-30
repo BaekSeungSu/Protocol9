@@ -1,4 +1,3 @@
-
 #include "Character/MainCharacter.h"
 #include "Character/MainPlayerController.h"
 #include "EnhancedInputComponent.h"
@@ -160,6 +159,3 @@ void AMainCharacter::StopJump(const FInputActionValue& Value)
 		StopJumping();
 	}
 }
-
-
-
