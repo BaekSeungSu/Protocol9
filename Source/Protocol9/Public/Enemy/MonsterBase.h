@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-
 #include "MonsterBase.generated.h"
 
 UENUM(BlueprintType)
@@ -14,10 +13,6 @@ enum class EMonsterState : uint8
     Attacking   UMETA(DisplayName = "Attacking"),
     Returning   UMETA(DisplayName = "Returning")
 };
-
-class UAISenseConfig_Sight;
-class UAISenseConfig_Hearing;
-class UAIPerceptionComponent;
 
 UCLASS()
 class PROTOCOL9_API AMonsterBase : public ACharacter
@@ -31,25 +26,14 @@ protected:
     virtual void BeginPlay() override;
 
 public:
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
-    UAIPerceptionComponent* AIPerceptionComponent;
-    UPROPERTY()
-    UAISenseConfig_Sight* SightConfig;
-    UPROPERTY()
-    UAISenseConfig_Hearing* HearingConfig;
-
+    
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
     EMonsterState CurrentState;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Perception")
-    float SightRadius = 2500.0f;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Perception")
-    float HearingRadius = 1500.0f;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Perception")
-    float PeripheralVisionAngleDegrees = 180.0f;
+    
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Patrol")
-    float PatrolRadius = 800.0f;
+    float PatrolRadius = 1200.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Patrol")
     float WaitTimeAtPatrolPoint = 3.0f;
@@ -58,7 +42,7 @@ public:
     float ChaseRadius = 2000.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Chase")
-    float LosePlayerTime = 5.0f;
+    float LosePlayerTime = 3.0f;
 
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Attack")
@@ -72,10 +56,10 @@ public:
 
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Movement")
-    float WalkSpeed = 200.0f;
+    float WalkSpeed = 300.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Movement")
-    float RunSpeed = 400.0f;
+    float RunSpeed = 600.0f;
 
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shape")
@@ -94,29 +78,27 @@ public:
     float AIUpdateInterval = 0.1f;
     //UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DropItems") //아이템 베이스 클래스 만들어지면 주석 해제
     //TArray<TSubclassOf<class AItemBase>> DropItems;
-protected:
-
-    void UpdateAI();
-    void SetState(EMonsterState NewState);
     
-
+    void SetState(EMonsterState NewState);
+    bool SetTargetPlayer(APawn* NewTarget);
+protected:
+    
     void StartPatrol();
     void Patrol();
-    FVector GetRandomPatrolPoint();
+    FVector GetRandomPatrolPoint() const;
     
 
     void ChasePlayer();
-    bool CanSeePlayer();
+    bool CanSeePlayer() const;
     
 
     void AttackPlayer();
-    bool IsInAttackRange();
+    bool IsInAttackRange() const;
     
 
     void ReturnToStart();
 
-    UFUNCTION()
-    void OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
+
     
 
     UFUNCTION()
@@ -127,9 +109,9 @@ protected:
     UFUNCTION()
     virtual void OnDeath();
     UFUNCTION()
-    void DropItems();
+    void DropItems() const;
     UFUNCTION()
-    void GiveExp();
+    void GiveExp() const;
     UFUNCTION()
     virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
     UPROPERTY()
@@ -138,7 +120,9 @@ protected:
     bool bShouldContinueAttacking = false;
     UFUNCTION()
     void StopContinuousAttack();
-private:   
+private:
+    void UpdateAI();
+    
     FVector StartLocation;
     FVector CurrentPatrolTarget;
     
