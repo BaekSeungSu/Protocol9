@@ -3,8 +3,8 @@
 #include "TimerManager.h"
 
 UStaminaComponent::UStaminaComponent()
-	:MaxStaminaCount(0),
-	CurrentStaminaCount(0),
+	:MaxStaminaCount(3),
+	CurrentStaminaCount(3),
 	StaminaChargeTime(5.0f)
 {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -20,9 +20,51 @@ void UStaminaComponent::BeginPlay()
 	
 }
 
+int UStaminaComponent::GetMaxStaminaCount() const
+{
+	return MaxStaminaCount;
+}
+
+int UStaminaComponent::GetCurrentStaminaCount() const
+{
+	return CurrentStaminaCount;
+}
+
+float UStaminaComponent::GetStaminaChargeTime() const
+{
+	return StaminaChargeTime;
+}
+
+void UStaminaComponent::SetMaxStaminaCount(int NewMaxStaminaCount)
+{
+	MaxStaminaCount = NewMaxStaminaCount;
+}
+
+void UStaminaComponent::SetCurrentStaminaCount(int NewCurremStaminaCount)
+{
+	if (NewCurremStaminaCount > MaxStaminaCount)
+	{
+		NewCurremStaminaCount = MaxStaminaCount;
+	}
+	else
+	{
+		CurrentStaminaCount = NewCurremStaminaCount;
+	}
+}
+
+void UStaminaComponent::SetStaminaChargeTime(float NewStaminaChargeTime)
+{
+	StaminaChargeTime = NewStaminaChargeTime;
+}
+
 void UStaminaComponent::UseStamina()
 {
 	CurrentStaminaCount--;
+
+	GEngine->AddOnScreenDebugMessage(-1,
+			2.0f,
+			FColor::Green,
+			FString::Printf(TEXT("Current Stamina %d"), CurrentStaminaCount));
 	
 	if (!GetOwner()->GetWorldTimerManager().IsTimerActive(StaminaChargeTimer))
 	{
@@ -41,6 +83,11 @@ void UStaminaComponent::ChargeStamina()
 	{
 		CurrentStaminaCount++;
 
+		GEngine->AddOnScreenDebugMessage(-1,
+					2.0f,
+					FColor::Green,
+					FString::Printf(TEXT("Current Stamina %d"), CurrentStaminaCount));
+		
 		GetOwner()->GetWorldTimerManager().SetTimer(
 		StaminaChargeTimer,
 		this,

@@ -15,19 +15,28 @@ class PROTOCOL9_API UStaminaComponent : public UActorComponent
 public:	
 	UStaminaComponent();
 
-private:
+protected:
+
+	class ACharacter* Owner;
+	
 	int MaxStaminaCount;
 	int CurrentStaminaCount;
 	float StaminaChargeTime;
-	
-protected:
 	
 	FTimerHandle StaminaChargeTimer;
 	
 	virtual void BeginPlay() override;
 
-public:	
+public:
 
+	int GetMaxStaminaCount() const;
+	int GetCurrentStaminaCount() const;
+	float GetStaminaChargeTime() const;
+
+	void SetMaxStaminaCount(int NewMaxStaminaCount);
+	void SetCurrentStaminaCount(int NewCurremStaminaCount);
+	void SetStaminaChargeTime(float NewStaminaChargeTime);
+	
 	void UseStamina();
 
 	void ChargeStamina();
