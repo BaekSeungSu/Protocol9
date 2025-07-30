@@ -1,9 +1,11 @@
-
 #include "Character/MainCharacter.h"
 #include "Character/MainPlayerController.h"
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Weapons/InventoryComponent.h"
+#include "Weapons/WeaponBase.h"
+#include "Weapons/WeaponInterface.h"
 
 AMainCharacter::AMainCharacter()
 {
@@ -11,7 +13,17 @@ AMainCharacter::AMainCharacter()
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(GetMesh());
+
+	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 	
+}
+
+void AMainCharacter::EquipDefaultWeapon()
+{
+	if (InventoryComponent && DefaultWeaponClass)
+	{
+		InventoryComponent->AddWeapon(DefaultWeaponClass);
+	}
 }
 
 void AMainCharacter::BeginPlay()
@@ -19,7 +31,8 @@ void AMainCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	GetMesh()->HideBoneByName(FName("weapon_r"), EPhysBodyOp::PBO_None);
-	
+
+	EquipDefaultWeapon();
 }
 
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -52,7 +65,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 			{
 				EnhancedInput->BindAction(
 					PlayerController->FireAction,
-					ETriggerEvent::Triggered,
+					ETriggerEvent::Started,
 					this,
 					&AMainCharacter::Fire
 					);
@@ -117,7 +130,15 @@ void AMainCharacter::Look(const FInputActionValue& Value)
 
 void AMainCharacter::Fire(const FInputActionValue& Value)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Fire"));
+	if (InventoryComponent)
+	{
+		AWeaponBase* CurrentWeapon = InventoryComponent->GetCurrentWeapon();
+
+		if (CurrentWeapon && CurrentWeapon->Implements<UWeaponInterface>())
+		{
+			IWeaponInterface::Execute_PrimaryFire(CurrentWeapon);
+		}
+	}
 
 }
 
