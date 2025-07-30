@@ -8,6 +8,8 @@
 
 struct FInputActionValue;
 class UCameraComponent;
+class UInventoryComponent;
+class AWeaponBase;
 
 UCLASS()
 class PROTOCOL9_API AMainCharacter : public ACharacter
@@ -23,6 +25,13 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
+	UInventoryComponent* InventoryComponent;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<AWeaponBase> DefaultWeaponClass;
+
+	void EquipDefaultWeapon();
 	
 	virtual void BeginPlay() override;
 
@@ -42,5 +51,6 @@ public:
 	void StartJump(const FInputActionValue& Value);
 	UFUNCTION()
 	void StopJump(const FInputActionValue& Value);
+	
 	
 };
