@@ -48,11 +48,6 @@ FName AItemBase::GetItemType() const
 	return ItemType;
 }
 
-	
-	
-void AItemBase::StartEffect() 
-{
-}
 void AItemBase::EndEffect() 
 {
 }

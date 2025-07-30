@@ -1,26 +1,24 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ItemBase.h"
+#include "Item/ItemBase.h"
 #include "Character/MainCharacter.h"
-#include "SpeedItem.generated.h"
-
+#include "IncreaseDamageItem.generated.h"
 
 
 UCLASS()
-class PROTOCOL9_API ASpeedItem : public AItemBase
+class PROTOCOL9_API AIncreaseDamageItem : public AItemBase
 {
 	GENERATED_BODY()
 public:
-	ASpeedItem();
+	AIncreaseDamageItem();
 	UPROPERTY()
 	AMainCharacter* AffectedPlayer;
-	
+
 	virtual void EndEffect() override;
 
 	virtual void ActivateItem(AActor* Activator)override;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Item")
-	float MultiSpeed;
-	
+	float MultiDamage;
 };

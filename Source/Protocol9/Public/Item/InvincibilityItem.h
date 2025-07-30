@@ -1,26 +1,24 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ItemBase.h"
+#include "Item/ItemBase.h"
 #include "Character/MainCharacter.h"
-#include "SpeedItem.generated.h"
-
+#include "InvincibilityItem.generated.h"
 
 
 UCLASS()
-class PROTOCOL9_API ASpeedItem : public AItemBase
+class PROTOCOL9_API AInvincibilityItem : public AItemBase
 {
 	GENERATED_BODY()
 public:
-	ASpeedItem();
+	AInvincibilityItem();
+
 	UPROPERTY()
 	AMainCharacter* AffectedPlayer;
-	
+
 	virtual void EndEffect() override;
 
 	virtual void ActivateItem(AActor* Activator)override;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Item")
-	float MultiSpeed;
 	
 };

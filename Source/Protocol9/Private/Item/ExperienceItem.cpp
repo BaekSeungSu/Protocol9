@@ -1,16 +1,16 @@
-#include "Item/SpeedItem.h"
+#include "Item/ExperienceItem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/SphereComponent.h"
 
-ASpeedItem::ASpeedItem()
+AExperienceItem::AExperienceItem()
 : AffectedPlayer(nullptr)
 {
-	MultiSpeed = 1.5f;
+	MultiExperience = 2.0f;
 	ItemDuration = 3.0f;
 	ItemType = "SpeedItem";
 }
 
-void ASpeedItem::ActivateItem(AActor* Activator)
+void AExperienceItem::ActivateItem(AActor* Activator)
 {
 	if (Activator && Activator ->ActorHasTag("Player"))
 	{
@@ -20,14 +20,14 @@ void ASpeedItem::ActivateItem(AActor* Activator)
 			GEngine->AddOnScreenDebugMessage(-1,
 				2.0f,
 				FColor::Blue,
-				FString::Printf(TEXT("Speed Up"))
+				FString::Printf(TEXT("Increased experience "))
 				);
 			//속도 증가 기능 추가
 			AffectedPlayer = MyCharacter; 
 			GetWorld()->GetTimerManager().SetTimer(
 				EffectTimerHandle,
 				this,
-				&ASpeedItem::EndEffect,
+				&AExperienceItem::EndEffect,
 				ItemDuration,
 				false);										
 		}
@@ -36,7 +36,7 @@ void ASpeedItem::ActivateItem(AActor* Activator)
 	SetActorEnableCollision(false);
 }
 
-void ASpeedItem::EndEffect() 
+void AExperienceItem::EndEffect() 
 {
 	//속도 증가 함수 제거 
 	if (AffectedPlayer)
