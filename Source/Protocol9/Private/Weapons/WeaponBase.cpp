@@ -12,6 +12,23 @@ AWeaponBase::AWeaponBase()
 	
 }
 
+void AWeaponBase::PrimaryFire_Implementation()
+{
+	IWeaponInterface::PrimaryFire_Implementation();
+}
+
+void AWeaponBase::StopFire_Implementation()
+{
+	IWeaponInterface::StopFire_Implementation();
+}
+
+void AWeaponBase::Reload_Implementation()
+{
+	IWeaponInterface::Reload_Implementation();
+}
+
+
+
 void AWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
