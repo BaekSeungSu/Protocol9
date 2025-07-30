@@ -1,12 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Enemy/MonsterBase.h"
-#include "Perception/AIPerceptionComponent.h"
-#include "Perception/AISenseConfig_Sight.h"
-#include "Perception/AISenseConfig_Hearing.h"
-#include "Perception/AIPerceptionStimuliSourceComponent.h"
-#include "Perception/AIPerceptionTypes.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AIController.h"
 #include "Enemy/MonsterBaseAIController.h"
@@ -23,34 +16,11 @@ AMonsterBase::AMonsterBase()
 	PrimaryActorTick.bCanEverTick = false;
 
 	AIControllerClass = AMonsterBaseAIController::StaticClass();
-
-
-	AIPerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerceptionComponent"));
-
-	SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("SightConfig"));
-	SightConfig->SightRadius = SightRadius;
-	SightConfig->LoseSightRadius = SightRadius+500.0f;
-	SightConfig->PeripheralVisionAngleDegrees = PeripheralVisionAngleDegrees;
-	SightConfig->SetMaxAge(1.0f);
-	SightConfig->DetectionByAffiliation.bDetectEnemies = true;
-	SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
-	SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
-	
-	HearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("HearingConfig"));
-	HearingConfig->HearingRange = HearingRadius;
-	HearingConfig->SetMaxAge(1.0f);
-	HearingConfig->DetectionByAffiliation.bDetectEnemies = true;
-	HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
-	HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
-	
-	AIPerceptionComponent->ConfigureSense(*HearingConfig);
-	AIPerceptionComponent->ConfigureSense(*SightConfig);
-	AIPerceptionComponent->SetDominantSense(SightConfig->GetSenseImplementation());
 	
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
-
+	//SetPerceptionComponent(AIPerceptionComponent);
 
 	if (GetMesh())
 	{
@@ -86,18 +56,9 @@ void AMonsterBase::BeginPlay()
 
 
 	AIController = Cast<AAIController>(GetController());
-	AMonsterBaseAIController* MonsterAI = Cast<AMonsterBaseAIController>(GetController());
-
-	
+	//AMonsterBaseAIController* MonsterAI = Cast<AMonsterBaseAIController>(GetController());
 
 	StartLocation = GetActorLocation();
-
-
-	if (AIPerceptionComponent)
-	{
-		AIPerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &AMonsterBase::OnTargetPerceptionUpdated);
-	}
-
 
 	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
 	{
@@ -191,6 +152,16 @@ void AMonsterBase::SetState(EMonsterState NewState)
 	}
 }
 
+bool AMonsterBase::SetTargetPlayer(APawn* NewTarget)
+{
+	TargetPlayer = NewTarget;
+	if (TargetPlayer && TargetPlayer->IsA<APawn>())
+	{
+		return true;
+	}
+	return false;
+}
+
 void AMonsterBase::StartPatrol()
 {
 	CurrentPatrolTarget = GetRandomPatrolPoint();
@@ -234,7 +205,7 @@ void AMonsterBase::Patrol()
 	}
 }
 
-FVector AMonsterBase::GetRandomPatrolPoint()
+FVector AMonsterBase::GetRandomPatrolPoint() const
 {
 
 	FVector RandomDirection = FMath::VRand();
@@ -281,7 +252,7 @@ void AMonsterBase::ChasePlayer()
 	}
 }
 
-bool AMonsterBase::CanSeePlayer()
+bool AMonsterBase::CanSeePlayer() const
 {
 	if (!TargetPlayer) return false;
 
@@ -386,7 +357,7 @@ void AMonsterBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
-bool AMonsterBase::IsInAttackRange()
+bool AMonsterBase::IsInAttackRange() const
 {
 	if (!TargetPlayer) return false;
 
@@ -409,25 +380,7 @@ void AMonsterBase::ReturnToStart()
 	AIController->MoveToLocation(StartLocation);
 }
 
-void AMonsterBase::OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
-{
-	APlayerController* PlayerController = Cast<APlayerController>(Cast<APawn>(Actor) ? Cast<APawn>(Actor)->GetController() : nullptr);
-	if (PlayerController == nullptr) return;
 
-	if (Stimulus.WasSuccessfullySensed())
-	{
-		TargetPlayer = Cast<APawn>(Actor);
-		if (CurrentState != EMonsterState::Attacking)
-		{
-			SetState(EMonsterState::Chasing);
-		}
-	}
-	else
-	{
-		TargetPlayer = nullptr;
-		SetState(EMonsterState::Returning);
-	}
-}
 
 // void AMonsterBase::OnSeePawn(APawn* Pawn)
 // {
@@ -535,7 +488,7 @@ void AMonsterBase::OnDeath()
 	Destroy();
 }
 
-void AMonsterBase::DropItems()
+void AMonsterBase::DropItems() const
 {
 	UWorld* World = GetWorld();
 	if (!World)
@@ -545,7 +498,7 @@ void AMonsterBase::DropItems()
 	//World->SpawnActor<AActor>(AItemBase::StaticClass(), GetActorLocation(), FRotator::ZeroRotator);
 }
 
-void AMonsterBase::GiveExp()
+void AMonsterBase::GiveExp() const
 {
 	UWorld* World = GetWorld();
 	if (!World)
