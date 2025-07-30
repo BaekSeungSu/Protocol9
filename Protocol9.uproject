@@ -9,7 +9,12 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
+<<<<<<< HEAD
 				"Engine"
+=======
+				"Engine",
+				"AIModule"
+>>>>>>> 2aac6e3574abab3f297b5c52c3f15a2f9535f140
 			]
 		}
 	],
