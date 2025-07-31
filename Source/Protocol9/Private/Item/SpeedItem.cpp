@@ -22,7 +22,7 @@ void ASpeedItem::ActivateItem(AActor* Activator)
 				FColor::Blue,
 				FString::Printf(TEXT("Speed Up"))
 				);
-			//속도 증가 기능 추가
+			//MyCharacter->AddSpeed(MultiSpeed);
 			AffectedPlayer = MyCharacter; 
 			GetWorld()->GetTimerManager().SetTimer(
 				EffectTimerHandle,
@@ -38,7 +38,6 @@ void ASpeedItem::ActivateItem(AActor* Activator)
 
 void ASpeedItem::EndEffect() 
 {
-	//속도 증가 함수 제거 
 	if (AffectedPlayer)
 	{
 		GEngine->AddOnScreenDebugMessage(
@@ -46,9 +45,10 @@ void ASpeedItem::EndEffect()
 			2.0f,
 			FColor::Red,
 			FString::Printf(TEXT("Speed Up Effect End! ")));
-		AffectedPlayer = nullptr;
+		//AffectedPlayer->ResetSpeed();
 	}
 	
 	GetWorld()->GetTimerManager().ClearTimer(EffectTimerHandle);
+	AffectedPlayer = nullptr;
 	DestroyItem();
 }

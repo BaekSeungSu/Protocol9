@@ -7,7 +7,7 @@
 #include "Weapons/WeaponBase.h"
 #include "Weapons/WeaponInterface.h"
 
-AMainCharacter::AMainCharacter()
+AMainCharacter::AMainCharacter() 
 {
 	PrimaryActorTick.bCanEverTick = false;
 
@@ -15,7 +15,19 @@ AMainCharacter::AMainCharacter()
 	CameraComponent->SetupAttachment(GetMesh());
 
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+
+	MaxHealth = 100;
+	Health = MaxHealth;
 	
+	NormalSpeed = 500.0f;
+	MultiSpeed = 1.5f;
+	SprintSpeed = NormalSpeed*MultiSpeed;
+
+	BasicAttack = 15.0f;
+	CurrentAttack = BasicAttack;
+	MultiAttack = 1.2f;
+
+	GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
 }
 
 void AMainCharacter::EquipDefaultWeapon()
@@ -161,3 +173,6 @@ void AMainCharacter::StopJump(const FInputActionValue& Value)
 		StopJumping();
 	}
 }
+
+
+

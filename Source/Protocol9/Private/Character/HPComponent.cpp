@@ -1,11 +1,11 @@
-
 #include "Character/HPComponent.h"
+#include "Character/MainCharacter.h"
 
 UHPComponent::UHPComponent()
 {
 
-	PrimaryComponentTick.bCanEverTick = true;
-
+	PrimaryComponentTick.bCanEverTick = false;
+	
 }
 
 
@@ -14,7 +14,6 @@ void UHPComponent::BeginPlay()
 	Super::BeginPlay();
 
 }
-
 
 
 

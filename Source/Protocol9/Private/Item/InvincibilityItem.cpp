@@ -20,16 +20,15 @@ void AInvincibilityItem::ActivateItem(AActor* Activator)
 			FColor::Blue,
 			FString::Printf(TEXT("Invincibility Time! ")));				
 			
-			//데미지 증가 로직 추가 
-
-
+			//MyCharacter->LockHelath();								//무적 로직 추가 
+			
 			AffectedPlayer = MyCharacter;                       //이 효과를 받는 엑터 저장 
 			GetWorld()->GetTimerManager().SetTimer(
 			EffectTimerHandle,
 			this,
 			&AInvincibilityItem::EndEffect,
 			ItemDuration,
-			false);										// 일정 시간 뒤에 효과가 끝나는 함수로 이동
+			false);										
 		}
 	}
 	SetActorHiddenInGame(true);
@@ -38,9 +37,6 @@ void AInvincibilityItem::ActivateItem(AActor* Activator)
 
 void AInvincibilityItem::EndEffect() 
 {
-	//데미지 증가 함수 제거
-
-	
 	if (AffectedPlayer)
 	{
 		GEngine->AddOnScreenDebugMessage(
@@ -48,9 +44,10 @@ void AInvincibilityItem::EndEffect()
 			2.0f,
 			FColor::Red,
 			FString::Printf(TEXT("Invincibility Time End! ")));
-		AffectedPlayer = nullptr;
+		//AffectedPlayer->UnlockHelath();                     // 무적 off 로직 추가                         
 	}
 	
 	GetWorld()->GetTimerManager().ClearTimer(EffectTimerHandle);
+	AffectedPlayer = nullptr;
 	DestroyItem();
 }
