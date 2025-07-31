@@ -14,7 +14,7 @@ Saved/
 
 *.log
 *.tmp
-
+*.DotSettings.user
 .DS_Store
 
 .vscode/
