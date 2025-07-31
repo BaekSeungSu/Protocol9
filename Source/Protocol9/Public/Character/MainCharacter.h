@@ -8,17 +8,16 @@
 
 struct FInputActionValue;
 class UCameraComponent;
-class UInventoryComponent;
-class AWeaponBase;
 class UHPComponent;
 class UStaminaComponent;
 class UControlComponent;
+class UInventoryComponent;
+class AWeaponBase;
 
 UCLASS()
 class PROTOCOL9_API AMainCharacter : public ACharacter
 {
 	GENERATED_BODY()
-
 	
 public:
 	AMainCharacter();
@@ -49,7 +48,6 @@ protected:
 	TSubclassOf<AWeaponBase> DefaultWeaponClass;
 
 	void EquipDefaultWeapon();
-	FTimerHandle DashTimer;
 	
 	virtual void BeginPlay() override;
 

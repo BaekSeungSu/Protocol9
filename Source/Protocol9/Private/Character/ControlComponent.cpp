@@ -36,11 +36,18 @@ void UControlComponent::Move(const FInputActionValue& Value)
 
 	const FVector2D MoveInput = Value.Get<FVector2D>();
 
+	
+	
 	if (!FMath::IsNearlyZero(MoveInput.X))
 	{
-		Owner->AddMovementInput(Owner->GetActorForwardVector(), MoveInput.X);
-	}
+		//FVector direction = FRotationMatrix(Owner->GetControlRotation()).GetScaledAxis(EAxis::X);
+		FVector direction = Owner->GetActorForwardVector();
 
+		direction = FVector(direction.X, direction.Y, 0.f).GetSafeNormal();
+		
+		Owner->AddMovementInput(direction, MoveInput.X);
+	}
+	
 	if (!FMath::IsNearlyZero(MoveInput.Y))
 	{
 		Owner->AddMovementInput(Owner->GetActorRightVector(), MoveInput.Y);
@@ -54,6 +61,7 @@ void UControlComponent::Look(const FInputActionValue& Value)
 	const FVector2D LookInput = Value.Get<FVector2D>();
 
 	Owner->AddControllerYawInput(LookInput.X);
+
 	Owner->AddControllerPitchInput(-LookInput.Y);
 }
 

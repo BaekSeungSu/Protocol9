@@ -19,7 +19,11 @@ AMainCharacter::AMainCharacter()
 	CameraComponent->SetupAttachment(GetMesh());
 
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
-	
+
+	HPComponent = CreateDefaultSubobject<UHPComponent>(TEXT("HP"));
+	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina"));
+	ControlComponent = CreateDefaultSubobject<UControlComponent>(TEXT("Control"));
+
 }
 
 void AMainCharacter::EquipDefaultWeapon()
@@ -28,11 +32,7 @@ void AMainCharacter::EquipDefaultWeapon()
 	{
 		InventoryComponent->AddWeapon(DefaultWeaponClass);
 	}
-
-	HPComponent = CreateDefaultSubobject<UHPComponent>(TEXT("HP"));
-	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina"));
-	ControlComponent = CreateDefaultSubobject<UControlComponent>(TEXT("Control"));
-
+	
 }
 
 void AMainCharacter::BeginPlay()
@@ -40,8 +40,12 @@ void AMainCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	GetMesh()->HideBoneByName(FName("weapon_r"), EPhysBodyOp::PBO_None);
+	GetMesh()->HideBoneByName(FName("neck_01"), EPhysBodyOp::PBO_None);
+	GetMesh()->HideBoneByName(FName("thigh_l"), EPhysBodyOp::PBO_None);
+	GetMesh()->HideBoneByName(FName("thigh_r"), EPhysBodyOp::PBO_None);
 
 	EquipDefaultWeapon();
+	
 }
 
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

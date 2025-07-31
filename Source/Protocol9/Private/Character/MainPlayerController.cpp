@@ -2,6 +2,7 @@
 
 
 #include "Character/MainPlayerController.h"
+#include "Camera/PlayerCameraManager.h"
 #include "EnhancedInputSubsystems.h"
 
 AMainPlayerController::AMainPlayerController()

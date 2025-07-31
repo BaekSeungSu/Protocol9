@@ -23,6 +23,8 @@ protected:
 	float DashPower;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Control")
 	float MaxSpeed;
+
+	float CurrentPitch;
 	
 	FTimerHandle DashTimer;
 	
