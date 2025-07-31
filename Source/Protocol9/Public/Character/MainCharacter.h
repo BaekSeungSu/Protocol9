@@ -8,6 +8,9 @@
 
 struct FInputActionValue;
 class UCameraComponent;
+class UHPComponent;
+class UStaminaComponent;
+class UControlComponent;
 class UInventoryComponent;
 class AWeaponBase;
 
@@ -15,15 +18,28 @@ UCLASS()
 class PROTOCOL9_API AMainCharacter : public ACharacter
 {
 	GENERATED_BODY()
-
 	
 public:
 	AMainCharacter();
 
+	
 protected:
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
+	int Attack;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Exp")
+	int Exp;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Exp")
+	int MaxExp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HP")
+	UHPComponent* HPComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stamina")
+	UStaminaComponent* StaminaComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Control")
+	UControlComponent* ControlComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	UInventoryComponent* InventoryComponent;
@@ -41,18 +57,10 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	UFUNCTION()
-	void Move(const FInputActionValue& Value);
-	UFUNCTION()
-	void Look(const FInputActionValue& Value);
-	UFUNCTION()
-	void Fire(const FInputActionValue& Value);
-	UFUNCTION()
-	void Dash(const FInputActionValue& Value);
-	UFUNCTION()
-	void StartJump(const FInputActionValue& Value);
-	UFUNCTION()
-	void StopJump(const FInputActionValue& Value);
+	UStaminaComponent* GetStaminaComponent() const { return StaminaComponent; }
+	UControlComponent* GetControlComponent() const { return ControlComponent; }
+	UHPComponent* GetHPComponent() const { return HPComponent; }
+
 	
 
 };

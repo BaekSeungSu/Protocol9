@@ -1,7 +1,11 @@
+
 #include "Character/MainCharacter.h"
 #include "Character/MainPlayerController.h"
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Character/StaminaComponent.h"
+#include "Character/HPComponent.h"
+#include "Character/ControlComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Weapons/InventoryComponent.h"
 #include "Weapons/WeaponBase.h"
@@ -16,18 +20,12 @@ AMainCharacter::AMainCharacter()
 
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 
-	MaxHealth = 100;
-	Health = MaxHealth;
-	
-	NormalSpeed = 500.0f;
-	MultiSpeed = 1.5f;
-	SprintSpeed = NormalSpeed*MultiSpeed;
 
-	BasicAttack = 15.0f;
-	CurrentAttack = BasicAttack;
-	MultiAttack = 1.2f;
+	HPComponent = CreateDefaultSubobject<UHPComponent>(TEXT("HP"));
+	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina"));
+	ControlComponent = CreateDefaultSubobject<UControlComponent>(TEXT("Control"));
 
-	GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+
 }
 
 void AMainCharacter::EquipDefaultWeapon()
@@ -36,6 +34,7 @@ void AMainCharacter::EquipDefaultWeapon()
 	{
 		InventoryComponent->AddWeapon(DefaultWeaponClass);
 	}
+	
 }
 
 void AMainCharacter::BeginPlay()
@@ -43,8 +42,12 @@ void AMainCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	GetMesh()->HideBoneByName(FName("weapon_r"), EPhysBodyOp::PBO_None);
+	GetMesh()->HideBoneByName(FName("neck_01"), EPhysBodyOp::PBO_None);
+	GetMesh()->HideBoneByName(FName("thigh_l"), EPhysBodyOp::PBO_None);
+	GetMesh()->HideBoneByName(FName("thigh_r"), EPhysBodyOp::PBO_None);
 
 	EquipDefaultWeapon();
+	
 }
 
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -60,8 +63,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 				EnhancedInput->BindAction(
 					PlayerController->MoveAction,
 					ETriggerEvent::Triggered,
-					this,
-					&AMainCharacter::Move);
+					ControlComponent,
+					&UControlComponent::Move);
 			}
 
 			if (PlayerController->LookAction)
@@ -69,8 +72,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 				EnhancedInput->BindAction(
 					PlayerController->LookAction,
 					ETriggerEvent::Triggered,
-					this,
-					&AMainCharacter::Look);
+					ControlComponent,
+					&UControlComponent::Look);
 			}
 
 			if (PlayerController->FireAction)
@@ -78,8 +81,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 				EnhancedInput->BindAction(
 					PlayerController->FireAction,
 					ETriggerEvent::Started,
-					this,
-					&AMainCharacter::Fire
+					ControlComponent,
+					&UControlComponent::Fire
 					);
 			}
 
@@ -87,9 +90,9 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 			{
 				EnhancedInput->BindAction(
 					PlayerController->JumpAction,
-					ETriggerEvent::Triggered,
-					this,
-					&AMainCharacter::StartJump);
+					ETriggerEvent::Started,
+					ControlComponent,
+					&UControlComponent::StartJump);
 			}
 
 			if (PlayerController->JumpAction)
@@ -97,8 +100,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 				EnhancedInput->BindAction(
 					PlayerController->JumpAction,
 					ETriggerEvent::Completed,
-					this,
-					&AMainCharacter::StopJumping);
+					ControlComponent,
+					&UControlComponent::StopJump);
 			}
 
 			if (PlayerController->DashAction)
@@ -106,73 +109,9 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 				EnhancedInput->BindAction(
 					PlayerController->DashAction,
 					ETriggerEvent::Triggered,
-					this,
-					&AMainCharacter::Dash);
+					ControlComponent,
+					&UControlComponent::Dash);
 			}
 		}
 	}
 }
-
-void AMainCharacter::Move(const FInputActionValue& Value)
-{
-	if (!Controller) return;
-
-	const FVector2D MoveInput = Value.Get<FVector2D>();
-
-	if (!FMath::IsNearlyZero(MoveInput.X))
-	{
-		AddMovementInput(GetActorForwardVector(), MoveInput.X);
-	}
-
-	if (!FMath::IsNearlyZero(MoveInput.Y))
-	{
-		AddMovementInput(GetActorRightVector(), MoveInput.Y);
-	}
-}
-
-void AMainCharacter::Look(const FInputActionValue& Value)
-{
-	if (!Controller) return;
-
-	const FVector2D LookInput = Value.Get<FVector2D>();
-
-	AddControllerYawInput(LookInput.X);
-	AddControllerPitchInput(-LookInput.Y);
-}
-
-void AMainCharacter::Fire(const FInputActionValue& Value)
-{
-	if (InventoryComponent)
-	{
-		AWeaponBase* CurrentWeapon = InventoryComponent->GetCurrentWeapon();
-
-		if (CurrentWeapon && CurrentWeapon->Implements<UWeaponInterface>())
-		{
-			IWeaponInterface::Execute_PrimaryFire(CurrentWeapon);
-		}
-	}
-
-}
-
-void AMainCharacter::Dash(const FInputActionValue& Value)
-{
-}
-
-void AMainCharacter::StartJump(const FInputActionValue& Value)
-{
-	if (Value.Get<bool>())
-	{
-		Jump();
-	}
-}
-
-void AMainCharacter::StopJump(const FInputActionValue& Value)
-{
-	if (!Value.Get<bool>())
-	{
-		StopJumping();
-	}
-}
-
-
-
