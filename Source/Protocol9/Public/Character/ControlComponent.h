@@ -45,5 +45,10 @@ public:
 	UFUNCTION()
 	void StopJump(const FInputActionValue& Value);
 
+	UFUNCTION()
+	void AddSpeed(float Multiplier);
+	UFUNCTION()
+	void ResetSpeed();
+	
 	void DoNothing (){};
 };

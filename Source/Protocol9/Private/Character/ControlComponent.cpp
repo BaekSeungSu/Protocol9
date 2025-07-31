@@ -112,3 +112,21 @@ void UControlComponent::StopJump(const FInputActionValue& Value)
 	}
 }
 
+
+void UControlComponent::AddSpeed(float Multiplier)
+{
+	if (Owner)
+	{
+		Owner->GetCharacterMovement()->MaxWalkSpeed *= Multiplier;
+	}
+	UE_LOG(LogTemp,Warning,TEXT("Increase Speed : %f"),Owner->GetCharacterMovement()->MaxWalkSpeed);
+}
+
+void UControlComponent::ResetSpeed()
+{
+	if (Owner)
+	{
+		Owner->GetCharacterMovement()->MaxWalkSpeed = MaxSpeed; 
+	}
+	UE_LOG(LogTemp,Warning,TEXT("Speed Reset : %f"),Owner->GetCharacterMovement()->MaxWalkSpeed);
+}

@@ -45,7 +45,7 @@ void AExperienceItem::EndEffect()
 			-1,
 			2.0f,
 			FColor::Red,
-			FString::Printf(TEXT("Speed Up Effect End! ")));
+			FString::Printf(TEXT("Increased experience End! ")));
 		                                                            //경험치 증가 로직 제거 
 	}
 	

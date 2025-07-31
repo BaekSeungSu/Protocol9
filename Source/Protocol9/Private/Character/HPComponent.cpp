@@ -57,6 +57,7 @@ void UHPComponent::AddHealth(float HealAmount)
 	{
 		CurrentHP = FMath::Min(MaxHP, CurrentHP + HealAmount);
 	}
+	UE_LOG(LogTemp,Warning,TEXT("HP : %f"),CurrentHP);
 }
 
 bool UHPComponent::IsDead()

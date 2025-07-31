@@ -10,12 +10,22 @@ AHealingItem::AHealingItem()
 
 void AHealingItem::ActivateItem(AActor* Activator)
 {
+	UE_LOG(LogTemp,Warning,TEXT("Called Healing Item"))
 	if (Activator && Activator ->ActorHasTag("Player"))
 	{
-		if (AMainCharacter* MainCharacter = Cast<AMainCharacter>(Activator))
+		UHPComponent* HPComponent = Activator->FindComponentByClass<UHPComponent>();
+		if (HPComponent)
 		{
-			//MainCharacter->AddHealth(HealAmount);
+			HPComponent->AddHealth(HealAmount);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT(" Error!"));
 		}
 		DestroyItem();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT(" Error!"));
 	}
 }
