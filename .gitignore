@@ -19,6 +19,7 @@ Saved/
 
 .vscode/
 .idea/
+*.DotSettings.user
 
 # Visual Studio cache
 .vs/
