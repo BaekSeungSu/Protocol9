@@ -18,11 +18,6 @@ void UHPComponent::BeginPlay()
 	//Owner = GetOwner();
 }
 
-UHPComponent* UHPComponent::GetHPComponent()
-{
-	return this;
-}
-
 void UHPComponent::SetMaxHP(float NewMaxHP)
 {
 	MaxHP = NewMaxHP;

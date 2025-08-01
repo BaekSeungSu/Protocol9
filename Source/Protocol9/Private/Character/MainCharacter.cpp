@@ -6,12 +6,19 @@
 #include "Character/StaminaComponent.h"
 #include "Character/HPComponent.h"
 #include "Character/ControlComponent.h"
+#include "Character/CharacterStateMachine.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Weapons/InventoryComponent.h"
 #include "Weapons/WeaponBase.h"
 #include "Weapons/WeaponInterface.h"
 
-AMainCharacter::AMainCharacter() 
+AMainCharacter::AMainCharacter()
+	:Attack(10),
+	LevelUpAttack(2),
+	Exp(0),
+	MaxExp(100),
+	CharacterLevel(1)
+	
 {
 	PrimaryActorTick.bCanEverTick = false;
 
@@ -20,6 +27,7 @@ AMainCharacter::AMainCharacter()
 
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 
+	StateMachine = CreateDefaultSubobject<UCharacterStateMachine>(TEXT("StateMachine"));
 
 	HPComponent = CreateDefaultSubobject<UHPComponent>(TEXT("HP"));
 	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina"));
@@ -103,6 +111,26 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 					);
 			}
 
+			if (PlayerController->MeleeAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->MeleeAction,
+					ETriggerEvent::Started,
+					ControlComponent,
+					&UControlComponent::Melee
+					);
+			}
+
+			if (PlayerController->ReloadAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->ReloadAction,
+					ETriggerEvent::Started,
+					ControlComponent,
+					&UControlComponent::Reload
+					);
+			}
+
 			if (PlayerController->JumpAction)
 			{
 				EnhancedInput->BindAction(
@@ -130,5 +158,41 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 					&UControlComponent::Dash);
 			}
 		}
+	}
+}
+
+void AMainCharacter::SetAttack(int NewAttack)
+{
+	if (NewAttack > 0)
+	{
+		Attack = NewAttack;
+	}
+}
+
+void AMainCharacter::SetExp(int NewExp)
+{
+	if (NewExp > 0)
+	{
+		Exp = NewExp;
+	}
+}
+
+void AMainCharacter::SetLevel(int NewLevel)
+{
+	if (NewLevel > 0)
+	{
+		CharacterLevel = NewLevel;
+	}
+}
+
+void AMainCharacter::LevelUp()
+{
+	if (Exp >= MaxExp)
+	{
+		CharacterLevel++;
+
+		Attack += LevelUpAttack;
+		
+		LevelUp();
 	}
 }

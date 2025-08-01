@@ -2,6 +2,7 @@
 #include "Character/ControlComponent.h"
 #include "Character/MainCharacter.h"
 #include "Character/StaminaComponent.h"
+#include "Character/CharacterStateMachine.h"
 #include "EnhancedInputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -67,8 +68,58 @@ void UControlComponent::Look(const FInputActionValue& Value)
 
 void UControlComponent::Fire(const FInputActionValue& Value)
 {
+	if (!Owner->Controller) return;
+
+	if (Owner->GetStateMachine()->CanFire()) return;
+	
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Fire"));
 
+	UAnimInstance* AnimInstance = Owner->GetMesh()->GetAnimInstance();
+	{
+		if (AnimInstance && Owner->FireMontage)
+		{
+			float duration = AnimInstance->Montage_Play(Owner->FireMontage);
+			//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("%f"), duration));
+		}
+	}
+}
+
+void UControlComponent::Melee(const FInputActionValue& Value)
+{
+	if (!Owner->Controller) return;
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Melee"));
+	}
+}
+
+void UControlComponent::Reload(const FInputActionValue& Value)
+{
+	if (!Owner->Controller) return;
+
+	if (Owner->GetStateMachine()->CanFire()) return;
+
+	Owner->GetStateMachine()->SetState(ECharacterState::Reload);
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, (TEXT("Reload!")));
+
+	UAnimInstance* AnimInstance = Owner->GetMesh()->GetAnimInstance();
+	{
+		if (AnimInstance && Owner->FireMontage)
+		{
+			float duration = AnimInstance->Montage_Play(Owner->ReloadMontage);
+			//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("%f"), duration));
+
+			FOnMontageEnded ReloadEnded;
+			ReloadEnded.BindLambda([this](UAnimMontage* Montage, bool bInterrupted)
+			{
+				if (Owner && Owner->GetStateMachine())
+				{
+					Owner->GetStateMachine()->SetState(ECharacterState::Idle);
+				}
+			});
+
+		}
+	}
 }
 
 void UControlComponent::Dash(const FInputActionValue& Value)
