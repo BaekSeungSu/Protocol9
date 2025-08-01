@@ -1,15 +1,19 @@
 #include "Weapons/WeaponBase.h"
 #include "Components/StaticMeshComponent.h"
+#include "Character/MainPlayerController.h"
+#include "Weapons/Data/WeaponData.h"
+#include "DrawDebugHelpers.h"
 
 AWeaponBase::AWeaponBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	StaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComp"));
-	StaticMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	StaticMeshComp->SetSimulatePhysics(false);
-	SetRootComponent(StaticMeshComp);
-	
+	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComp"));
+	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	WeaponMesh->SetSimulatePhysics(false);
+	SetRootComponent(WeaponMesh);
+
+	CurrentWeaponData = nullptr;
 }
 
 void AWeaponBase::PrimaryFire_Implementation()
@@ -32,12 +36,62 @@ void AWeaponBase::Reload_Implementation()
 void AWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	LoadWeaponData();
 }
+
+
 
 void AWeaponBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 }
+void AWeaponBase::FireAction()
+{
+	if (CurrentWeaponData)
+	{
+		if (CurrentWeaponData->FireType == EFireType::HitScan)
+		{
+			FireHitScan();
+		}
+	}
+}
+
+void AWeaponBase::FireHitScan()
+{
+	AMainPlayerController* OwnerController = Cast<AMainPlayerController>(GetOwner()->GetInstigatorController());
+	if (!OwnerController) return;
+
+	FVector EyeLocation;
+	FRotator EyeRotation;
+	OwnerController->GetPlayerViewPoint(EyeLocation, EyeRotation);
+
+	FVector Start = WeaponMesh->GetSocketLocation(FName("MuzzleSocket"));
+	FVector Direction = EyeRotation.Vector();
+	FVector End = Start + Direction * CurrentWeaponData->Range;
+
+	FHitResult HitResult;
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility);
+
+	if (bHit)
+	{
+		DrawDebugLine(GetWorld(), Start, HitResult.Location, FColor::Red, false, 0.0f, 0, 1.0f);
+		UE_LOG(LogTemp, Warning, TEXT("Hit Actor : %s"), *HitResult.GetActor()->GetName());
+	}
+	else
+	{
+		DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 0.0f, 0, 1.0f);
+		UE_LOG(LogTemp, Warning, TEXT("Miss"));
+	}
+}
+
+void AWeaponBase::LoadWeaponData()
+{
+	if (!WeaponDataTable) return;
+	if (WeaponDataRowName.IsNone()) return;
+
+	CurrentWeaponData = WeaponDataTable->FindRow<FWeaponData>(WeaponDataRowName, TEXT(""));
+}
+
+
 

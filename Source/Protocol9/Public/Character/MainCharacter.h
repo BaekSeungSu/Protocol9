@@ -75,6 +75,9 @@ public:
 	void AddAttack(float Multiplied);
 	UFUNCTION()
 	void ResetAttack();
+	UInventoryComponent* GetInventoryComponent() const {return InventoryComponent; }
+	
+
 	UCharacterStateMachine* GetStateMachine() const { return StateMachine;}
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
