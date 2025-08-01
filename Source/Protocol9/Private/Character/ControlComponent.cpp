@@ -1,11 +1,11 @@
-
 #include "Character/ControlComponent.h"
 #include "Character/MainCharacter.h"
 #include "Character/StaminaComponent.h"
 #include "Character/CharacterStateMachine.h"
 #include "EnhancedInputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-
+#include "Weapons/InventoryComponent.h"
+#include "Weapons/WeaponBase.h"
 
 
 UControlComponent::UControlComponent()
@@ -68,9 +68,16 @@ void UControlComponent::Look(const FInputActionValue& Value)
 
 void UControlComponent::Fire(const FInputActionValue& Value)
 {
+	//AWeaponBase* CurrentWeapon = Owner->GetInventoryComponent()->GetCurrentWeapon();
+	
 	if (!Owner->Controller) return;
 
 	if (Owner->GetStateMachine()->CanFire()) return;
+
+	// if (CurrentWeapon && CurrentWeapon->Implements<UWeaponInterface>())
+	// {
+	// 	IWeaponInterface::Execute_PrimaryFire(CurrentWeapon);
+	// }
 	
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Fire"));
 
@@ -109,14 +116,14 @@ void UControlComponent::Reload(const FInputActionValue& Value)
 			float duration = AnimInstance->Montage_Play(Owner->ReloadMontage);
 			//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("%f"), duration));
 
-			FOnMontageEnded ReloadEnded;
-			ReloadEnded.BindLambda([this](UAnimMontage* Montage, bool bInterrupted)
-			{
-				if (Owner && Owner->GetStateMachine())
-				{
-					Owner->GetStateMachine()->SetState(ECharacterState::Idle);
-				}
-			});
+			// FOnMontageEnded ReloadEnded;
+			// ReloadEnded.BindLambda([this](UAnimMontage* Montage, bool bInterrupted)
+			// {
+			// 	if (Owner && Owner->GetStateMachine())
+			// 	{
+			// 		Owner->GetStateMachine()->SetState(ECharacterState::Idle);
+			// 	}
+			// });
 
 		}
 	}
