@@ -7,6 +7,7 @@
 #include "MainCharacter.generated.h"
 
 struct FInputActionValue;
+class USpringArmComponent;
 class UCameraComponent;
 class UHPComponent;
 class UStaminaComponent;
@@ -41,6 +42,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Exp")
 	int CharacterLevel;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	USpringArmComponent* SpringArmComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HP")

@@ -10,6 +10,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Weapons/InventoryComponent.h"
 #include "Weapons/WeaponBase.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Weapons/WeaponInterface.h"
 
 AMainCharacter::AMainCharacter()
@@ -22,8 +23,11 @@ AMainCharacter::AMainCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
+	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	SpringArmComponent->SetupAttachment(RootComponent);
+	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	CameraComponent->SetupAttachment(GetMesh());
+	CameraComponent->SetupAttachment(SpringArmComponent);
 
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 
