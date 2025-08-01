@@ -9,7 +9,6 @@ ARangedMonsterBase::ARangedMonsterBase()
 {
 	AttackRange = 1000.0f; 
 	AttackCooldown = 3.0f; 
-	ChaseRadius = 1200.0f;  
 }
 
 void ARangedMonsterBase::PerformAttack()
