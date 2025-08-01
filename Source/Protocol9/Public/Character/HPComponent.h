@@ -22,8 +22,6 @@ protected:
 public:	
 	UHPComponent();
 
-	UHPComponent* GetHPComponent();
-
 	UFUNCTION(BlueprintPure, Category = "HP")
 	float GetMaxHP() const {return MaxHP;};
 	UFUNCTION(BlueprintPure, Category = "HP")

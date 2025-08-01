@@ -39,6 +39,10 @@ public:
 	UFUNCTION()
 	void Fire(const FInputActionValue& Value);
 	UFUNCTION()
+	void Melee(const FInputActionValue& Value);
+	UFUNCTION()
+	void Reload(const FInputActionValue& Value);
+	UFUNCTION()
 	void Dash(const FInputActionValue& Value);
 	UFUNCTION()
 	void StartJump(const FInputActionValue& Value);

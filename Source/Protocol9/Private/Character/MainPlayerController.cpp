@@ -11,7 +11,8 @@ AMainPlayerController::AMainPlayerController()
 	LookAction(nullptr),
 	FireAction(nullptr),
 	JumpAction(nullptr),
-	DashAction(nullptr)
+	DashAction(nullptr),
+	ReloadAction(nullptr)
 {
 }
 

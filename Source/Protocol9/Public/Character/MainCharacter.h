@@ -13,6 +13,7 @@ class UStaminaComponent;
 class UControlComponent;
 class UInventoryComponent;
 class AWeaponBase;
+class UCharacterStateMachine;
 
 UCLASS()
 class PROTOCOL9_API AMainCharacter : public ACharacter
@@ -27,10 +28,14 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
 	int Attack;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
+	int LevelUPPerAttack;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Exp")
 	int Exp;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Exp")
 	int MaxExp;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Exp")
+	int CharacterLevel;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComponent;
@@ -47,8 +52,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<AWeaponBase> DefaultWeaponClass;
 
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "StateMachine")
+	UCharacterStateMachine* StateMachine;
 	
+
 	void EquipDefaultWeapon();
 	
 	virtual void BeginPlay() override;
@@ -60,7 +67,24 @@ public:
 	UStaminaComponent* GetStaminaComponent() const { return StaminaComponent; }
 	UControlComponent* GetControlComponent() const { return ControlComponent; }
 	UHPComponent* GetHPComponent() const { return HPComponent; }
+	UCharacterStateMachine* GetStateMachine() const { return StateMachine;}
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	UAnimMontage* FireMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	UAnimMontage* ReloadMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	UAnimMontage* OnHandMontage;
+	
+	int GetAttack() const{return Attack;}
+	int GetExp() const {return Exp;}
+	int GetCharacterLevel() const {return CharacterLevel;}
 
+	void SetAttack(int NewAttack);
+	void SetExp(int Exp);
+	void SetLevel(int Level);
+	
+	void LevelUp();
 	
 
 };
