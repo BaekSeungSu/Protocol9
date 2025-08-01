@@ -1,11 +1,14 @@
 #include "Character/HPComponent.h"
+#include "Character/MainCharacter.h"
 
 UHPComponent::UHPComponent()
 	:MaxHP(100.0f),
 	CurrentHP(MaxHP),
 	bIsDead(false)
 {
+
 	PrimaryComponentTick.bCanEverTick = false;
+
 }
 
 void UHPComponent::BeginPlay()
@@ -54,6 +57,7 @@ void UHPComponent::AddHealth(float HealAmount)
 	{
 		CurrentHP = FMath::Min(MaxHP, CurrentHP + HealAmount);
 	}
+	UE_LOG(LogTemp,Warning,TEXT("HP : %f"),CurrentHP);
 }
 
 bool UHPComponent::IsDead()
@@ -69,6 +73,7 @@ bool UHPComponent::IsDead()
 	
 	return bIsDead;
 }
+
 
 
 

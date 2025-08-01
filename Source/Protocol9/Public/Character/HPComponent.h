@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Character/MainCharacter.h"
 #include "HPComponent.generated.h"
 
 
@@ -44,7 +45,4 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
-
-		
 };

@@ -11,7 +11,7 @@
 #include "Weapons/WeaponBase.h"
 #include "Weapons/WeaponInterface.h"
 
-AMainCharacter::AMainCharacter()
+AMainCharacter::AMainCharacter() 
 {
 	PrimaryActorTick.bCanEverTick = false;
 
@@ -20,9 +20,11 @@ AMainCharacter::AMainCharacter()
 
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 
+
 	HPComponent = CreateDefaultSubobject<UHPComponent>(TEXT("HP"));
 	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina"));
 	ControlComponent = CreateDefaultSubobject<UControlComponent>(TEXT("Control"));
+
 
 }
 

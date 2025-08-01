@@ -1,5 +1,6 @@
 #include "Item/SpeedItem.h"
 #include "Kismet/GameplayStatics.h"
+#include "Character/ControlComponent.h"
 #include "Components/SphereComponent.h"
 
 ASpeedItem::ASpeedItem()
@@ -17,19 +18,23 @@ void ASpeedItem::ActivateItem(AActor* Activator)
 		AMainCharacter* MyCharacter = Cast<AMainCharacter>(Activator);
 		if (MyCharacter)
 		{
-			GEngine->AddOnScreenDebugMessage(-1,
-				2.0f,
-				FColor::Blue,
-				FString::Printf(TEXT("Speed Up"))
-				);
-			//속도 증가 기능 추가
-			AffectedPlayer = MyCharacter; 
-			GetWorld()->GetTimerManager().SetTimer(
-				EffectTimerHandle,
-				this,
-				&ASpeedItem::EndEffect,
-				ItemDuration,
-				false);										
+			UControlComponent* ControlComp= MyCharacter->FindComponentByClass<UControlComponent>();
+			if (ControlComp)
+			{
+				GEngine->AddOnScreenDebugMessage(-1,
+					2.0f,
+					FColor::Blue,
+					FString::Printf(TEXT("Speed Up"))
+					);
+				ControlComp->AddSpeed(MultiSpeed);
+				AffectedPlayer = ControlComp; 
+				GetWorld()->GetTimerManager().SetTimer(
+					EffectTimerHandle,
+					this,
+					&ASpeedItem::EndEffect,
+					ItemDuration,
+					false);
+			}
 		}
 	}
 	SetActorHiddenInGame(true);
@@ -38,7 +43,6 @@ void ASpeedItem::ActivateItem(AActor* Activator)
 
 void ASpeedItem::EndEffect() 
 {
-	//속도 증가 함수 제거 
 	if (AffectedPlayer)
 	{
 		GEngine->AddOnScreenDebugMessage(
@@ -46,9 +50,10 @@ void ASpeedItem::EndEffect()
 			2.0f,
 			FColor::Red,
 			FString::Printf(TEXT("Speed Up Effect End! ")));
-		AffectedPlayer = nullptr;
+		AffectedPlayer->ResetSpeed();
 	}
 	
 	GetWorld()->GetTimerManager().ClearTimer(EffectTimerHandle);
+	AffectedPlayer = nullptr;
 	DestroyItem();
 }

@@ -1,24 +1,31 @@
 #include "Item/HealingItem.h"
+#include "Character/HPComponent.h"
 #include "Character/MainCharacter.h"
 
 AHealingItem::AHealingItem()
 {
 	HealAmount = 30.0f;
-	ItemType = "Healing";
+	ItemType = "HealingItem";
 }
 
 void AHealingItem::ActivateItem(AActor* Activator)
 {
+	UE_LOG(LogTemp,Warning,TEXT("Called Healing Item"))
 	if (Activator && Activator ->ActorHasTag("Player"))
 	{
-		if (AMainCharacter* Character = Cast<AMainCharacter>(Activator))
+		UHPComponent* HPComponent = Activator->FindComponentByClass<UHPComponent>();
+		if (HPComponent)
 		{
-			GEngine->AddOnScreenDebugMessage(-1,
-					2.0f,
-					FColor::Red,
-					FString::Printf(TEXT("Heal"))
-					);
+			HPComponent->AddHealth(HealAmount);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT(" Error!"));
 		}
 		DestroyItem();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT(" Error!"));
 	}
 }

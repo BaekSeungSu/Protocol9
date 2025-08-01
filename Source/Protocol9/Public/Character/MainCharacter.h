@@ -47,6 +47,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<AWeaponBase> DefaultWeaponClass;
 
+
+	
 	void EquipDefaultWeapon();
 	
 	virtual void BeginPlay() override;
@@ -60,5 +62,5 @@ public:
 	UHPComponent* GetHPComponent() const { return HPComponent; }
 
 	
-	
+
 };

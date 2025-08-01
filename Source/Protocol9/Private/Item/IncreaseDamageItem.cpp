@@ -23,7 +23,8 @@ void AIncreaseDamageItem::ActivateItem(AActor* Activator)
 			FColor::Blue,
 			FString::Printf(TEXT("Increase Damage ")));				
 			
-			//데미지 증가 로직 추가 
+			//MyCharacter->AddAttack(MultiDamage);
+			
 			AffectedPlayer = MyCharacter; 
 			GetWorld()->GetTimerManager().SetTimer(
 			EffectTimerHandle,
@@ -39,7 +40,6 @@ void AIncreaseDamageItem::ActivateItem(AActor* Activator)
 
 void AIncreaseDamageItem::EndEffect() 
 {
-	//데미지 증가 함수 제거 
 	if (AffectedPlayer)
 	{
 		GEngine->AddOnScreenDebugMessage(
@@ -47,9 +47,10 @@ void AIncreaseDamageItem::EndEffect()
 			2.0f,
 			FColor::Red,
 			FString::Printf(TEXT("Increase Damage Effect End! ")));
-		AffectedPlayer = nullptr;
+			//AffectedPlayer->ResetAttack();							//데미지 증가 함수 제거 
 	}
 	
 	GetWorld()->GetTimerManager().ClearTimer(EffectTimerHandle);
+	AffectedPlayer = nullptr;	
 	DestroyItem();
 }

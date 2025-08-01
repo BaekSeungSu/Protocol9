@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -12,18 +10,37 @@ class PROTOCOL9_API ATileBase : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	ATileBase();
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StaticMesh")
-	UStaticMeshComponent* StaticMeshComponent;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "StaticMesh | SceneComponent")
-	USceneComponent* SceneComponent;
+
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+private:
+	// 내부 함수
+	void ClearPreviousInstances();
+	void GenerateInstances();
 
+public:
+	// 컴포넌트
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	class USceneComponent* SceneComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	class UStaticMeshComponent* StaticMeshComponent;
+
+	// 인스턴스 메시 리스트
+	UPROPERTY(EditAnywhere, Category = "Instance")
+	TArray<UStaticMesh*> InstanceMeshList;
+
+	// 생성된 인스턴스 컴포넌트 추적
+	UPROPERTY()
+	TArray<class UInstancedStaticMeshComponent*> SpawnedInstance;
+
+	// 스폰 수량
+	UPROPERTY(EditAnywhere, Category = "Instance")
+	int32 SpawnQuantity = 10;
+
+	// 중첩 방지 반경
+	UPROPERTY(EditAnywhere, Category = "Instance")
+	float SpawnRadius = 50.f;
 };

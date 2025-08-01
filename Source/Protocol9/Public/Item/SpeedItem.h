@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "ItemBase.h"
+#include "Character/ControlComponent.h"
 #include "Character/MainCharacter.h"
 #include "SpeedItem.generated.h"
 
@@ -14,7 +15,7 @@ class PROTOCOL9_API ASpeedItem : public AItemBase
 public:
 	ASpeedItem();
 	UPROPERTY()
-	AMainCharacter* AffectedPlayer;
+	UControlComponent* AffectedPlayer;
 	
 	virtual void EndEffect() override;
 
