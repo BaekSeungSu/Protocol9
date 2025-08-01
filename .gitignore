@@ -14,11 +14,12 @@ Saved/
 
 *.log
 *.tmp
-
+*.DotSettings.user
 .DS_Store
 
 .vscode/
 .idea/
+*.DotSettings.user
 
 # Visual Studio cache
 .vs/
