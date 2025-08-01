@@ -6,6 +6,8 @@
 #include "WeaponBase.generated.h"
 
 class UStaticMeshComponent;
+class UDataTable;
+struct FWeaponData;
 
 UCLASS()
 class PROTOCOL9_API AWeaponBase : public AActor, public IWeaponInterface
@@ -21,9 +23,22 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UStaticMeshComponent* StaticMeshComp;
+	UStaticMeshComponent* WeaponMesh;
 
+	UPROPERTY(EditDefaultsOnly, Category="Data")
+	UDataTable* WeaponDataTable;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Data")
+	FName WeaponDataRowName;
+
+	const FWeaponData* CurrentWeaponData;
+	
+	void FireAction();
+	void FireHitScan();
+	void LoadWeaponData();
+
+	
 private:
 };

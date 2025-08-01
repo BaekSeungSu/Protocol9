@@ -7,11 +7,12 @@ AExperienceItem::AExperienceItem()
 {
 	MultiExperience = 2.0f;
 	ItemDuration = 3.0f;
-	ItemType = "SpeedItem";
+	ItemType = "ExperienceItem";
 }
 
 void AExperienceItem::ActivateItem(AActor* Activator)
 {
+	Super::ActivateItem(Activator);
 	if (Activator && Activator ->ActorHasTag("Player"))
 	{
 		AMainCharacter* MyCharacter = Cast<AMainCharacter>(Activator);
@@ -22,7 +23,7 @@ void AExperienceItem::ActivateItem(AActor* Activator)
 				FColor::Blue,
 				FString::Printf(TEXT("Increased experience "))
 				);
-			//속도 증가 기능 추가
+			//경험치 증가 
 			AffectedPlayer = MyCharacter; 
 			GetWorld()->GetTimerManager().SetTimer(
 				EffectTimerHandle,
@@ -38,17 +39,18 @@ void AExperienceItem::ActivateItem(AActor* Activator)
 
 void AExperienceItem::EndEffect() 
 {
-	//속도 증가 함수 제거 
+	
 	if (AffectedPlayer)
 	{
 		GEngine->AddOnScreenDebugMessage(
 			-1,
 			2.0f,
 			FColor::Red,
-			FString::Printf(TEXT("Speed Up Effect End! ")));
-		AffectedPlayer = nullptr;
+			FString::Printf(TEXT("Increased experience End! ")));
+		                                                            //경험치 증가 로직 제거 
 	}
 	
 	GetWorld()->GetTimerManager().ClearTimer(EffectTimerHandle);
+	AffectedPlayer = nullptr;
 	DestroyItem();
 }

@@ -1,21 +1,47 @@
+
 #include "Character/MainCharacter.h"
 #include "Character/MainPlayerController.h"
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Character/StaminaComponent.h"
+#include "Character/HPComponent.h"
+#include "Character/ControlComponent.h"
+#include "Character/CharacterStateMachine.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Weapons/InventoryComponent.h"
 #include "Weapons/WeaponBase.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Weapons/WeaponInterface.h"
 
 AMainCharacter::AMainCharacter()
+	:Attack(10),
+	LevelUpAttack(2),
+	Exp(0),
+	MaxExp(100),
+	CharacterLevel(1)
+	
 {
 	PrimaryActorTick.bCanEverTick = false;
 
+	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	SpringArmComponent->SetupAttachment(RootComponent);
+	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	CameraComponent->SetupAttachment(GetMesh());
+	CameraComponent->SetupAttachment(SpringArmComponent);
 
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
-	
+
+	StateMachine = CreateDefaultSubobject<UCharacterStateMachine>(TEXT("StateMachine"));
+
+	HPComponent = CreateDefaultSubobject<UHPComponent>(TEXT("HP"));
+	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina"));
+	ControlComponent = CreateDefaultSubobject<UControlComponent>(TEXT("Control"));
+
+	BasetAttack = 20.0f;
+	LevelUpAttack = 1.2f;
+	Attack = BasetAttack;
+	CurrentAttack = Attack;
+
 }
 
 void AMainCharacter::EquipDefaultWeapon()
@@ -24,6 +50,7 @@ void AMainCharacter::EquipDefaultWeapon()
 	{
 		InventoryComponent->AddWeapon(DefaultWeaponClass);
 	}
+	
 }
 
 void AMainCharacter::BeginPlay()
@@ -31,9 +58,26 @@ void AMainCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	GetMesh()->HideBoneByName(FName("weapon_r"), EPhysBodyOp::PBO_None);
+	GetMesh()->HideBoneByName(FName("neck_01"), EPhysBodyOp::PBO_None);
+	GetMesh()->HideBoneByName(FName("thigh_l"), EPhysBodyOp::PBO_None);
+	GetMesh()->HideBoneByName(FName("thigh_r"), EPhysBodyOp::PBO_None);
 
 	EquipDefaultWeapon();
+	
 }
+
+void AMainCharacter::AddAttack(float Multiplied)
+{
+	CurrentAttack *= Multiplied;
+	UE_LOG(LogTemp, Warning,TEXT("Increased	My Attack : %f"),CurrentAttack);
+}
+
+void AMainCharacter::ResetAttack()
+{
+	CurrentAttack = Attack;
+	UE_LOG(LogTemp, Warning,TEXT("Return My Attack : %f"),CurrentAttack);
+}
+
 
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -48,8 +92,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 				EnhancedInput->BindAction(
 					PlayerController->MoveAction,
 					ETriggerEvent::Triggered,
-					this,
-					&AMainCharacter::Move);
+					ControlComponent,
+					&UControlComponent::Move);
 			}
 
 			if (PlayerController->LookAction)
@@ -57,8 +101,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 				EnhancedInput->BindAction(
 					PlayerController->LookAction,
 					ETriggerEvent::Triggered,
-					this,
-					&AMainCharacter::Look);
+					ControlComponent,
+					&UControlComponent::Look);
 			}
 
 			if (PlayerController->FireAction)
@@ -66,8 +110,28 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 				EnhancedInput->BindAction(
 					PlayerController->FireAction,
 					ETriggerEvent::Started,
-					this,
-					&AMainCharacter::Fire
+					ControlComponent,
+					&UControlComponent::Fire
+					);
+			}
+
+			if (PlayerController->MeleeAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->MeleeAction,
+					ETriggerEvent::Started,
+					ControlComponent,
+					&UControlComponent::Melee
+					);
+			}
+
+			if (PlayerController->ReloadAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->ReloadAction,
+					ETriggerEvent::Started,
+					ControlComponent,
+					&UControlComponent::Reload
 					);
 			}
 
@@ -75,9 +139,9 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 			{
 				EnhancedInput->BindAction(
 					PlayerController->JumpAction,
-					ETriggerEvent::Triggered,
-					this,
-					&AMainCharacter::StartJump);
+					ETriggerEvent::Started,
+					ControlComponent,
+					&UControlComponent::StartJump);
 			}
 
 			if (PlayerController->JumpAction)
@@ -85,8 +149,8 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 				EnhancedInput->BindAction(
 					PlayerController->JumpAction,
 					ETriggerEvent::Completed,
-					this,
-					&AMainCharacter::StopJumping);
+					ControlComponent,
+					&UControlComponent::StopJump);
 			}
 
 			if (PlayerController->DashAction)
@@ -94,70 +158,45 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 				EnhancedInput->BindAction(
 					PlayerController->DashAction,
 					ETriggerEvent::Triggered,
-					this,
-					&AMainCharacter::Dash);
+					ControlComponent,
+					&UControlComponent::Dash);
 			}
 		}
 	}
 }
 
-void AMainCharacter::Move(const FInputActionValue& Value)
+void AMainCharacter::SetAttack(int NewAttack)
 {
-	if (!Controller) return;
-
-	const FVector2D MoveInput = Value.Get<FVector2D>();
-
-	if (!FMath::IsNearlyZero(MoveInput.X))
+	if (NewAttack > 0)
 	{
-		AddMovementInput(GetActorForwardVector(), MoveInput.X);
-	}
-
-	if (!FMath::IsNearlyZero(MoveInput.Y))
-	{
-		AddMovementInput(GetActorRightVector(), MoveInput.Y);
+		Attack = NewAttack;
 	}
 }
 
-void AMainCharacter::Look(const FInputActionValue& Value)
+void AMainCharacter::SetExp(int NewExp)
 {
-	if (!Controller) return;
-
-	const FVector2D LookInput = Value.Get<FVector2D>();
-
-	AddControllerYawInput(LookInput.X);
-	AddControllerPitchInput(-LookInput.Y);
-}
-
-void AMainCharacter::Fire(const FInputActionValue& Value)
-{
-	if (InventoryComponent)
+	if (NewExp > 0)
 	{
-		AWeaponBase* CurrentWeapon = InventoryComponent->GetCurrentWeapon();
-
-		if (CurrentWeapon && CurrentWeapon->Implements<UWeaponInterface>())
-		{
-			IWeaponInterface::Execute_PrimaryFire(CurrentWeapon);
-		}
-	}
-
-}
-
-void AMainCharacter::Dash(const FInputActionValue& Value)
-{
-}
-
-void AMainCharacter::StartJump(const FInputActionValue& Value)
-{
-	if (Value.Get<bool>())
-	{
-		Jump();
+		Exp = NewExp;
 	}
 }
 
-void AMainCharacter::StopJump(const FInputActionValue& Value)
+void AMainCharacter::SetLevel(int NewLevel)
 {
-	if (!Value.Get<bool>())
+	if (NewLevel > 0)
 	{
-		StopJumping();
+		CharacterLevel = NewLevel;
+	}
+}
+
+void AMainCharacter::LevelUp()
+{
+	if (Exp >= MaxExp)
+	{
+		CharacterLevel++;
+
+		Attack += LevelUpAttack;
+		
+		LevelUp();
 	}
 }

@@ -7,29 +7,61 @@
 #include "MainCharacter.generated.h"
 
 struct FInputActionValue;
+class USpringArmComponent;
 class UCameraComponent;
+class UHPComponent;
+class UStaminaComponent;
+class UControlComponent;
 class UInventoryComponent;
 class AWeaponBase;
+class UCharacterStateMachine;
 
 UCLASS()
 class PROTOCOL9_API AMainCharacter : public ACharacter
 {
 	GENERATED_BODY()
-
 	
 public:
 	AMainCharacter();
 
+	
 protected:
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
+	float BasetAttack;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
+	float LevelUpAttack;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
+	float Attack;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
+	float CurrentAttack;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Exp")
+	int Exp;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Exp")
+	int MaxExp;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Exp")
+	int CharacterLevel;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	USpringArmComponent* SpringArmComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HP")
+	UHPComponent* HPComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stamina")
+	UStaminaComponent* StaminaComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Control")
+	UControlComponent* ControlComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	UInventoryComponent* InventoryComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<AWeaponBase> DefaultWeaponClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "StateMachine")
+	UCharacterStateMachine* StateMachine;
+	
 
 	void EquipDefaultWeapon();
 	
@@ -39,18 +71,34 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UStaminaComponent* GetStaminaComponent() const { return StaminaComponent; }
+	UControlComponent* GetControlComponent() const { return ControlComponent; }
+	UHPComponent* GetHPComponent() const { return HPComponent; }
 	UFUNCTION()
-	void Move(const FInputActionValue& Value);
+	void AddAttack(float Multiplied);
 	UFUNCTION()
-	void Look(const FInputActionValue& Value);
-	UFUNCTION()
-	void Fire(const FInputActionValue& Value);
-	UFUNCTION()
-	void Dash(const FInputActionValue& Value);
-	UFUNCTION()
-	void StartJump(const FInputActionValue& Value);
-	UFUNCTION()
-	void StopJump(const FInputActionValue& Value);
+	void ResetAttack();
+	UInventoryComponent* GetInventoryComponent() const {return InventoryComponent; }
 	
+
+	UCharacterStateMachine* GetStateMachine() const { return StateMachine;}
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	UAnimMontage* FireMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	UAnimMontage* ReloadMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	UAnimMontage* OnHandMontage;
+	
+	int GetAttack() const{return Attack;}
+	int GetExp() const {return Exp;}
+	int GetCharacterLevel() const {return CharacterLevel;}
+
+	void SetAttack(int NewAttack);
+	void SetExp(int Exp);
+	void SetLevel(int Level);
+	
+	void LevelUp();
+	
+
 };

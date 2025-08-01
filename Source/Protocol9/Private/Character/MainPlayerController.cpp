@@ -2,6 +2,7 @@
 
 
 #include "Character/MainPlayerController.h"
+#include "Camera/PlayerCameraManager.h"
 #include "EnhancedInputSubsystems.h"
 
 AMainPlayerController::AMainPlayerController()
@@ -10,7 +11,8 @@ AMainPlayerController::AMainPlayerController()
 	LookAction(nullptr),
 	FireAction(nullptr),
 	JumpAction(nullptr),
-	DashAction(nullptr)
+	DashAction(nullptr),
+	ReloadAction(nullptr)
 {
 }
 
