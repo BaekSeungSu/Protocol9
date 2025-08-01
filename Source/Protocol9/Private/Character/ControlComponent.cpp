@@ -68,16 +68,16 @@ void UControlComponent::Look(const FInputActionValue& Value)
 
 void UControlComponent::Fire(const FInputActionValue& Value)
 {
-	//AWeaponBase* CurrentWeapon = Owner->GetInventoryComponent()->GetCurrentWeapon();
+	AWeaponBase* CurrentWeapon = Owner->GetInventoryComponent()->GetCurrentWeapon();
 	
 	if (!Owner->Controller) return;
 
 	if (Owner->GetStateMachine()->CanFire()) return;
 
-	// if (CurrentWeapon && CurrentWeapon->Implements<UWeaponInterface>())
-	// {
-	// 	IWeaponInterface::Execute_PrimaryFire(CurrentWeapon);
-	// }
+	 if (CurrentWeapon && CurrentWeapon->Implements<UWeaponInterface>())
+	 {
+	 	IWeaponInterface::Execute_PrimaryFire(CurrentWeapon);
+	 }
 	
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Fire"));
 
