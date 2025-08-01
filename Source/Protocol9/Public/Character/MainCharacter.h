@@ -60,7 +60,7 @@ public:
 	UStaminaComponent* GetStaminaComponent() const { return StaminaComponent; }
 	UControlComponent* GetControlComponent() const { return ControlComponent; }
 	UHPComponent* GetHPComponent() const { return HPComponent; }
-
+	UInventoryComponent* GetInventoryComponent() const {return InventoryComponent; }
 	
 
 };
