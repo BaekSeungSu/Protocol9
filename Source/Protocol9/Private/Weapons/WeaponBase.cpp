@@ -66,21 +66,23 @@ void AWeaponBase::FireHitScan()
 	FRotator EyeRotation;
 	OwnerController->GetPlayerViewPoint(EyeLocation, EyeRotation);
 
-	FVector Start = WeaponMesh->GetSocketLocation(FName("MuzzleSocket"));
+	FVector Start = EyeLocation;
 	FVector Direction = EyeRotation.Vector();
 	FVector End = Start + Direction * CurrentWeaponData->Range;
+	FVector MuzzleLocation = WeaponMesh->GetSocketLocation(FName("MuzzleSocket"));
 
 	FHitResult HitResult;
 	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility);
 
 	if (bHit)
 	{
-		DrawDebugLine(GetWorld(), Start, HitResult.Location, FColor::Red, false, 0.0f, 0, 1.0f);
+		DrawDebugLine(GetWorld(), MuzzleLocation, HitResult.ImpactPoint, FColor::Red, false, 2.0f, 0, 1.0f);
+		DrawDebugBox(GetWorld(), HitResult.ImpactPoint, FVector(5.f), FColor::Green, false, 2.0f, 0, 2.0f);
 		UE_LOG(LogTemp, Warning, TEXT("Hit Actor : %s"), *HitResult.GetActor()->GetName());
 	}
-	else
+	else  
 	{
-		DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 0.0f, 0, 1.0f);
+		DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.0f, 0, 1.0f);
 		UE_LOG(LogTemp, Warning, TEXT("Miss"));
 	}
 }
