@@ -76,13 +76,13 @@ void AWeaponBase::FireHitScan()
 
 	if (bHit)
 	{
-		DrawDebugLine(GetWorld(), MuzzleLocation, HitResult.ImpactPoint, FColor::Red, false, 2.0f, 0, 1.0f);
-		DrawDebugBox(GetWorld(), HitResult.ImpactPoint, FVector(5.f), FColor::Green, false, 2.0f, 0, 2.0f);
+		DrawDebugLine(GetWorld(), MuzzleLocation, HitResult.ImpactPoint, FColor::Red, false, 4.0f, 0, 3.0f);
+		DrawDebugBox(GetWorld(), HitResult.ImpactPoint, FVector(5.f), FColor::Green, false, 4.0f, 0, 3.0f);
 		UE_LOG(LogTemp, Warning, TEXT("Hit Actor : %s"), *HitResult.GetActor()->GetName());
 	}
 	else  
 	{
-		DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.0f, 0, 1.0f);
+		DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 4.0f, 0, 3.0f);
 		UE_LOG(LogTemp, Warning, TEXT("Miss"));
 	}
 }
