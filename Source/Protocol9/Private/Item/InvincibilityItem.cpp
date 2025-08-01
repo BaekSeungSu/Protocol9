@@ -10,6 +10,7 @@ AInvincibilityItem::AInvincibilityItem()
 
 void AInvincibilityItem::ActivateItem(AActor* Activator)
 {
+	Super::ActivateItem(Activator);
 	if (Activator && Activator ->ActorHasTag("Player"))
 	{
 		AMainCharacter* MyCharacter = Cast<AMainCharacter>(Activator);

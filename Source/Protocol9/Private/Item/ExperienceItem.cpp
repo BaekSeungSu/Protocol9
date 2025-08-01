@@ -12,6 +12,7 @@ AExperienceItem::AExperienceItem()
 
 void AExperienceItem::ActivateItem(AActor* Activator)
 {
+	Super::ActivateItem(Activator);
 	if (Activator && Activator ->ActorHasTag("Player"))
 	{
 		AMainCharacter* MyCharacter = Cast<AMainCharacter>(Activator);

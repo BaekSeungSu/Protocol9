@@ -48,6 +48,8 @@ protected:
 	UNiagaraComponent* NiagaraComp;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Item|Niagara")
 	UNiagaraSystem* NiagaraSystem;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Niagara")
+	UNiagaraSystem* OverlapEffectSystem;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Item|Component")
 	USphereComponent* Collision;
