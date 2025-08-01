@@ -25,6 +25,10 @@ AMainCharacter::AMainCharacter()
 	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina"));
 	ControlComponent = CreateDefaultSubobject<UControlComponent>(TEXT("Control"));
 
+	BasetAttack = 20.0f;
+	LevelUpAttack = 1.2f;
+	Attack = BasetAttack;
+	CurrentAttack = Attack;
 
 }
 
@@ -49,6 +53,19 @@ void AMainCharacter::BeginPlay()
 	EquipDefaultWeapon();
 	
 }
+
+void AMainCharacter::AddAttack(float Multiplied)
+{
+	CurrentAttack *= Multiplied;
+	UE_LOG(LogTemp, Warning,TEXT("Increased	My Attack : %f"),CurrentAttack);
+}
+
+void AMainCharacter::ResetAttack()
+{
+	CurrentAttack = Attack;
+	UE_LOG(LogTemp, Warning,TEXT("Return My Attack : %f"),CurrentAttack);
+}
+
 
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {

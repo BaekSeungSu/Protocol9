@@ -24,9 +24,15 @@ public:
 
 	
 protected:
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
-	int Attack;
+	float BasetAttack;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
+	float LevelUpAttack;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
+	float Attack;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
+	float CurrentAttack;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Exp")
 	int Exp;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Exp")
@@ -60,7 +66,8 @@ public:
 	UStaminaComponent* GetStaminaComponent() const { return StaminaComponent; }
 	UControlComponent* GetControlComponent() const { return ControlComponent; }
 	UHPComponent* GetHPComponent() const { return HPComponent; }
-
-	
-
+	UFUNCTION()
+	void AddAttack(float Multiplied);
+	UFUNCTION()
+	void ResetAttack();
 };

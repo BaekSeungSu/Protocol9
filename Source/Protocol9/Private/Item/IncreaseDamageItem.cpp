@@ -24,7 +24,7 @@ void AIncreaseDamageItem::ActivateItem(AActor* Activator)
 			FColor::Blue,
 			FString::Printf(TEXT("Increase Damage ")));				
 			
-			//MyCharacter->AddAttack(MultiDamage);
+			MyCharacter->AddAttack(MultiDamage);
 			
 			AffectedPlayer = MyCharacter; 
 			GetWorld()->GetTimerManager().SetTimer(
@@ -48,7 +48,7 @@ void AIncreaseDamageItem::EndEffect()
 			2.0f,
 			FColor::Red,
 			FString::Printf(TEXT("Increase Damage Effect End! ")));
-			//AffectedPlayer->ResetAttack();							//데미지 증가 함수 제거 
+			AffectedPlayer->ResetAttack();							//데미지 증가 함수 제거 
 	}
 	
 	GetWorld()->GetTimerManager().ClearTimer(EffectTimerHandle);
