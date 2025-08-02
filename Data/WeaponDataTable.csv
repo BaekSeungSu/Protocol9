@@ -1,2 +1,2 @@
 ,WeaponType,FireType,WeaponClass,ProjectileClass,Damage,FireRate,Range,MagazineSize
-Pistol,Pistol,HitScan,/Script/Engine.Blueprint'/Game/Blueprints/Weapon/BP_Weapon_Pistol.BP_Weapon_Pistol_C',15,5,5000,,12
+Pistol,Pistol,HitScan,/Script/Engine.Blueprint'/Game/Blueprints/Weapon/BP_Weapon_Pistol.BP_Weapon_Pistol_C',15,5,10,3000,12
