@@ -7,7 +7,7 @@
 AWeaponBase::AWeaponBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
-
+	
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComp"));
 	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	WeaponMesh->SetSimulatePhysics(false);
@@ -65,26 +65,33 @@ void AWeaponBase::FireHitScan()
 	FVector EyeLocation;
 	FRotator EyeRotation;
 	OwnerController->GetPlayerViewPoint(EyeLocation, EyeRotation);
+	
+	FVector FireDirection = EyeRotation.Vector();
+	FVector TraceStart = EyeLocation;
+	FVector TraceEnd = TraceStart + FireDirection * CurrentWeaponData->Range;
 
-	FVector Start = EyeLocation;
-	FVector Direction = EyeRotation.Vector();
-	FVector End = Start + Direction * CurrentWeaponData->Range;
-	FVector MuzzleLocation = WeaponMesh->GetSocketLocation(FName("MuzzleSocket"));
+	FCollisionQueryParams CollisionParams;
+	CollisionParams.AddIgnoredActor(GetOwner());
+	CollisionParams.AddIgnoredActor(this);
 
 	FHitResult HitResult;
-	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility);
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, CollisionParams);
+
+	FVector MuzzleLocation = WeaponMesh->GetSocketLocation(TEXT("MuzzleSocket"));
+	DrawDebugPoint(GetWorld(), MuzzleLocation, 10.0f, FColor::Red, false, 1.0f);
 
 	if (bHit)
 	{
-		DrawDebugLine(GetWorld(), MuzzleLocation, HitResult.ImpactPoint, FColor::Red, false, 4.0f, 0, 3.0f);
-		DrawDebugBox(GetWorld(), HitResult.ImpactPoint, FVector(5.f), FColor::Green, false, 4.0f, 0, 3.0f);
-		UE_LOG(LogTemp, Warning, TEXT("Hit Actor : %s"), *HitResult.GetActor()->GetName());
+		DrawDebugLine(GetWorld(), MuzzleLocation, HitResult.ImpactPoint, FColor::Green, false, 2.0f, 0, 2.0f);
+		DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 10.0f, 10, FColor::Blue, false, 2.0f, 0, 3.0f);
+		UE_LOG(LogTemp, Warning, TEXT("Hit : %s"), *HitResult.GetActor()->GetName());
 	}
-	else  
+	else
 	{
-		DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 4.0f, 0, 3.0f);
-		UE_LOG(LogTemp, Warning, TEXT("Miss"));
+		DrawDebugLine(GetWorld(), MuzzleLocation, TraceEnd, FColor::Red, false, 2.0f, 0, 2.0f);
+		UE_LOG(LogTemp, Error, TEXT("Miss"));
 	}
+	
 }
 
 void AWeaponBase::LoadWeaponData()
