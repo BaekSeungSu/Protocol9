@@ -13,6 +13,7 @@ class UHPComponent;
 class UStaminaComponent;
 class UControlComponent;
 class UInventoryComponent;
+class UPlayerUIComponent;
 class AWeaponBase;
 class UCharacterStateMachine;
 
@@ -52,7 +53,10 @@ protected:
 	UStaminaComponent* StaminaComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Control")
 	UControlComponent* ControlComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
+	UPlayerUIComponent* PlayerUIComponent;
 
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	UInventoryComponent* InventoryComponent;
 

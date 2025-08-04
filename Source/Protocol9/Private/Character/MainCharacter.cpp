@@ -1,4 +1,3 @@
-
 #include "Character/MainCharacter.h"
 #include "Character/MainPlayerController.h"
 #include "EnhancedInputComponent.h"
@@ -11,15 +10,10 @@
 #include "Weapons/InventoryComponent.h"
 #include "Weapons/WeaponBase.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "UI/PlayerUIComponent.h"
 #include "Weapons/WeaponInterface.h"
 
 AMainCharacter::AMainCharacter()
-	:Attack(10),
-	LevelUpAttack(2),
-	Exp(0),
-	MaxExp(100),
-	CharacterLevel(1)
-	
 {
 	PrimaryActorTick.bCanEverTick = false;
 
@@ -37,10 +31,15 @@ AMainCharacter::AMainCharacter()
 	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina"));
 	ControlComponent = CreateDefaultSubobject<UControlComponent>(TEXT("Control"));
 
+	PlayerUIComponent = CreateDefaultSubobject<UPlayerUIComponent>(TEXT("PlayerUI"));
+	
 	BasetAttack = 20.0f;
 	LevelUpAttack = 1.2f;
 	Attack = BasetAttack;
 	CurrentAttack = Attack;
+	Exp = 0;
+	MaxExp = 100;
+	CharacterLevel = 1;
 
 }
 
