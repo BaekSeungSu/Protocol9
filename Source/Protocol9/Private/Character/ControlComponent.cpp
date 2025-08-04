@@ -111,20 +111,21 @@ void UControlComponent::Reload(const FInputActionValue& Value)
 
 	UAnimInstance* AnimInstance = Owner->GetMesh()->GetAnimInstance();
 	{
-		if (AnimInstance && Owner->FireMontage)
+		if (AnimInstance && Owner->ReloadMontage)
 		{
 			float duration = AnimInstance->Montage_Play(Owner->ReloadMontage);
 			//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("%f"), duration));
 
-			// FOnMontageEnded ReloadEnded;
-			// ReloadEnded.BindLambda([this](UAnimMontage* Montage, bool bInterrupted)
-			// {
-			// 	if (Owner && Owner->GetStateMachine())
-			// 	{
-			// 		Owner->GetStateMachine()->SetState(ECharacterState::Idle);
-			// 	}
-			// });
+			FOnMontageEnded ReloadEnded;
+			ReloadEnded.BindLambda([this](UAnimMontage* Montage, bool bInterrupted)
+			{
+				if (Owner && Owner->GetStateMachine())
+				{
+					Owner->GetStateMachine()->SetState(ECharacterState::Idle);
+				}
+			});
 
+			AnimInstance->Montage_SetEndDelegate(ReloadEnded, Owner->ReloadMontage);
 		}
 	}
 }
