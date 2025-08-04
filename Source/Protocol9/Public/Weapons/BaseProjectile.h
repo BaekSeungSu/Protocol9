@@ -4,6 +4,8 @@
 #include "GameFramework/Actor.h"
 #include "BaseProjectile.generated.h"
 
+class USphereComponent;
+class UProjectileMovementComponent;
 UCLASS()
 class PROTOCOL9_API ABaseProjectile : public AActor
 {
@@ -14,8 +16,15 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
-public:	
 	virtual void Tick(float DeltaTime) override;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USphereComponent* ProjectileCollision;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UProjectileMovementComponent* ProjectileMovement;
+
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+private:
 
 };
