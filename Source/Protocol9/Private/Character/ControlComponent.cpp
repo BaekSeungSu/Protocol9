@@ -102,11 +102,19 @@ void UControlComponent::Melee(const FInputActionValue& Value)
 void UControlComponent::Reload(const FInputActionValue& Value)
 {
 	if (!Owner->Controller) return;
-
 	if (Owner->GetStateMachine()->CanFire()) return;
-
 	Owner->GetStateMachine()->SetState(ECharacterState::Reload);
 
+	if (Owner->GetInventoryComponent())
+	{
+		AWeaponBase* CurrentWeapon = Owner->GetInventoryComponent()->GetCurrentWeapon();
+		if (CurrentWeapon && CurrentWeapon->Implements<UWeaponInterface>())
+		{
+			IWeaponInterface::Execute_Reload(CurrentWeapon);
+		}
+	}
+
+	
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, (TEXT("Reload!")));
 
 	UAnimInstance* AnimInstance = Owner->GetMesh()->GetAnimInstance();
