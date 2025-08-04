@@ -74,14 +74,14 @@ public:
 	UStaminaComponent* GetStaminaComponent() const { return StaminaComponent; }
 	UControlComponent* GetControlComponent() const { return ControlComponent; }
 	UHPComponent* GetHPComponent() const { return HPComponent; }
+	
+	UInventoryComponent* GetInventoryComponent() const {return InventoryComponent; }
+	UCharacterStateMachine* GetStateMachine() const { return StateMachine;}
+
 	UFUNCTION()
 	void AddAttack(float Multiplied);
 	UFUNCTION()
 	void ResetAttack();
-	UInventoryComponent* GetInventoryComponent() const {return InventoryComponent; }
-	
-
-	UCharacterStateMachine* GetStateMachine() const { return StateMachine;}
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	UAnimMontage* FireMontage;
@@ -89,6 +89,9 @@ public:
 	UAnimMontage* ReloadMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	UAnimMontage* OnHandMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	UAnimMontage* MeleeMontage;
+	
 	
 	int GetAttack() const{return Attack;}
 	int GetExp() const {return Exp;}

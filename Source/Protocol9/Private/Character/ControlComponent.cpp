@@ -2,6 +2,7 @@
 #include "Character/MainCharacter.h"
 #include "Character/StaminaComponent.h"
 #include "Character/CharacterStateMachine.h"
+#include "Character/HPComponent.h"
 #include "EnhancedInputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Weapons/InventoryComponent.h"
@@ -28,16 +29,32 @@ void UControlComponent::BeginPlay()
 	if (Owner)
 	{
 		Owner->GetCharacterMovement()->MaxWalkSpeed = MaxSpeed;
+
+		UHPComponent* HPComp = Owner->GetHPComponent();
+		if (HPComp)
+		{
+			HPComp->OnDeathEvent.AddDynamic(this,&UControlComponent::HandleCharacterDeath);
+		}
 	}
+}
+
+void UControlComponent::DisableInput()
+{
+	bInputEnabled = false;
+}
+
+void UControlComponent::EnableInput()
+{
+	bInputEnabled = true;
 }
 
 void UControlComponent::Move(const FInputActionValue& Value)
 {
 	if (!Owner->Controller) return;
 
-	const FVector2D MoveInput = Value.Get<FVector2D>();
-
+	if (!bInputEnabled) return;
 	
+	const FVector2D MoveInput = Value.Get<FVector2D>();
 	
 	if (!FMath::IsNearlyZero(MoveInput.X))
 	{
@@ -59,6 +76,8 @@ void UControlComponent::Look(const FInputActionValue& Value)
 {
 	if (!Owner->Controller) return;
 
+	if (!bInputEnabled) return;
+	
 	const FVector2D LookInput = Value.Get<FVector2D>();
 
 	Owner->AddControllerYawInput(LookInput.X);
@@ -71,6 +90,8 @@ void UControlComponent::Fire(const FInputActionValue& Value)
 	AWeaponBase* CurrentWeapon = Owner->GetInventoryComponent()->GetCurrentWeapon();
 	
 	if (!Owner->Controller) return;
+
+	if (!bInputEnabled) return;
 
 	if (Owner->GetStateMachine()->CanFire()) return;
 
@@ -94,15 +115,77 @@ void UControlComponent::Fire(const FInputActionValue& Value)
 void UControlComponent::Melee(const FInputActionValue& Value)
 {
 	if (!Owner->Controller) return;
+
+	if (!bInputEnabled) return;
+	
+	if (Owner->GetStateMachine()->CanMelee()) return;
+	
+	UAnimInstance* AnimInstance = Owner->GetMesh()->GetAnimInstance();
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Melee"));
+		if (AnimInstance && Owner->MeleeMontage)
+		{
+			MeleeAttack();
+			
+			float duration = AnimInstance->Montage_Play(Owner->MeleeMontage);
+			
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Melee"));
+
+			FOnMontageEnded MeleeEnded;
+			MeleeEnded.BindLambda([this](UAnimMontage* Montage, bool bInterrupted)
+			{
+				if (Owner && Owner->GetStateMachine())
+				{
+					Owner->GetStateMachine()->SetState(ECharacterState::Idle);
+				}
+			});
+
+			AnimInstance->Montage_SetEndDelegate(MeleeEnded, Owner->ReloadMontage);
+		}
 	}
+	
+}
+
+void UControlComponent::MeleeAttack()
+{
+	TArray<AActor*> HitActors;
+
+	FVector Start = Owner->GetActorLocation();
+	FVector Forward = Owner->GetActorForwardVector();
+	FVector End = Start + (Forward * MeleeRange);
+
+	TArray<FHitResult> HitResults;
+	FCollisionShape Box = FCollisionShape::MakeBox(FVector(MeleeBoxHalfSize));
+	FRotator BoxRotation = Owner->GetControlRotation();
+
+	FCollisionObjectQueryParams ObjectQueryParams;
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_Pawn);
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(GetOwner());
+	
+#if ENABLE_DRAW_DEBUG
+	DrawDebugBox(GetWorld(), End, MeleeBoxHalfSize, BoxRotation.Quaternion(), FColor::Red, false, 1.0f);
+#endif
+
+	bool bHit = GetWorld()->SweepMultiByObjectType(
+		HitResults,
+		Start,
+		End,
+		BoxRotation.Quaternion(),
+		ObjectQueryParams,
+		Box,
+		QueryParams
+	);
+
+	
 }
 
 void UControlComponent::Reload(const FInputActionValue& Value)
 {
 	if (!Owner->Controller) return;
 
+	if (!bInputEnabled) return;
+	
 	if (Owner->GetStateMachine()->CanFire()) return;
 
 	Owner->GetStateMachine()->SetState(ECharacterState::Reload);
@@ -132,10 +215,9 @@ void UControlComponent::Reload(const FInputActionValue& Value)
 
 void UControlComponent::Dash(const FInputActionValue& Value)
 {
-	if (Owner->GetWorldTimerManager().IsTimerActive(DashTimer))
-	{
-		return;
-	}
+	if (!bInputEnabled) return;
+	
+	if (Owner->GetWorldTimerManager().IsTimerActive(DashTimer))	return;
 	
 	if ( Owner->GetCharacterMovement()->IsFalling() && Owner->GetStaminaComponent()->GetCurrentStaminaCount() > 0)
 	{
@@ -157,6 +239,8 @@ void UControlComponent::Dash(const FInputActionValue& Value)
 
 void UControlComponent::StartJump(const FInputActionValue& Value)
 {
+	if (!bInputEnabled) return;
+	
 	if (Value.Get<bool>())
 	{
 		Owner->Jump();
@@ -165,10 +249,28 @@ void UControlComponent::StartJump(const FInputActionValue& Value)
 
 void UControlComponent::StopJump(const FInputActionValue& Value)
 {
+	if (!bInputEnabled) return;
+	
 	if (!Value.Get<bool>())
 	{
 		Owner->StopJumping();
 	}
+}
+
+void UControlComponent::SwapWeapon1(const FInputActionValue& Value)
+{
+
+	if (!bInputEnabled) return;
+	
+	UE_LOG(LogTemp,Warning,TEXT("Swap Weapon 1 "));
+
+}
+
+void UControlComponent::SwapWeapon2(const FInputActionValue& Value)
+{
+	if (!bInputEnabled) return;
+	
+	UE_LOG(LogTemp,Warning,TEXT("Swap Weapon 2 "));
 }
 
 
@@ -188,4 +290,9 @@ void UControlComponent::ResetSpeed()
 		Owner->GetCharacterMovement()->MaxWalkSpeed = MaxSpeed; 
 	}
 	UE_LOG(LogTemp,Warning,TEXT("Speed Reset : %f"),Owner->GetCharacterMovement()->MaxWalkSpeed);
+}
+
+void UControlComponent::HandleCharacterDeath()
+{
+	DisableInput();
 }

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "ControlComponent.generated.h"
+struct FInputActionValue;
 class AMainCharacter;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -16,9 +17,17 @@ public:
 	
 	UControlComponent();
 
+private:
+	bool bInputEnabled = true;
+	
 protected:
 	AMainCharacter* Owner;
 
+	UPROPERTY(EditAnywhere, Category = "Melee")
+	FVector MeleeBoxHalfSize = FVector(80.0f, 80.0f, 80.0f);
+	UPROPERTY(EditAnywhere, Category = "Melee")
+	float MeleeRange = 200.0f;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Control")
 	float DashPower;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Control")
@@ -31,6 +40,11 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
+
+	UFUNCTION()
+	void DisableInput();
+	UFUNCTION()
+	void EnableInput();
 	
 	UFUNCTION()
 	void Move(const FInputActionValue& Value);
@@ -41,6 +55,8 @@ public:
 	UFUNCTION()
 	void Melee(const FInputActionValue& Value);
 	UFUNCTION()
+	void MeleeAttack();
+	UFUNCTION()
 	void Reload(const FInputActionValue& Value);
 	UFUNCTION()
 	void Dash(const FInputActionValue& Value);
@@ -48,6 +64,10 @@ public:
 	void StartJump(const FInputActionValue& Value);
 	UFUNCTION()
 	void StopJump(const FInputActionValue& Value);
+	UFUNCTION()
+	void SwapWeapon1(const FInputActionValue& Value);
+	UFUNCTION()
+	void SwapWeapon2(const FInputActionValue& Value);
 
 	UFUNCTION()
 	void AddSpeed(float Multiplier);
@@ -55,4 +75,6 @@ public:
 	void ResetSpeed();
 	
 	void DoNothing (){};
+
+	void HandleCharacterDeath();
 };

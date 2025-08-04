@@ -1,6 +1,7 @@
 
 #include "Character/CharacterStateMachine.h"
 #include "Character/MainCharacter.h"
+#include "Character/HPComponent.h"
 
 UCharacterStateMachine::UCharacterStateMachine()
 {
@@ -15,6 +16,15 @@ void UCharacterStateMachine::BeginPlay()
 
 	Owner = Cast<AMainCharacter>(GetOwner());
 
+	if (Owner)
+	{
+		UHPComponent* HPComp = Owner->GetHPComponent();
+		if (HPComp)
+		{
+			HPComp->OnDeathEvent.AddDynamic(this,&UCharacterStateMachine::HandleCharacterDeath);
+		}
+	}
+
 }
 
 void UCharacterStateMachine::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -22,6 +32,21 @@ void UCharacterStateMachine::TickComponent(float DeltaTime, ELevelTick TickType,
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 
+}
+
+void UCharacterStateMachine::HandleCharacterDeath()
+{
+	SetState(ECharacterState::Dead);
+	StopCurrentMontage();
+	
+	UAnimInstance* AnimInstance = Owner->GetMesh()->GetAnimInstance();
+	{
+		if (AnimInstance && DeathMontage)
+		{
+			float duration = AnimInstance->Montage_Play(DeathMontage);
+
+		}
+	}
 }
 
 void UCharacterStateMachine::SetState(ECharacterState NewState)
