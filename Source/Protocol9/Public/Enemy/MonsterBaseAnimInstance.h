@@ -54,6 +54,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|Thresholds")
 	float RunningSpeedMin = 250.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|StartOffset")
+	float AnimationStartOffset;
 private:
 	float PreviousSpeed;
 	bool bWasMovingLastFrame;

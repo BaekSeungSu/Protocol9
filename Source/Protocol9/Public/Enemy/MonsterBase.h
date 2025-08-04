@@ -8,10 +8,8 @@ UENUM(BlueprintType)
 enum class EMonsterState : uint8
 {
     Idle        UMETA(DisplayName = "Idle"),
-    Patrolling  UMETA(DisplayName = "Patrolling"),
     Chasing     UMETA(DisplayName = "Chasing"),
-    Attacking   UMETA(DisplayName = "Attacking"),
-    Returning   UMETA(DisplayName = "Returning")
+    Attacking   UMETA(DisplayName = "Attacking")
 };
 
 UCLASS()
@@ -30,21 +28,6 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
     EMonsterState CurrentState;
 
-    
-    
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Patrol")
-    float PatrolRadius = 1200.0f;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Patrol")
-    float WaitTimeAtPatrolPoint = 3.0f;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Chase")
-    float ChaseRadius = 2000.0f;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Chase")
-    float LosePlayerTime = 3.0f;
-
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Attack")
     float AttackRange = 150.0f;
 
@@ -54,13 +37,11 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Attack")
     class UAnimMontage* AttackMontage;
 
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Movement")
     float WalkSpeed = 300.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Movement")
     float RunSpeed = 600.0f;
-
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shape")
     float MonsterHalfHeight = 88.0f;
@@ -76,31 +57,18 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
     float AIUpdateInterval = 0.1f;
-    //UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DropItems") //아이템 베이스 클래스 만들어지면 주석 해제
-    //TArray<TSubclassOf<class AItemBase>> DropItems;
     
     void SetState(EMonsterState NewState);
-    bool SetTargetPlayer(APawn* NewTarget);
+
 protected:
-    
-    void StartPatrol();
-    void Patrol();
-    FVector GetRandomPatrolPoint() const;
-    
-
     void ChasePlayer();
-    bool CanSeePlayer() const;
-    
 
+    bool SetAnimInstance();
+    
     void AttackPlayer();
-    bool IsInAttackRange() const;
     
-
-    void ReturnToStart();
-
-
+    virtual bool IsInAttackRange() const;
     
-
     UFUNCTION()
     void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
     UFUNCTION()
@@ -120,35 +88,31 @@ protected:
     bool bShouldContinueAttacking = false;
     UFUNCTION()
     void StopContinuousAttack();
+    virtual void MoveToTarget();
+    virtual FVector GetTargetLocation() const;
 private:
     void UpdateAI();
     
     FVector StartLocation;
-    FVector CurrentPatrolTarget;
     
     float LastAttackTime;
-    float PlayerLostTime;
-    float PatrolWaitTimer;
     
     UPROPERTY()
     class AAIController* AIController;
     
-    bool bIsMovingToPatrolPoint;
-    bool bIsWaitingAtPatrolPoint;
-    bool bHasReachedPatrolPoint;
-
-    INT32 CurrentHP;
-
-private:
+    int32 CurrentHP;
+    
     FTimerHandle AttackTimerHandle;
+
    
+    bool FindAndSetTargetPlayer();
+    bool SetTargetPlayer(APawn* NewTarget);
+    
     UFUNCTION()
     virtual void PerformAttack();
     
     UFUNCTION()
     void StartContinuousAttack();
-    
-
 
     UFUNCTION()
     void StartAIUpdateTimer();

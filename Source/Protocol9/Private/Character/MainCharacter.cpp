@@ -55,7 +55,7 @@ void AMainCharacter::EquipDefaultWeapon()
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	GetMesh()->HideBoneByName(FName("weapon_r"), EPhysBodyOp::PBO_None);
 	GetMesh()->HideBoneByName(FName("neck_01"), EPhysBodyOp::PBO_None);
 	GetMesh()->HideBoneByName(FName("thigh_l"), EPhysBodyOp::PBO_None);
@@ -76,6 +76,7 @@ void AMainCharacter::ResetAttack()
 	CurrentAttack = Attack;
 	UE_LOG(LogTemp, Warning,TEXT("Return My Attack : %f"),CurrentAttack);
 }
+
 
 
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -159,6 +160,25 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 					ETriggerEvent::Triggered,
 					ControlComponent,
 					&UControlComponent::Dash);
+			}
+			
+			if
+			(PlayerController->SwapWeapon1)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->SwapWeapon1,
+					ETriggerEvent::Started,
+					ControlComponent,
+					&UControlComponent::SwapWeapon1);
+			}
+
+			if (PlayerController->SwapWeapon2)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->SwapWeapon2,
+					ETriggerEvent::Started,
+					ControlComponent,
+					&UControlComponent::SwapWeapon2);
 			}
 		}
 	}

@@ -32,6 +32,7 @@ void UMonsterBaseAnimInstance::NativeInitializeAnimation()
             UE_LOG(LogTemp, Warning, TEXT("AnimInstance: Failed to cast pawn to MonsterBase"));
         }
     }
+    AnimationStartOffset = FMath::RandRange(0.0f, 1.0f);
 }
 
 void UMonsterBaseAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
