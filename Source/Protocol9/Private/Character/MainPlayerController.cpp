@@ -12,7 +12,9 @@ AMainPlayerController::AMainPlayerController()
 	FireAction(nullptr),
 	JumpAction(nullptr),
 	DashAction(nullptr),
-	ReloadAction(nullptr)
+	ReloadAction(nullptr),
+	SwapWeapon1(nullptr),
+	SwapWeapon2(nullptr)
 {
 }
 

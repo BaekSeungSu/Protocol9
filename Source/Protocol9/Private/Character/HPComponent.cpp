@@ -15,7 +15,11 @@ void UHPComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//Owner = GetOwner();
+	if (GetOwner())
+	{
+		
+	}
+
 }
 
 void UHPComponent::SetMaxHP(float NewMaxHP)
@@ -43,7 +47,10 @@ void UHPComponent::TakeDamage(float Damage)
 		CurrentHP = FMath::Max(0.0f, CurrentHP - Damage);
 	}
 
-	IsDead();
+	if (CurrentHP == 0)
+	{
+		OnDeath();
+	}
 }
 
 void UHPComponent::AddHealth(float HealAmount)
@@ -55,18 +62,12 @@ void UHPComponent::AddHealth(float HealAmount)
 	UE_LOG(LogTemp,Warning,TEXT("HP : %f"),CurrentHP);
 }
 
-bool UHPComponent::IsDead()
+void UHPComponent::OnDeath()
 {
-	if (CurrentHP <= 0.0f)
-	{
-		bIsDead = true;
-	}
-	else
-	{
-		bIsDead = false;
-	}
 	
-	return bIsDead;
+	bIsDead = true;
+
+	OnDeathEvent.Broadcast();
 }
 
 
