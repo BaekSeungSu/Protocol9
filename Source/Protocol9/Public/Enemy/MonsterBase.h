@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "MonsterBase.generated.h"
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMonsterDead, AMonsterBase*, DeadMonster);
 
 UENUM(BlueprintType)
 enum class EMonsterState : uint8
@@ -45,7 +46,9 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shape")
     float MonsterHalfHeight = 88.0f;
-    
+
+    UFUNCTION(BlueprintCallable)
+    float GetMonsterHalfHeight() const;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Shape")
     float MonsterRadius = 34.0f;
 
@@ -58,15 +61,15 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
     float AIUpdateInterval = 0.1f;
     
-    void SetState(EMonsterState NewState);
-
+    UPROPERTY(BlueprintAssignable)
+    FOnMonsterDead OnMonsterDead;
 protected:
     void ChasePlayer();
-
+    void SetState(EMonsterState NewState);
     bool SetAnimInstance();
-    
     void AttackPlayer();
-    
+
+    virtual void PossessedBy(AController* NewController) override;
     virtual bool IsInAttackRange() const;
     
     UFUNCTION()
