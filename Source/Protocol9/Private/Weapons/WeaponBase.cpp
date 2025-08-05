@@ -99,10 +99,10 @@ void AWeaponBase::ApplyRecoil()
 		APlayerController* PlayerController = Cast<APlayerController>(OwnerController);
 		if (PlayerController)
 		{
-			const float Pitch = -CurrentWeaponData->RecoilPitch;
-			const float Yaw = FMath::RandRange(-CurrentWeaponData->RecoilYaw, CurrentWeaponData->RecoilYaw);
-			PlayerController->AddPitchInput(Pitch);
-			PlayerController->AddYawInput(Yaw);
+			if (CurrentWeaponData->RecoilCameraShake)
+			{
+				PlayerController->ClientStartCameraShake(CurrentWeaponData->RecoilCameraShake);
+			}
 		}
 
 		AMainCharacter* OwnerCharacter = Cast<AMainCharacter>(GetOwner());
