@@ -1,6 +1,7 @@
 #include "Item/IncreaseDamageItem.h"
 #include "Components/SphereComponent.h"
 #include "Character/MainCharacter.h"
+#include "Item/ObjectPoolingComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 AIncreaseDamageItem::AIncreaseDamageItem()
@@ -13,6 +14,8 @@ AIncreaseDamageItem::AIncreaseDamageItem()
 
 void AIncreaseDamageItem::ActivateItem(AActor* Activator)
 {
+	SetActorHiddenInGame(true);
+	SetActorEnableCollision(false);
 	Super::ActivateItem(Activator);
 	if (Activator && Activator ->ActorHasTag("Player"))
 	{
@@ -35,8 +38,6 @@ void AIncreaseDamageItem::ActivateItem(AActor* Activator)
 			false);										// 일정 시간 뒤에 효과가 끝나는 함수로 이동
 		}
 	}
-	SetActorHiddenInGame(true);
-	SetActorEnableCollision(false);
 }
 
 void AIncreaseDamageItem::EndEffect() 
@@ -53,5 +54,8 @@ void AIncreaseDamageItem::EndEffect()
 	
 	GetWorld()->GetTimerManager().ClearTimer(EffectTimerHandle);
 	AffectedPlayer = nullptr;	
-	DestroyItem();
+	if (OwningPool)
+	{
+		OwningPool->ReturnObjectToPool(this);
+	}
 }

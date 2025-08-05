@@ -1,6 +1,7 @@
 #include "Item/InvincibilityItem.h"
 #include "Character/MainCharacter.h"
 #include "Character/HPComponent.h"
+#include "Item/ObjectPoolingComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 AInvincibilityItem::AInvincibilityItem()
@@ -12,6 +13,8 @@ AInvincibilityItem::AInvincibilityItem()
 
 void AInvincibilityItem::ActivateItem(AActor* Activator)
 {
+	SetActorHiddenInGame(true);
+	SetActorEnableCollision(false);
 	Super::ActivateItem(Activator);
 	if (Activator && Activator ->ActorHasTag("Player"))
 	{
@@ -34,8 +37,6 @@ void AInvincibilityItem::ActivateItem(AActor* Activator)
 			false);										
 		}
 	}
-	SetActorHiddenInGame(true);
-	SetActorEnableCollision(false);
 }
 
 void AInvincibilityItem::EndEffect() 
@@ -56,5 +57,8 @@ void AInvincibilityItem::EndEffect()
 	
 	GetWorld()->GetTimerManager().ClearTimer(EffectTimerHandle);
 	AffectedPlayer = nullptr;
-	DestroyItem();
+	if (OwningPool)
+	{
+		OwningPool->ReturnObjectToPool(this);
+	}
 }

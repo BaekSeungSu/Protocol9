@@ -9,6 +9,8 @@ class UNiagaraComponent;
 class UNiagaraSystem;
 class USphereComponent;
 
+class UObjectPoolingComponent;
+
 UCLASS()
 class PROTOCOL9_API AItemBase : public AActor,public IItemInterface
 {
@@ -17,6 +19,9 @@ class PROTOCOL9_API AItemBase : public AActor,public IItemInterface
 public:	
 	
 	AItemBase();
+
+	UPROPERTY()
+	UObjectPoolingComponent* OwningPool; 
 
 protected:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Item")
@@ -57,8 +62,6 @@ protected:
 	FTimerHandle EffectTimerHandle;
 	
 	virtual void EndEffect() override;
-
-	virtual void DestroyItem();
-
+	
 	
 };

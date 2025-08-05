@@ -1,5 +1,6 @@
 #include "Item/ExperienceItem.h"
 #include "Kismet/GameplayStatics.h"
+#include "Item/ObjectPoolingComponent.h"
 #include "Components/SphereComponent.h"
 
 AExperienceItem::AExperienceItem()
@@ -12,6 +13,8 @@ AExperienceItem::AExperienceItem()
 
 void AExperienceItem::ActivateItem(AActor* Activator)
 {
+	SetActorHiddenInGame(true);
+	SetActorEnableCollision(false);
 	Super::ActivateItem(Activator);
 	if (Activator && Activator ->ActorHasTag("Player"))
 	{
@@ -35,8 +38,10 @@ void AExperienceItem::ActivateItem(AActor* Activator)
 				*/										
 		}
 	}
-	SetActorHiddenInGame(true);
-	SetActorEnableCollision(false);
+	if (OwningPool)
+	{
+		OwningPool->ReturnObjectToPool(this);
+	}
 }
 
 /*
