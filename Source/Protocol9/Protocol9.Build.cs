@@ -9,7 +9,7 @@ public class Protocol9 : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "AIModule","NavigationSystem","Niagara"});
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "AIModule","NavigationSystem","Niagara","UMG"});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "AIModule", "NavigationSystem","Niagara"});
 
