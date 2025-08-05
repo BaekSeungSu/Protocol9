@@ -43,11 +43,4 @@ public:
 	// 중첩 방지 반경
 	UPROPERTY(EditAnywhere, Category = "Instance")
 	float SpawnRadius = 50.f;
-	
-	UPROPERTY(EditAnywhere, Category = "Tile info")
-	int32 TileIndex;
-	
-	#if WITH_EDITOR
-		void PrintIndex ();
-	#endif
 };

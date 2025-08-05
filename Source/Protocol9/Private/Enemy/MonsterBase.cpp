@@ -8,7 +8,6 @@
 #include "TimerManager.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
-#include "NavigationSystem.h"
 #include "GameFramework/PlayerController.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/DamageEvents.h"
@@ -47,16 +46,16 @@ void AMonsterBase::BeginPlay()
 {
 	Super::BeginPlay();
 
+	AIController = Cast<AAIController>(GetController());
+	
 	StartLocation = GetActorLocation();
 	
 	SetAnimInstance();
 	SetState(EMonsterState::Chasing);
-	
+
 	AIUpdateInterval = FMath::RandRange(AIUpdateInterval-AIUpdateInterval*0.2f, AIUpdateInterval+AIUpdateInterval*0.2f);
 	StartAIUpdateTimer();
 	FindAndSetTargetPlayer();
-
-	UE_LOG(LogTemp, Warning, TEXT("TargetPlayer : %s"), *TargetPlayer->GetName());
 }
 
 void AMonsterBase::UpdateAI()
@@ -107,11 +106,6 @@ void AMonsterBase::SetState(EMonsterState NewState)
 		}
 		break;
 	}
-}
-
-float AMonsterBase::GetMonsterHalfHeight() const
-{
-	return MonsterHalfHeight;
 }
 
 void AMonsterBase::ChasePlayer()
@@ -170,13 +164,6 @@ void AMonsterBase::AttackPlayer()
 	if (bShouldContinueAttacking) return;
 
 	StartContinuousAttack();
-}
-
-void AMonsterBase::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-
-	AIController = Cast<AAIController>(GetController());
 }
 
 void AMonsterBase::StartContinuousAttack()
@@ -238,19 +225,8 @@ FVector AMonsterBase::GetTargetLocation() const
 {
 	if (TargetPlayer)
 	{
-		FVector TargetLocation = TargetPlayer->GetActorLocation();
-
-		UNavigationSystemV1* NavSys = UNavigationSystemV1::GetNavigationSystem(GetWorld());
-		FNavLocation NavLocation;
-		const FVector QueryExtent = FVector(100,100,300);
-		if (NavSys && NavSys->ProjectPointToNavigation(TargetLocation, NavLocation, QueryExtent))
-		{
-			return NavLocation.Location;
-		}
-		UE_LOG(LogTemp, Warning, TEXT("NavSys is NULL"));
-		return TargetLocation;
+		return TargetPlayer->GetActorLocation();
 	}
-	UE_LOG(LogTemp, Warning, TEXT("TargetPlayer is NULL"));
 	return GetActorLocation();
 }
 
@@ -331,7 +307,6 @@ void AMonsterBase::OnDeath()
 {
 	GiveExp();
 	DropItems();
-	OnMonsterDead.Broadcast(this);
 	Destroy();
 }
 

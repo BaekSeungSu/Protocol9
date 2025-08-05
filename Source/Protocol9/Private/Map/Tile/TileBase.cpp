@@ -116,9 +116,3 @@ void ATileBase::GenerateInstances()
 		}
 	}
 }
-
-void ATileBase::PrintIndex()
-{
-	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, FString::Printf(TEXT("Tile Index: %d"), TileIndex));
-}
-

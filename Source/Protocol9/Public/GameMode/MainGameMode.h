@@ -1,30 +1,17 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameModeBase.h"
+#include "GameFramework/GameMode.h"
 #include "MainGameMode.generated.h"
 
-class UUWBP_HUD;
-
+/**
+ * 
+ */
 UCLASS()
-class PROTOCOL9_API AMainGameMode : public AGameModeBase
+class PROTOCOL9_API AMainGameMode : public AGameMode
 {
 	GENERATED_BODY()
-
-public:
-	virtual void BeginPlay() override;
-
-protected:
-	void UpdateGameTimer();
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<UUWBP_HUD> HUDWidgetClass;
-
-private:
-	FTimerHandle GameTimerHandle;
-	float ElapsedTime = 0.0f;
-
-	UPROPERTY()
-	UUWBP_HUD* HUDWidget;
 	
 };
