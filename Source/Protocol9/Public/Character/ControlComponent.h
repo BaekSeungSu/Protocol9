@@ -76,5 +76,6 @@ public:
 	
 	void DoNothing (){};
 
+	UFUNCTION()
 	void HandleCharacterDeath();
 };
