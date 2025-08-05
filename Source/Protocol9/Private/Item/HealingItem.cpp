@@ -1,5 +1,6 @@
 #include "Item/HealingItem.h"
 #include "Character/HPComponent.h"
+#include "Item/ObjectPoolingComponent.h"
 #include "Character/MainCharacter.h"
 
 AHealingItem::AHealingItem()
@@ -10,8 +11,9 @@ AHealingItem::AHealingItem()
 
 void AHealingItem::ActivateItem(AActor* Activator)
 {
+	SetActorHiddenInGame(true);
+	SetActorEnableCollision(false);
 	Super::ActivateItem(Activator);
-	UE_LOG(LogTemp,Warning,TEXT("Called Healing Item"))
 	if (Activator && Activator ->ActorHasTag("Player"))
 	{
 		UHPComponent* HPComponent = Activator->FindComponentByClass<UHPComponent>();
@@ -23,10 +25,9 @@ void AHealingItem::ActivateItem(AActor* Activator)
 		{
 			UE_LOG(LogTemp, Error, TEXT(" Error!"));
 		}
-		DestroyItem();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT(" Error!"));
+		if (OwningPool)
+		{
+			OwningPool->ReturnObjectToPool(this);
+		}
 	}
 }
