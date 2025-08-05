@@ -42,7 +42,7 @@ protected:
 	int MaxExp;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Exp")
 	int CharacterLevel;
-
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	USpringArmComponent* SpringArmComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
@@ -104,8 +104,9 @@ public:
 	void SetAttack(int NewAttack);
 	void SetExp(int Exp);
 	void SetLevel(int Level);
+	void AddExp(int NewExp);
 	
 	void LevelUp();
-	
+
 
 };

@@ -3,10 +3,10 @@
 #include "Components/SphereComponent.h"
 
 AExperienceItem::AExperienceItem()
-: AffectedPlayer(nullptr)
+//: AffectedPlayer(nullptr)
 {
-	MultiExperience = 2.0f;
-	ItemDuration = 3.0f;
+	AddExperience = 20;
+	//ItemDuration = 3.0f;
 	ItemType = "ExperienceItem";
 }
 
@@ -23,20 +23,23 @@ void AExperienceItem::ActivateItem(AActor* Activator)
 				FColor::Blue,
 				FString::Printf(TEXT("Increased experience "))
 				);
-			//경험치 증가 
-			AffectedPlayer = MyCharacter; 
-			GetWorld()->GetTimerManager().SetTimer(
+			MyCharacter ->AddExp(AddExperience);
+			//AffectedPlayer = MyCharacter; 
+
+			/*GetWorld()->GetTimerManager().SetTimer(
 				EffectTimerHandle,
 				this,
 				&AExperienceItem::EndEffect,
 				ItemDuration,
-				false);										
+				false);
+				*/										
 		}
 	}
 	SetActorHiddenInGame(true);
 	SetActorEnableCollision(false);
 }
 
+/*
 void AExperienceItem::EndEffect() 
 {
 	
@@ -54,3 +57,4 @@ void AExperienceItem::EndEffect()
 	AffectedPlayer = nullptr;
 	DestroyItem();
 }
+*/

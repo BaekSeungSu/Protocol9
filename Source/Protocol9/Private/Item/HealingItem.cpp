@@ -11,7 +11,6 @@ AHealingItem::AHealingItem()
 void AHealingItem::ActivateItem(AActor* Activator)
 {
 	Super::ActivateItem(Activator);
-	UE_LOG(LogTemp,Warning,TEXT("Called Healing Item"))
 	if (Activator && Activator ->ActorHasTag("Player"))
 	{
 		UHPComponent* HPComponent = Activator->FindComponentByClass<UHPComponent>();
