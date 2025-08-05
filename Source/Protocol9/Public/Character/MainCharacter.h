@@ -24,7 +24,7 @@ class PROTOCOL9_API AMainCharacter : public ACharacter
 	
 public:
 	AMainCharacter();
-
+	
 	
 protected:
 

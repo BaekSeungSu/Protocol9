@@ -14,7 +14,7 @@ public:
 
 protected:
 	virtual void PerformAttack() override;
-
+	virtual void ChasePlayer() override;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ranged Combat")
 	TSubclassOf<class AMonsterProjectile> ProjectileClass;
     
@@ -24,5 +24,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ranged Combat")
 	float ProjectileArcHeight = 350.0f;
 
+	bool HasLineOfSightToPlayer();
 	FVector GetProjectileSpawnLocation();
 };

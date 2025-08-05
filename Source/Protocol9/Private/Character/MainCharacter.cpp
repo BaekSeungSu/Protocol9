@@ -102,7 +102,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 					PlayerController->LookAction,
 					ETriggerEvent::Triggered,
 					ControlComponent,
-					&UControlComponent::Look);
+					&UControlComponent::Look); 
 			}
 
 			if (PlayerController->FireAction)
