@@ -25,10 +25,9 @@ public:
 		  Range(0.0f),
 		  MagazineSize(0),
 		  ReloadTime(0),
-		  RecoilPitch(0),
-		  RecoilYaw(0),
 		  SpreadAngle(0),
-		  CrosshairRecoilAmount(0)
+		  CrosshairRecoilAmount(0),
+		  RecoilCameraShake(nullptr)
 	{
 	}
 	
@@ -54,13 +53,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Ammo")
 	float ReloadTime;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Recoil")
-	float RecoilPitch;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Recoil")
-	float RecoilYaw;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Recoil")
 	float SpreadAngle;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Recoil")
 	float CrosshairRecoilAmount;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Recoil")
+	TSubclassOf<UCameraShakeBase> RecoilCameraShake;
 };
 
