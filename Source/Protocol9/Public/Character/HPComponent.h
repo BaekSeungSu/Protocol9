@@ -5,6 +5,7 @@
 #include "Character/MainCharacter.h"
 #include "HPComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeathSignature);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROTOCOL9_API UHPComponent : public UActorComponent
@@ -22,6 +23,9 @@ protected:
 public:	
 	UHPComponent();
 
+	UPROPERTY(BlueprintAssignable, Category = "HP")
+	FOnDeathSignature OnDeathEvent;
+	
 	UFUNCTION(BlueprintPure, Category = "HP")
 	float GetMaxHP() const {return MaxHP;};
 	UFUNCTION(BlueprintPure, Category = "HP")
@@ -39,7 +43,7 @@ public:
 	void AddHealth(float HealAmount);
 
 	UFUNCTION(BlueprintCallable, Category = "HP")
-	bool IsDead();
+	void OnDeath();
 
 protected:
 	virtual void BeginPlay() override;

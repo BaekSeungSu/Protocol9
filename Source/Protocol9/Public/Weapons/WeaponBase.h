@@ -26,18 +26,34 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* WeaponMesh;
-
 	UPROPERTY(EditDefaultsOnly, Category="Data")
 	UDataTable* WeaponDataTable;
-	
 	UPROPERTY(EditDefaultsOnly, Category="Data")
 	FName WeaponDataRowName;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Ammo")
+	int32 CurrentAmmo;
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="State")
+	bool bIsReloading;
 
-	const FWeaponData* CurrentWeaponData;
 	
+	const FWeaponData* CurrentWeaponData;
+	FTimerHandle ReloadTimerHandle;
+
+	// 발사 관련 함수
 	void FireAction();
+	bool CanFire() const;
+	void ApplyRecoil();
+
+	// HitScan 관련 함수
 	void FireHitScan();
+	FVector CalculateHitScanDirection() const;
+	
+	// Projectile 관련 함수
+	void FireProjectile();
+
+	
 	void LoadWeaponData();
+	void FinishReload();
 
 	
 private:
