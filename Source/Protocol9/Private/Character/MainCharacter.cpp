@@ -41,6 +41,57 @@ AMainCharacter::AMainCharacter()
 	MaxExp = 100;
 	CharacterLevel = 1;
 
+	DeathCameraSocket = TEXT("head");
+
+
+}
+
+void AMainCharacter::SetupDeathCamera()
+{
+	OriginalSpringArmParent = SpringArmComponent->GetAttachParent();
+	OriginalSpringArmLocation = SpringArmComponent->GetRelativeLocation();
+	OriginalSpringArmRotation = SpringArmComponent->GetRelativeRotation();
+
+	// 스프링암을 메시의 특정 소켓에 부착
+	if (GetMesh())
+	{
+		// head 소켓이나 spine 소켓 등 원하는 소켓에 부착
+		SpringArmComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		SpringArmComponent->AttachToComponent(
+			GetMesh(),
+			FAttachmentTransformRules::KeepWorldTransform,
+			DeathCameraSocket // 예: "head", "spine_03" 등
+		);
+
+		// 카메라 래그 설정으로 부드러운 움직임 구현
+		// SpringArmComponent->bEnableCameraLag = true;
+		// SpringArmComponent->bEnableCameraRotationLag = true;
+		// SpringArmComponent->CameraLagSpeed = 3.0f;
+		// SpringArmComponent->CameraRotationLagSpeed = 3.0f;
+        
+		// 원하는 오프셋 설정
+		SpringArmComponent->SetRelativeLocation(FVector(0, 50, 0));  // 측면에서 보기
+		SpringArmComponent->SetRelativeRotation(FRotator(0, -90, 0));  // 캐릭터를 향해 보기
+	}
+
+}
+
+void AMainCharacter::ResetCameraToDefault()
+{
+	if (OriginalSpringArmParent)
+	{
+		SpringArmComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		SpringArmComponent->AttachToComponent(
+			OriginalSpringArmParent,
+			FAttachmentTransformRules::KeepWorldTransform
+		);
+		SpringArmComponent->SetRelativeLocation(OriginalSpringArmLocation);
+		SpringArmComponent->SetRelativeRotation(OriginalSpringArmRotation);
+        
+		// SpringArmComponent->bEnableCameraLag = false;
+		// SpringArmComponent->bEnableCameraRotationLag = false;
+	}
+
 }
 
 void AMainCharacter::EquipDefaultWeapon()
@@ -55,12 +106,9 @@ void AMainCharacter::EquipDefaultWeapon()
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	GetMesh()->HideBoneByName(FName("weapon_r"), EPhysBodyOp::PBO_None);
-	GetMesh()->HideBoneByName(FName("neck_01"), EPhysBodyOp::PBO_None);
-	GetMesh()->HideBoneByName(FName("thigh_l"), EPhysBodyOp::PBO_None);
-	GetMesh()->HideBoneByName(FName("thigh_r"), EPhysBodyOp::PBO_None);
 
+	HideDefalutMesh();
+	
 	EquipDefaultWeapon();
 	
 }
@@ -77,6 +125,20 @@ void AMainCharacter::ResetAttack()
 	UE_LOG(LogTemp, Warning,TEXT("Return My Attack : %f"),CurrentAttack);
 }
 
+void AMainCharacter::HideDefalutMesh()
+{
+	GetMesh()->HideBoneByName(FName("weapon_r"), EPhysBodyOp::PBO_None);
+	GetMesh()->HideBoneByName(FName("neck_01"), EPhysBodyOp::PBO_None);
+	GetMesh()->HideBoneByName(FName("thigh_l"), EPhysBodyOp::PBO_None);
+	GetMesh()->HideBoneByName(FName("thigh_r"), EPhysBodyOp::PBO_None);
+}
+
+void AMainCharacter::ShowDefalutMesh()
+{
+	GetMesh()->UnHideBoneByName(FName("neck_01"));
+	GetMesh()->UnHideBoneByName(FName("thigh_l"));
+	GetMesh()->UnHideBoneByName(FName("thigh_r"));
+}
 
 
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -157,7 +219,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 			{
 				EnhancedInput->BindAction(
 					PlayerController->DashAction,
-					ETriggerEvent::Triggered,
+					ETriggerEvent::Started,
 					ControlComponent,
 					&UControlComponent::Dash);
 			}
@@ -219,3 +281,4 @@ void AMainCharacter::LevelUp()
 		LevelUp();
 	}
 }
+

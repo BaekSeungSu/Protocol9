@@ -25,6 +25,21 @@ class PROTOCOL9_API AMainCharacter : public ACharacter
 public:
 	AMainCharacter();
 
+protected:
+	// 카메라를 부착할 소켓 이름
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+	FName DeathCameraSocket;
+
+	// 원래 카메라 설정을 저장할 변수들
+	FVector OriginalSpringArmLocation;
+	FRotator OriginalSpringArmRotation;
+	USceneComponent* OriginalSpringArmParent;
+    
+public:
+	// 데스 카메라 설정/해제 함수
+	void SetupDeathCamera();
+	void ResetCameraToDefault();
+
 	
 protected:
 
@@ -96,6 +111,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	UAnimMontage* MeleeMontage;
 	
+	void HideDefalutMesh();
+	void ShowDefalutMesh();
 	
 	int GetAttack() const{return Attack;}
 	int GetExp() const {return Exp;}
@@ -106,6 +123,7 @@ public:
 	void SetLevel(int Level);
 	
 	void LevelUp();
+
 	
 
 };

@@ -7,6 +7,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Weapons/InventoryComponent.h"
 #include "Weapons/WeaponBase.h"
+#include "Enemy/MonsterBase.h"
+#include "Engine/DamageEvents.h"
 
 
 UControlComponent::UControlComponent()
@@ -35,6 +37,8 @@ void UControlComponent::BeginPlay()
 		{
 			HPComp->OnDeathEvent.AddDynamic(this,&UControlComponent::HandleCharacterDeath);
 		}
+
+		EnableInput();
 	}
 }
 
@@ -96,6 +100,13 @@ void UControlComponent::Fire(const FInputActionValue& Value)
 	if (!bInputEnabled) return;
 
 	if (Owner->GetStateMachine()->CanFire()) return;
+
+	// GetCurrentAmmo 추가필요
+	// if (CurrentWeapon->GetCurrentAmmo() <= 0)
+	// {
+	// 	Reload(Value);
+	//	return;
+	// }
 
 	 if (CurrentWeapon && CurrentWeapon->Implements<UWeaponInterface>())
 	 {
@@ -179,6 +190,21 @@ void UControlComponent::MeleeAttack()
 		QueryParams
 	);
 
+	if (bHit)
+	{
+		for (FHitResult& Hit : HitResults)
+		{
+			if (AMonsterBase* Target = Cast<AMonsterBase>(Hit.GetActor()))
+			{
+				HitActors.Add(Hit.GetActor());
+
+				// Target->TakeDamage(Owner->GetAttack(),FDamageEvent(),Owner->GetController(), Owner);
+				FVector Direction = (Hit.ImpactPoint - Owner->GetActorLocation()).GetSafeNormal();
+				Target->GetMesh()->AddImpulse(Direction * 100.0f);
+			}
+		}
+	}
+
 	
 }
 
@@ -209,7 +235,6 @@ void UControlComponent::Reload(const FInputActionValue& Value)
 		if (AnimInstance && Owner->ReloadMontage)
 		{
 			float duration = AnimInstance->Montage_Play(Owner->ReloadMontage);
-			//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("%f"), duration));
 
 			FOnMontageEnded ReloadEnded;
 			ReloadEnded.BindLambda([this](UAnimMontage* Montage, bool bInterrupted)
@@ -273,6 +298,8 @@ void UControlComponent::SwapWeapon1(const FInputActionValue& Value)
 {
 
 	if (!bInputEnabled) return;
+
+	Owner->GetHPComponent()->OnDeath();
 	
 	UE_LOG(LogTemp,Warning,TEXT("Swap Weapon 1 "));
 
