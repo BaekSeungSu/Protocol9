@@ -46,54 +46,6 @@ AMainCharacter::AMainCharacter()
 
 }
 
-void AMainCharacter::SetupDeathCamera()
-{
-	OriginalSpringArmParent = SpringArmComponent->GetAttachParent();
-	OriginalSpringArmLocation = SpringArmComponent->GetRelativeLocation();
-	OriginalSpringArmRotation = SpringArmComponent->GetRelativeRotation();
-
-	// 스프링암을 메시의 특정 소켓에 부착
-	if (GetMesh())
-	{
-		// head 소켓이나 spine 소켓 등 원하는 소켓에 부착
-		SpringArmComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-		SpringArmComponent->AttachToComponent(
-			GetMesh(),
-			FAttachmentTransformRules::KeepWorldTransform,
-			DeathCameraSocket // 예: "head", "spine_03" 등
-		);
-
-		// 카메라 래그 설정으로 부드러운 움직임 구현
-		// SpringArmComponent->bEnableCameraLag = true;
-		// SpringArmComponent->bEnableCameraRotationLag = true;
-		// SpringArmComponent->CameraLagSpeed = 3.0f;
-		// SpringArmComponent->CameraRotationLagSpeed = 3.0f;
-        
-		// 원하는 오프셋 설정
-		SpringArmComponent->SetRelativeLocation(FVector(0, 50, 0));  // 측면에서 보기
-		SpringArmComponent->SetRelativeRotation(FRotator(0, -90, 0));  // 캐릭터를 향해 보기
-	}
-
-}
-
-void AMainCharacter::ResetCameraToDefault()
-{
-	if (OriginalSpringArmParent)
-	{
-		SpringArmComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-		SpringArmComponent->AttachToComponent(
-			OriginalSpringArmParent,
-			FAttachmentTransformRules::KeepWorldTransform
-		);
-		SpringArmComponent->SetRelativeLocation(OriginalSpringArmLocation);
-		SpringArmComponent->SetRelativeRotation(OriginalSpringArmRotation);
-        
-		// SpringArmComponent->bEnableCameraLag = false;
-		// SpringArmComponent->bEnableCameraRotationLag = false;
-	}
-
-}
-
 void AMainCharacter::EquipDefaultWeapon()
 {
 	if (InventoryComponent && DefaultWeaponClass)
@@ -123,6 +75,50 @@ void AMainCharacter::ResetAttack()
 {
 	CurrentAttack = Attack;
 	UE_LOG(LogTemp, Warning,TEXT("Return My Attack : %f"),CurrentAttack);
+}
+
+void AMainCharacter::SetupDeathCamera()
+{
+	OriginalSpringArmParent = SpringArmComponent->GetAttachParent();
+	OriginalSpringArmLocation = SpringArmComponent->GetRelativeLocation();
+	OriginalSpringArmRotation = SpringArmComponent->GetRelativeRotation();
+
+	if (GetMesh())
+	{
+		SpringArmComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		SpringArmComponent->AttachToComponent(
+			GetMesh(),
+			FAttachmentTransformRules::KeepWorldTransform,
+			DeathCameraSocket
+		);
+
+		// SpringArmComponent->bEnableCameraLag = true;
+		// SpringArmComponent->bEnableCameraRotationLag = true;
+		// SpringArmComponent->CameraLagSpeed = 3.0f;
+		// SpringArmComponent->CameraRotationLagSpeed = 3.0f;
+        
+		SpringArmComponent->SetRelativeLocation(FVector(0, 50, 0));  // 측면에서 보기
+		SpringArmComponent->SetRelativeRotation(FRotator(0, -90, 0));  // 캐릭터를 향해 보기
+	}
+
+}
+
+void AMainCharacter::ResetCameraToDefault()
+{
+	if (OriginalSpringArmParent)
+	{
+		SpringArmComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		SpringArmComponent->AttachToComponent(
+			OriginalSpringArmParent,
+			FAttachmentTransformRules::KeepWorldTransform
+		);
+		SpringArmComponent->SetRelativeLocation(OriginalSpringArmLocation);
+		SpringArmComponent->SetRelativeRotation(OriginalSpringArmRotation);
+        
+		// SpringArmComponent->bEnableCameraLag = false;
+		// SpringArmComponent->bEnableCameraRotationLag = false;
+	}
+
 }
 
 void AMainCharacter::HideDefalutMesh()
