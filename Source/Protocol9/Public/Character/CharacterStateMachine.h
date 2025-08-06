@@ -58,7 +58,8 @@ public:
 		|| CurrentState == ECharacterState::Dead
 		|| CurrentState == ECharacterState::Melee;}
 
-	bool CanMelee() const{return CurrentState == ECharacterState::Dead;}
+	bool CanMelee() const{return CurrentState == ECharacterState::Dead
+		|| CurrentState == ECharacterState::Melee;}
 
 	bool CanSwapWeapon() const{return CurrentState != ECharacterState::Dead;}
 	

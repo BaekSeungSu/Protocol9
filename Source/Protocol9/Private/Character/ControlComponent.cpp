@@ -3,10 +3,14 @@
 #include "Character/StaminaComponent.h"
 #include "Character/CharacterStateMachine.h"
 #include "Character/HPComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/DamageType.h"
 #include "EnhancedInputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Weapons/InventoryComponent.h"
 #include "Weapons/WeaponBase.h"
+#include "Enemy/MonsterBase.h"
+#include "Engine/DamageEvents.h"
 
 
 UControlComponent::UControlComponent()
@@ -35,6 +39,8 @@ void UControlComponent::BeginPlay()
 		{
 			HPComp->OnDeathEvent.AddDynamic(this,&UControlComponent::HandleCharacterDeath);
 		}
+
+		EnableInput();
 	}
 }
 
@@ -92,6 +98,13 @@ void UControlComponent::StartFire(const FInputActionValue& Value)
 	if (!bInputEnabled || !Owner || !Owner->Controller) return;
 	if (Owner->GetStateMachine()->CanFire()) return;
 
+	// GetCurrentAmmo 추가필요
+	// if (CurrentWeapon->GetCurrentAmmo() <= 0)
+	// {
+	// 	Reload(Value);
+	//	return;
+	// }
+	
 	AWeaponBase* CurrentWeapon = Owner->GetInventoryComponent()->GetCurrentWeapon();
 	if (CurrentWeapon && CurrentWeapon->Implements<UWeaponInterface>())
 	{
@@ -133,7 +146,7 @@ void UControlComponent::Melee(const FInputActionValue& Value)
 	{
 		if (AnimInstance && Owner->MeleeMontage)
 		{
-			MeleeAttack();
+			Owner->GetStateMachine()->SetState(ECharacterState::Melee);
 			
 			float duration = AnimInstance->Montage_Play(Owner->MeleeMontage);
 			
@@ -148,7 +161,8 @@ void UControlComponent::Melee(const FInputActionValue& Value)
 				}
 			});
 
-			AnimInstance->Montage_SetEndDelegate(MeleeEnded, Owner->ReloadMontage);
+			AnimInstance->Montage_SetEndDelegate(MeleeEnded, Owner->MeleeMontage);
+
 		}
 	}
 	
@@ -186,6 +200,40 @@ void UControlComponent::MeleeAttack()
 		QueryParams
 	);
 
+	if (bHit)
+	{
+		int HitCount = 0;
+
+		for (FHitResult& Hit : HitResults)
+		{
+			if (AActor* Target = Cast<AActor>(Hit.GetActor()))
+			{
+				HitActors.Add(Hit.GetActor());
+
+				FVector Direction = (Hit.ImpactPoint - Owner->GetActorLocation()).GetSafeNormal();
+				
+				if (AMonsterBase* Monster = Cast<AMonsterBase>(Target))
+				{
+					UGameplayStatics::ApplyDamage(
+					Target,
+					Owner->GetAttack(),
+					Owner->GetController(),
+					Owner,
+					UDamageType::StaticClass()
+					);
+					
+					Monster->GetMesh()->AddImpulse(Direction * 100.0f);
+					HitCount++;
+
+				}
+			}
+		}
+		
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("MeleeAttack Complete"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("%d"), HitActors.Num()));
+
+	}
+
 	
 }
 
@@ -216,7 +264,6 @@ void UControlComponent::Reload(const FInputActionValue& Value)
 		if (AnimInstance && Owner->ReloadMontage)
 		{
 			float duration = AnimInstance->Montage_Play(Owner->ReloadMontage);
-			//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("%f"), duration));
 
 			FOnMontageEnded ReloadEnded;
 			ReloadEnded.BindLambda([this](UAnimMontage* Montage, bool bInterrupted)
@@ -280,6 +327,8 @@ void UControlComponent::SwapWeapon1(const FInputActionValue& Value)
 {
 
 	if (!bInputEnabled) return;
+
+	Owner->GetHPComponent()->OnDeath();
 	
 	UE_LOG(LogTemp,Warning,TEXT("Swap Weapon 1 "));
 

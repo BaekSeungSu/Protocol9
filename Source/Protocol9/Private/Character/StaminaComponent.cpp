@@ -59,7 +59,8 @@ void UStaminaComponent::SetStaminaChargeTime(float NewStaminaChargeTime)
 void UStaminaComponent::UseStamina()
 {
 	CurrentStaminaCount--;
-
+	StaminaChanged.Broadcast(CurrentStaminaCount);
+	
 	GEngine->AddOnScreenDebugMessage(-1,
 			2.0f,
 			FColor::Green,
@@ -81,7 +82,8 @@ void UStaminaComponent::ChargeStamina()
 	if (CurrentStaminaCount < MaxStaminaCount)
 	{
 		CurrentStaminaCount++;
-
+		StaminaChanged.Broadcast(CurrentStaminaCount);
+		
 		GEngine->AddOnScreenDebugMessage(-1,
 					2.0f,
 					FColor::Green,
@@ -93,5 +95,27 @@ void UStaminaComponent::ChargeStamina()
 		&UStaminaComponent::ChargeStamina,
 		5.0f,
 		false);
+
+		GetOwner()->GetWorldTimerManager().SetTimer(
+		SChecktaminaChargeTimer,
+		this,
+		&UStaminaComponent::CheckStaminaChargeTime,
+		0.2f,
+		true);
+		
+	}
+}
+
+void UStaminaComponent::CheckStaminaChargeTime()
+{
+	float RemainTime = GetOwner()->GetWorldTimerManager().GetTimerRemaining(StaminaChargeTimer);
+
+	if (RemainTime > 0.0f)
+	{
+		RemainStaminaChargeTime.Broadcast(RemainTime);
+	}
+	else
+	{
+		GetOwner()->GetWorldTimerManager().ClearTimer(StaminaChargeTimer);
 	}
 }

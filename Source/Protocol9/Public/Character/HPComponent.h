@@ -6,6 +6,7 @@
 #include "HPComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeathSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHPChangedSignature, float, CurrentHP);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROTOCOL9_API UHPComponent : public UActorComponent
@@ -20,11 +21,14 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "HP")
 	bool bIsDead;
 	bool bIsInvisible = false;
+	
 public:	
 	UHPComponent();
-
+	//이벤트
 	UPROPERTY(BlueprintAssignable, Category = "HP")
 	FOnDeathSignature OnDeathEvent;
+	UPROPERTY(BlueprintAssignable, Category = "HP")
+	FHPChangedSignature HPChanged;
 	
 	UFUNCTION(BlueprintPure, Category = "HP")
 	float GetMaxHP() const {return MaxHP;};
@@ -38,7 +42,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HP")
 	void SetCurrentHP(float NewCurrentHP);
 	UFUNCTION(BlueprintCallable, Category = "HP")
-	void TakeDamage(float Damage);
+	void HandleDamage(float DamageAmount, 
+						struct FDamageEvent const& DamageEvent, 
+						class AController* EventInstigator, 
+						AActor* DamageCauser);
+
 	UFUNCTION(BlueprintCallable, Category = "HP")
 	void AddHealth(float HealAmount);
 
