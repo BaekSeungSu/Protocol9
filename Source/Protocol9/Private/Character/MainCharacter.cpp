@@ -111,9 +111,20 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 					PlayerController->FireAction,
 					ETriggerEvent::Started,
 					ControlComponent,
-					&UControlComponent::Fire
+					&UControlComponent::StartFire
 					);
 			}
+
+			if (PlayerController->FireAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->FireAction,
+					ETriggerEvent::Completed,
+					ControlComponent,
+					&UControlComponent::StopFire
+					);
+			}
+
 
 			if (PlayerController->MeleeAction)
 			{
