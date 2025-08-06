@@ -21,13 +21,19 @@ public:
 	AItemBase();
 
 	UPROPERTY()
-	UObjectPoolingComponent* OwningPool; 
+	UObjectPoolingComponent* OwningPool;
+	UFUNCTION()
+	void ItemLifeTime();
+	UFUNCTION()
+	void ReturnToPool();
 
 protected:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Item")
 	FName ItemType;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Item")
 	float ItemDuration;
+	UPROPERTY(EditAnywhere,Category="Item")
+	float ItemLifeDuration;
 	
 	virtual void BeginPlay() override;
 	UFUNCTION()
@@ -39,12 +45,6 @@ protected:
 		bool bFromSweep,
 		const FHitResult& SweepResult) override;
 	UFUNCTION()
-	virtual void OnItemEndOverlap(
-		UPrimitiveComponent* OverlappedComp,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComp,
-		int32 OtherBodyIndex
-		) override;
 	
 	virtual void ActivateItem(AActor* Activator)override;
 	virtual FName GetItemType() const override;
@@ -60,6 +60,8 @@ protected:
 	USphereComponent* Collision;
 
 	FTimerHandle EffectTimerHandle;
+
+	FTimerHandle ItemLIfeTimerHandle;
 	
 	virtual void EndEffect() override;
 	

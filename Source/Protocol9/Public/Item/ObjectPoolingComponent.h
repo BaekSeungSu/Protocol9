@@ -16,9 +16,9 @@ class PROTOCOL9_API UObjectPoolingComponent : public UActorComponent
 public:
 	UObjectPoolingComponent();
 
-	// 블루프린트에서 설정할 데이터 테이블 변수
+	// 아이템 정보가 담긴 데이터 테이블
 	UPROPERTY(EditAnywhere, Category = "Object Pooling")
-	UDataTable* ItemSpawnTable; 
+	UDataTable* ItemSpawnTable;                  
 	
 	// 풀에서 특정 클래스의 아이템을 가져오는 함수
 	AItemBase* GetPooledObjectByClass(TSubclassOf<AItemBase> ItemClass);
@@ -38,6 +38,6 @@ private:
 
 	// 데이터 테이블에서 확률에 따라 랜덤 아이템 클래스를 선택하는 함수
 	TSubclassOf<AItemBase> GetRandomItemClassFromTable();
-	// 오브젝트 풀
+	// 미리 만들어둔 아이템들을 담는 배열
 	TArray<AItemBase*> ObjectPool;
 };
