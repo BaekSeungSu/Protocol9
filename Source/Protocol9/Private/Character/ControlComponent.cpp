@@ -139,7 +139,7 @@ void UControlComponent::Melee(const FInputActionValue& Value)
 	{
 		if (AnimInstance && Owner->MeleeMontage)
 		{
-			MeleeAttack();
+			Owner->GetStateMachine()->SetState(ECharacterState::Melee);
 			
 			float duration = AnimInstance->Montage_Play(Owner->MeleeMontage);
 			
@@ -154,7 +154,8 @@ void UControlComponent::Melee(const FInputActionValue& Value)
 				}
 			});
 
-			AnimInstance->Montage_SetEndDelegate(MeleeEnded, Owner->ReloadMontage);
+			AnimInstance->Montage_SetEndDelegate(MeleeEnded, Owner->MeleeMontage);
+
 		}
 	}
 	
@@ -194,27 +195,36 @@ void UControlComponent::MeleeAttack()
 
 	if (bHit)
 	{
+		int HitCount = 0;
+
 		for (FHitResult& Hit : HitResults)
 		{
 			if (AActor* Target = Cast<AActor>(Hit.GetActor()))
 			{
 				HitActors.Add(Hit.GetActor());
 
-				UGameplayStatics::ApplyDamage(
+				FVector Direction = (Hit.ImpactPoint - Owner->GetActorLocation()).GetSafeNormal();
+				
+				if (AMonsterBase* Monster = Cast<AMonsterBase>(Target))
+				{
+					UGameplayStatics::ApplyDamage(
 					Target,
 					Owner->GetAttack(),
 					Owner->GetController(),
 					Owner,
 					UDamageType::StaticClass()
-				);
-
-				FVector Direction = (Hit.ImpactPoint - Owner->GetActorLocation()).GetSafeNormal();
-				if (AMonsterBase* Monster = Cast<AMonsterBase>(Target))
-				{
+					);
+					
 					Monster->GetMesh()->AddImpulse(Direction * 100.0f);
+					HitCount++;
+
 				}
 			}
 		}
+		
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("MeleeAttack Complete"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("%d"), HitActors.Num()));
+
 	}
 
 	
