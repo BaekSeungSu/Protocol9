@@ -1,10 +1,13 @@
 #include "Weapons/WeaponBase.h"
 #include "Components/StaticMeshComponent.h"
-#include "Character/MainPlayerController.h"
 #include "Weapons/Data/WeaponData.h"
 #include "UI/PlayerUIComponent.h"
 #include "Character/MainCharacter.h"
 #include "DrawDebugHelpers.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/DamageType.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 AWeaponBase::AWeaponBase()
 {
@@ -61,10 +64,9 @@ void AWeaponBase::Tick(float DeltaTime)
 }
 void AWeaponBase::FireAction()
 {
-	if (!CanFire())
-	{
-		return;
-	}
+	if (!CanFire()) return;
+	
+	LastFireTime = GetWorld()->GetTimeSeconds();
 	CurrentAmmo--;
 	ApplyRecoil();
 	
@@ -79,6 +81,15 @@ void AWeaponBase::FireAction()
 			FireProjectile();
 		}
 	}
+
+	if (CurrentWeaponData->MuzzleFlash)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), CurrentWeaponData->MuzzleFlash, WeaponMesh->GetSocketLocation(TEXT("MuzzleSocket")));
+	}
+	if (CurrentWeaponData->FireSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), CurrentWeaponData->FireSound, GetActorLocation());
+	}
 }
 
 bool AWeaponBase::CanFire() const
@@ -88,35 +99,44 @@ bool AWeaponBase::CanFire() const
 		UE_LOG(LogTemp, Error, TEXT("Can not Fire"));
 		return false;
 	}
+
+	const float TimeBetweenShots = 60.0f / CurrentWeaponData->FireRate;
+	if (GetWorld()->GetTimeSeconds() < LastFireTime + TimeBetweenShots)
+	{
+		return false;
+	}
+	
 	return true;
 }
 
 void AWeaponBase::ApplyRecoil()
 {
-	AController* OwnerController = GetOwner()->GetInstigatorController();
-	if (OwnerController)
-	{
-		APlayerController* PlayerController = Cast<APlayerController>(OwnerController);
-		if (PlayerController)
-		{
-			if (CurrentWeaponData->RecoilCameraShake)
-			{
-				PlayerController->ClientStartCameraShake(CurrentWeaponData->RecoilCameraShake);
-			}
-		}
+	APlayerController* PlayerController = GetOwner()->GetInstigatorController<APlayerController>();
+	if (!PlayerController || !CurrentWeaponData) return;
 
-		AMainCharacter* OwnerCharacter = Cast<AMainCharacter>(GetOwner());
-		if (OwnerCharacter)
+	const float Pitch = -CurrentWeaponData->RecoilPitch;
+	const float Yaw = FMath::RandRange(-CurrentWeaponData->RecoilYaw, CurrentWeaponData->RecoilYaw);
+	PlayerController->AddPitchInput(Pitch);
+	PlayerController->AddYawInput(Yaw);
+	
+	if (CurrentWeaponData->RecoilCameraShake)
+	{
+		PlayerController->ClientStartCameraShake(CurrentWeaponData->RecoilCameraShake);
+	}
+		
+
+	AMainCharacter* OwnerCharacter = Cast<AMainCharacter>(GetOwner());
+	if (OwnerCharacter)
+	{
+		UPlayerUIComponent* UIComponent = OwnerCharacter->FindComponentByClass<UPlayerUIComponent>();
+		if (UIComponent)
 		{
-			UPlayerUIComponent* UIComponent = OwnerCharacter->FindComponentByClass<UPlayerUIComponent>();
-			if (UIComponent)
-			{
-				float CurrentAimSize = UIComponent->GetAimSize();
-				UIComponent->SetAimSize(CurrentAimSize + CurrentWeaponData->CrosshairRecoilAmount);
-			}
+			float CurrentAimSize = UIComponent->GetAimSize();
+			UIComponent->SetAimSize(CurrentAimSize + CurrentWeaponData->CrosshairRecoilAmount);
 		}
 	}
 }
+
 
 
 
@@ -135,15 +155,13 @@ void AWeaponBase::FireHitScan()
 	CollisionParams.AddIgnoredActor(this);
 
 	FHitResult HitResult;
-	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Visibility, CollisionParams);
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Pawn, CollisionParams);
 
 	FVector MuzzleLocation = WeaponMesh->GetSocketLocation(TEXT("MuzzleSocket"));
 	
 	if (bHit)
 	{
-		DrawDebugLine(GetWorld(), MuzzleLocation, HitResult.ImpactPoint, FColor::Green, false, 2.0f, 0, 2.0f);
-		DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 10.0f, 10, FColor::Blue, false, 2.0f, 0, 3.0f);
-		UE_LOG(LogTemp, Warning, TEXT("Hit : %s"), *HitResult.GetActor()->GetName());
+		ProcessHit(HitResult,FireDirection);
 	}
 	else
 	{
@@ -156,17 +174,30 @@ void AWeaponBase::FireHitScan()
 FVector AWeaponBase::CalculateHitScanDirection() const
 {
 	AController* OwnerController = GetOwner()->GetInstigatorController();
-	if (!OwnerController) return FVector::ZeroVector;
-
+	AMainCharacter* OwnerCharacter = Cast<AMainCharacter>(GetOwner());
+	if (!OwnerController || !OwnerCharacter || !CurrentWeaponData)
+	{
+		return FVector::ZeroVector;
+	}
+	
 	FVector EyeLocation;
 	FRotator EyeRotation;
 	OwnerController->GetPlayerViewPoint(EyeLocation, EyeRotation);
-
 	FVector FireDirection = EyeRotation.Vector();
-	if (CurrentWeaponData&& CurrentWeaponData->SpreadAngle > 0.0f)
+
+	float BaseSpreadAngle = CurrentWeaponData->SpreadAngle;
+	float DynamicSpread = 0.0f;
+	UPlayerUIComponent* UIComponent = OwnerCharacter->FindComponentByClass<UPlayerUIComponent>();
+	if (UIComponent)
 	{
-		const float ConeHalfAngleRad = FMath::DegreesToRadians(CurrentWeaponData->SpreadAngle * 0.5f);
-		FireDirection = FMath::VRandCone(FireDirection, ConeHalfAngleRad);
+		DynamicSpread = UIComponent->GetAimSize() * 0.01f;
+	}
+	float FinalSpreadAngle = BaseSpreadAngle + DynamicSpread;
+
+	if (FinalSpreadAngle > 0.0f)
+	{
+		const float ConeHalfAngle = FMath::DegreesToRadians(FinalSpreadAngle * 0.5f);
+		FireDirection = FMath::VRandCone(FireDirection, ConeHalfAngle);
 	}
 	
 	return FireDirection;
@@ -174,6 +205,21 @@ FVector AWeaponBase::CalculateHitScanDirection() const
 
 void AWeaponBase::FireProjectile()
 {
+}
+
+void AWeaponBase::ProcessHit(const FHitResult& HitResult, const FVector& ShotDirection)
+{
+	AActor* HitActor = HitResult.GetActor();
+	if (HitActor)
+	{
+		AController* OwnerController = GetOwner()->GetInstigatorController();
+		UGameplayStatics::ApplyPointDamage(HitActor, CurrentWeaponData->Damage, ShotDirection, HitResult, OwnerController, this, UDamageType::StaticClass());
+	}
+
+	if (CurrentWeaponData->HitParticle)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), CurrentWeaponData->HitParticle, HitResult.ImpactPoint, HitResult.ImpactNormal.Rotation());
+	}
 }
 
 
