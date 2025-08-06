@@ -3,6 +3,8 @@
 #include "Character/StaminaComponent.h"
 #include "Character/CharacterStateMachine.h"
 #include "Character/HPComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/DamageType.h"
 #include "EnhancedInputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Weapons/InventoryComponent.h"
@@ -194,13 +196,23 @@ void UControlComponent::MeleeAttack()
 	{
 		for (FHitResult& Hit : HitResults)
 		{
-			if (AMonsterBase* Target = Cast<AMonsterBase>(Hit.GetActor()))
+			if (AActor* Target = Cast<AActor>(Hit.GetActor()))
 			{
 				HitActors.Add(Hit.GetActor());
 
-				//Target->TakeDamage(Owner->GetAttack(),FDamageEvent(),Owner->GetController(), Owner);
+				UGameplayStatics::ApplyDamage(
+					Target,
+					Owner->GetAttack(),
+					Owner->GetController(),
+					Owner,
+					UDamageType::StaticClass()
+				);
+
 				FVector Direction = (Hit.ImpactPoint - Owner->GetActorLocation()).GetSafeNormal();
-				Target->GetMesh()->AddImpulse(Direction * 100.0f);
+				if (AMonsterBase* Monster = Cast<AMonsterBase>(Target))
+				{
+					Monster->GetMesh()->AddImpulse(Direction * 100.0f);
+				}
 			}
 		}
 	}

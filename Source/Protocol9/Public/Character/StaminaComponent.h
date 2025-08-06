@@ -6,6 +6,9 @@
 #include "Components/ActorComponent.h"
 #include "StaminaComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCurrentStaminaChangedSignature, int, CurrentStaminaCount);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStaminaChargeTimeSignature, float, StaminaChargeTime);
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROTOCOL9_API UStaminaComponent : public UActorComponent
@@ -16,7 +19,12 @@ public:
 	UStaminaComponent();
 
 protected:
-
+	//이벤트
+	UPROPERTY(BlueprintAssignable, Category = "Stamina")
+	FCurrentStaminaChangedSignature StaminaChanged;
+	UPROPERTY(BlueprintAssignable, Category = "Stamina")
+	FStaminaChargeTimeSignature RemainStaminaChargeTime;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
 	int MaxStaminaCount;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
@@ -25,6 +33,7 @@ protected:
 	float StaminaChargeTime;
 	
 	FTimerHandle StaminaChargeTimer;
+	FTimerHandle SChecktaminaChargeTimer;
 	
 	virtual void BeginPlay() override;
 
@@ -48,4 +57,6 @@ public:
 	void UseStamina();
 	UFUNCTION(BlueprintCallable, Category = "Stamina")
 	void ChargeStamina();
+	UFUNCTION(BlueprintCallable, Category = "Stamina")
+	void CheckStaminaChargeTime();
 };

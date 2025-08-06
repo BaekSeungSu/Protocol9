@@ -40,15 +40,18 @@ void UHPComponent::SetCurrentHP(float NewCurrentHP)
 	}
 }
 
-void UHPComponent::TakeDamage(float Damage)
+void UHPComponent::HandleDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+	class AController* EventInstigator, AActor* DamageCauser)
 {
 	if (bIsInvisible)
 	{
 		return;
 	}
-	if (Damage > 0.0f)
+	if (DamageAmount > 0.0f)
 	{
-		CurrentHP = FMath::Max(0.0f, CurrentHP - Damage);
+		CurrentHP = FMath::Max(0.0f, CurrentHP - DamageAmount);
+
+		HPChanged.Broadcast(CurrentHP);
 	}
 
 	if (CurrentHP == 0)
@@ -62,6 +65,8 @@ void UHPComponent::AddHealth(float HealAmount)
 	if (HealAmount > 0.0f)
 	{
 		CurrentHP = FMath::Min(MaxHP, CurrentHP + HealAmount);
+
+		HPChanged.Broadcast(CurrentHP);
 	}
 	UE_LOG(LogTemp,Warning,TEXT("HP : %f"),CurrentHP);
 }

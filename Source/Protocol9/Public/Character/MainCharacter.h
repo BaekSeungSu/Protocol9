@@ -17,6 +17,10 @@ class UPlayerUIComponent;
 class AWeaponBase;
 class UCharacterStateMachine;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FExpChangedSignature, int, Exp);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FLevelUPSignature, int, CharacterLevel);
+
+
 UCLASS()
 class PROTOCOL9_API AMainCharacter : public ACharacter
 {
@@ -24,9 +28,14 @@ class PROTOCOL9_API AMainCharacter : public ACharacter
 	
 public:
 	AMainCharacter();
-
 	
 protected:
+
+	//이벤트
+	UPROPERTY(BlueprintAssignable, Category = "Exp")
+	FExpChangedSignature ExpChanged;
+	UPROPERTY(BlueprintAssignable, Category = "Exp")
+	FLevelUPSignature LevelUPEvent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
 	float BasetAttack;
@@ -102,6 +111,11 @@ public:
 	UAnimMontage* OnHandMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	UAnimMontage* MeleeMontage;
+
+	virtual float TakeDamage(float DamageAmount, 
+						struct FDamageEvent const& DamageEvent, 
+						class AController* EventInstigator, 
+						AActor* DamageCauser) override;
 	
 	void HideDefalutMesh();
 	void ShowDefalutMesh();

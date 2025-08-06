@@ -121,6 +121,19 @@ void AMainCharacter::ResetCameraToDefault()
 
 }
 
+float AMainCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+	class AController* EventInstigator, AActor* DamageCauser)
+{
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (HPComponent)
+	{
+		HPComponent->HandleDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	}
+	
+	return ActualDamage;
+}
+
 void AMainCharacter::HideDefalutMesh()
 {
 	GetMesh()->HideBoneByName(FName("weapon_r"), EPhysBodyOp::PBO_None);
@@ -270,6 +283,8 @@ void AMainCharacter::AddExp(int NewExp)
 {
 	Exp += NewExp;
 	UE_LOG(LogTemp, Display, TEXT("AddExp %d"), NewExp);
+	ExpChanged.Broadcast(Exp);
+	
 	if (Exp>=MaxExp)
 	{
 		LevelUp();
@@ -287,6 +302,8 @@ void AMainCharacter::LevelUp()
 		Attack += LevelUpAttack;
 
 		Exp -= MaxExp;
+
+		LevelUPEvent.Broadcast(CharacterLevel);
 		
 		LevelUp();
 	}
