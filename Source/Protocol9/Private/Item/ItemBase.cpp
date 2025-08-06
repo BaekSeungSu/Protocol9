@@ -66,11 +66,6 @@ void AItemBase::EndEffect()
 {
 }
 
-void AItemBase::DestroyItem()
-{
-	Destroy();
-}
-
 void AItemBase::BeginPlay()
 {
 	Super::BeginPlay();

@@ -15,5 +15,5 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
 	TSubclassOf<class AMonsterBase> MonsterClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Monster")
-	int32 MonsterMaxCount;
+	TArray<int32> MonsterSpawnCountPerCharacterLevel;
 };

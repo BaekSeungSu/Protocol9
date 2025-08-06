@@ -13,13 +13,13 @@ class PROTOCOL9_API AExperienceItem : public AItemBase
 public:
 	AExperienceItem();
 
-	UPROPERTY()
-	AMainCharacter* AffectedPlayer;
+	//UPROPERTY()
+	//AMainCharacter* AffectedPlayer;
 
-	virtual void EndEffect() override;
+	//virtual void EndEffect() override;
 
 	virtual void ActivateItem(AActor* Activator)override;
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Item")
-	float MultiExperience;
+	int AddExperience;
 };

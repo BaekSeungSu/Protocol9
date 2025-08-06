@@ -19,7 +19,7 @@ protected:
 	float CurrentHP;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "HP")
 	bool bIsDead;
-	
+	bool bIsInvisible = false;
 public:	
 	UHPComponent();
 
@@ -45,6 +45,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HP")
 	void OnDeath();
 
+	UFUNCTION(BlueprintCallable, Category = "HP")
+	void LockHealth();
+	UFUNCTION(BlueprintCallable, Category = "HP")
+	void UnlockHealth();
+	
 protected:
 	virtual void BeginPlay() override;
 };

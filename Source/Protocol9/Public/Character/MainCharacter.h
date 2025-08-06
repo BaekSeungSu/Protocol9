@@ -26,7 +26,6 @@ public:
 	AMainCharacter();
 
 	
-	
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
@@ -117,9 +116,9 @@ public:
 	void SetAttack(int NewAttack);
 	void SetExp(int Exp);
 	void SetLevel(int Level);
+	void AddExp(int NewExp);
 	
 	void LevelUp();
-
 	
 
 };
