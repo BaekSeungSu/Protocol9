@@ -5,6 +5,7 @@
 #include "Enemy/MonsterSpawnRow.h"
 #include "MonsterSpawner.generated.h"
 class AMainCharacter;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMonsterSpawned, AMonsterBase*, Monster);
 UCLASS()
 class PROTOCOL9_API AMonsterSpawner : public AActor
 {
@@ -17,6 +18,8 @@ public:
 	void ReSpawnMonster(AMonsterBase* Monster);
 	UFUNCTION()
 	void SpawnBossMonster();
+	UPROPERTY(BlueprintAssignable)
+	FMonsterSpawned OnMonsterSpawned;
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
@@ -36,7 +39,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spawner")
 	AMainCharacter* Player;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spawner")
-	int32 CurrentSpawnLevel =5;
+	int32 CurrentSpawnLevel =1;
 private:
 	TMap<TSubclassOf<AMonsterBase>, int32> SpawnedCount;
 	

@@ -125,6 +125,7 @@ void AMonsterSpawner::SpawnMonster(TSubclassOf<AMonsterBase> MonsterClass)
 	if (!NewMonster)
 		return;
 	NewMonster->OnMonsterDead.AddDynamic(this, &AMonsterSpawner::ReSpawnMonster);
+	OnMonsterSpawned.Broadcast(NewMonster);
 }
 
 

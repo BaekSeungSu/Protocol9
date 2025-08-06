@@ -56,6 +56,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement|StartOffset")
 	float AnimationStartOffset;
+	UFUNCTION()
+	void AnimNotify_AttackCheck() const;
 private:
 	float PreviousSpeed;
 	bool bWasMovingLastFrame;

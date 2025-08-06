@@ -1,6 +1,6 @@
 #include "Enemy/MonsterBaseAnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
-
+#include "Enemy/MeleeMonsterBase.h"
 UMonsterBaseAnimInstance::UMonsterBaseAnimInstance()
 {
     MonsterOwner = nullptr;
@@ -108,5 +108,19 @@ void UMonsterBaseAnimInstance::UpdateCombatProperties()
         //     bIsAttacking = AnimInstance->Montage_IsPlaying(MonsterOwner->AttackMontage);
         // }
     }
+}
+
+void UMonsterBaseAnimInstance::AnimNotify_AttackCheck() const
+{
+    UE_LOG(LogTemp,Warning, TEXT("AnimNotify"));
+    APawn* OwnerPawn = TryGetPawnOwner();
+    
+    AMeleeMonsterBase* MeleeMonster = Cast<AMeleeMonsterBase>(OwnerPawn);
+    
+    if (MeleeMonster)
+    {
+        MeleeMonster->AttackCheck();
+    }
+    
 }
 

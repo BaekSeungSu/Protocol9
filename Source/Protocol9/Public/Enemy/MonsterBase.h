@@ -4,7 +4,7 @@
 #include "GameFramework/Character.h"
 #include "MonsterBase.generated.h"
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMonsterDead, AMonsterBase*, DeadMonster);
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMonsterDeadLocation, FVector, DeadLocation);
 UENUM(BlueprintType)
 enum class EMonsterState : uint8
 {
@@ -38,8 +38,6 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Attack")
     class UAnimMontage* AttackMontage;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Die")
-    UAnimMontage* DeadMontage;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Movement")
     float WalkSpeed = 300.0f;
 
@@ -65,6 +63,10 @@ public:
     
     UPROPERTY(BlueprintAssignable)
     FOnMonsterDead OnMonsterDead;
+    
+    UPROPERTY(BlueprintAssignable)
+    FOnMonsterDeadLocation OnMonsterDeadLocation;
+
 protected:
     virtual void ChasePlayer();
     void SetState(EMonsterState NewState);
@@ -82,9 +84,13 @@ protected:
     UFUNCTION()
     virtual void OnDeath();
     UFUNCTION()
+    void Ragdoll();
+    UFUNCTION()
     void ClearMonster();
     UFUNCTION()
     void DropItems() const;
+    UFUNCTION()
+    FVector FindGroundLocation() const;
     UFUNCTION()
     void GiveExp() const;
     UFUNCTION()

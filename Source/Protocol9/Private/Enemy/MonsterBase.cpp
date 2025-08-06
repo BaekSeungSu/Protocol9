@@ -341,24 +341,35 @@ void AMonsterBase::OnDeath()
 
 	SetState(EMonsterState::Dead);
 
+	Ragdoll();	
+
+	GiveExp();
+	
+	DropItems();
+	
+	OnMonsterDead.Broadcast(this);
+	OnMonsterDeadLocation.Broadcast(FindGroundLocation());
+	GetWorldTimerManager().SetTimer(DeadTimerHandle,this,&AMonsterBase::EndDeath, 5.0f, false);
+}
+
+void AMonsterBase::Ragdoll()
+{
 	if (AIController)
 	{
 		AIController->StopMovement();
 	}
+	
 	GetWorld()->GetTimerManager().ClearTimer(AIUpdateTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
 
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCharacterMovement()->DisableMovement();
+	
+	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+	GetMesh()->SetAnimInstanceClass(nullptr);
 
-	GiveExp();
-	DropItems();
-	OnMonsterDead.Broadcast(this);
-	if (DeadMontage && GetMesh() && GetMesh()->GetAnimInstance())
-	{
-		GetMesh()->GetAnimInstance()->Montage_Play(DeadMontage);
-	}
-	GetWorldTimerManager().SetTimer(DeadTimerHandle,this,&AMonsterBase::EndDeath, 5.0f, false);
+	GetMesh()->SetSimulatePhysics(true);
+	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
 }
 
 void AMonsterBase::ClearMonster()
@@ -374,10 +385,32 @@ void AMonsterBase::ClearMonster()
 void AMonsterBase::DropItems() const
 {
 	UWorld* World = GetWorld();
-	if (World)
+	
+}
+
+FVector AMonsterBase::FindGroundLocation() const
+{
+	FVector StartPoint = GetActorLocation();
+	FVector EndPoint = StartPoint - FVector(0.f, 0.f, 10000.f); 
+    
+	FHitResult HitResult;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+
+	bool bHit = GetWorld()->LineTraceSingleByChannel(
+		HitResult,
+		StartPoint,
+		EndPoint,
+		ECC_WorldStatic,
+		QueryParams
+	);
+
+	if (bHit)
 	{
-		//아이템 스폰
+		return HitResult.Location;
 	}
+	
+	return GetActorLocation();
 }
 
 void AMonsterBase::GiveExp() const
