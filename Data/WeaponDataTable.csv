@@ -1,3 +1,3 @@
-,WeaponType,FireType,WeaponClass,ProjectileClass,Damage,FireRate,Range,MagazineSize,ReloadTime,SpreadAngle,CrosshairRecoilAmount,RecoilCameraShake
-Pistol,Pistol,HitScan,/Script/Engine.Blueprint'/Game/Blueprints/Weapon/BP_Weapon_Pistol.BP_Weapon_Pistol_C',,10,10,3000,12,1.5,1,15,/Script/Engine.Blueprint'/Game/Blueprints/Weapon/CameraShakes/CS_RecoilPistol.CS_RecoilPistol_C'
-SMG,SMG,HitScan,,,8,20,5000,25,2,2.5,15,
+,WeaponType,FireType,WeaponClass,ProjectileClass,Damage,FireRate,Range,MagazineSize,ReloadTime,RecoilPitch,RecoilYaw,SpreadAngle,CrosshairRecoilAmount,RecoilCameraShake,MuzzleFlash,HitParticle,FireSound
+Pistol,Pistol,HitScan,/Script/Engine.Blueprint'/Game/Blueprints/Weapon/BP_Weapon_Pistol.BP_Weapon_Pistol_C',,10,60,3000,12,1.5,0.3,0.15,1,50,/Script/Engine.Blueprint'/Game/Blueprints/Weapon/CameraShakes/CS_RecoilPistol.CS_RecoilPistol_C',/Script/Niagara.NiagaraSystem'/Game/Blueprints/Weapon/Effect/MuzzleFlash/NS_Pistol_MuzzleFlash.NS_Pistol_MuzzleFlash',/Script/Niagara.NiagaraSystem'/Game/Blueprints/Weapon/Effect/HitEffect/NS_Pistol_Hit.NS_Pistol_Hit',/Script/Engine.SoundWave'/Game/Blueprints/Weapon/Sounds/SW_Pistol.SW_Pistol'
+SMG,SMG,HitScan,,,8,30,5000,25,2,,,2.5,50,,,,
