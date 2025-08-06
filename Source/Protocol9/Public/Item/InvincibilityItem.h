@@ -14,7 +14,7 @@ public:
 	AInvincibilityItem();
 
 	UPROPERTY()
-	AMainCharacter* AffectedPlayer;
+	AActor* AffectedPlayer;
 
 	virtual void EndEffect() override;
 

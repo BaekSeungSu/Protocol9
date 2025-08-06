@@ -42,6 +42,10 @@ void UHPComponent::SetCurrentHP(float NewCurrentHP)
 
 void UHPComponent::TakeDamage(float Damage)
 {
+	if (bIsInvisible)
+	{
+		return;
+	}
 	if (Damage > 0.0f)
 	{
 		CurrentHP = FMath::Max(0.0f, CurrentHP - Damage);
@@ -61,6 +65,19 @@ void UHPComponent::AddHealth(float HealAmount)
 	}
 	UE_LOG(LogTemp,Warning,TEXT("HP : %f"),CurrentHP);
 }
+
+void UHPComponent::LockHealth()
+{
+	bIsInvisible =true;
+	UE_LOG(LogTemp,Warning,TEXT("Invinsible Time!"));
+}
+
+void UHPComponent::UnlockHealth()
+{
+	bIsInvisible = false;
+	UE_LOG(LogTemp,Warning,TEXT("Invinsible Time End!"));
+}
+
 
 void UHPComponent::OnDeath()
 {

@@ -4,6 +4,7 @@
 #include "Enemy/RangedMonsterBase.h"
 #include "Enemy/MonsterProjectile.h"
 #include "Engine/World.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 ARangedMonsterBase::ARangedMonsterBase()
 {
@@ -45,6 +46,31 @@ void ARangedMonsterBase::PerformAttack()
 	{
 		GetMesh()->GetAnimInstance()->Montage_Play(AttackMontage);
 	}
+}
+
+void ARangedMonsterBase::ChasePlayer()
+{
+	if (!TargetPlayer || !AIController) return;
+
+	if (IsInAttackRange() && HasLineOfSightToPlayer())
+	{
+		SetState(EMonsterState::Attacking);
+		return;
+	}
+	MoveToTarget();
+}
+
+bool ARangedMonsterBase::HasLineOfSightToPlayer()
+{
+	if (!TargetPlayer)
+		return false;
+	FVector PlayerLocation = TargetPlayer->GetActorLocation();
+	FVector MonsterLocation = GetActorLocation();
+	FHitResult HitResult;
+	TArray<AActor*> ActorsToIgnore;
+	ActorsToIgnore.Add(this);
+	bool bHit = UKismetSystemLibrary::LineTraceSingle(GetWorld(), MonsterLocation, PlayerLocation, UEngineTypes::ConvertToTraceType(ECC_Visibility),false, ActorsToIgnore,EDrawDebugTrace::None, HitResult, true);
+	return !bHit || (bHit && HitResult.GetActor() == TargetPlayer);
 }
 
 FVector ARangedMonsterBase::GetProjectileSpawnLocation()
