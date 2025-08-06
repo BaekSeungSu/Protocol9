@@ -87,20 +87,16 @@ void UControlComponent::Look(const FInputActionValue& Value)
 	Owner->AddControllerPitchInput(-LookInput.Y);
 }
 
-void UControlComponent::Fire(const FInputActionValue& Value)
+void UControlComponent::StartFire(const FInputActionValue& Value)
 {
-	AWeaponBase* CurrentWeapon = Owner->GetInventoryComponent()->GetCurrentWeapon();
-	
-	if (!Owner->Controller) return;
-
-	if (!bInputEnabled) return;
-
+	if (!bInputEnabled || !Owner || !Owner->Controller) return;
 	if (Owner->GetStateMachine()->CanFire()) return;
 
-	 if (CurrentWeapon && CurrentWeapon->Implements<UWeaponInterface>())
-	 {
-	 	IWeaponInterface::Execute_PrimaryFire(CurrentWeapon);
-	 }
+	AWeaponBase* CurrentWeapon = Owner->GetInventoryComponent()->GetCurrentWeapon();
+	if (CurrentWeapon && CurrentWeapon->Implements<UWeaponInterface>())
+	{
+		IWeaponInterface::Execute_PrimaryFire(CurrentWeapon);
+	}
 	
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Fire"));
 
@@ -111,6 +107,17 @@ void UControlComponent::Fire(const FInputActionValue& Value)
 			float duration = AnimInstance->Montage_Play(Owner->FireMontage);
 			//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("%f"), duration));
 		}
+	}
+}
+
+void UControlComponent::StopFire(const FInputActionValue& Value)
+{
+	if (!bInputEnabled || !Owner || !Owner->Controller) return;
+	
+	AWeaponBase* CurrentWeapon = Owner->GetInventoryComponent()->GetCurrentWeapon();
+	if (CurrentWeapon && CurrentWeapon->Implements<UWeaponInterface>())
+	{
+		IWeaponInterface::Execute_StopFire(CurrentWeapon);
 	}
 }
 
@@ -308,3 +315,5 @@ void UControlComponent::HandleCharacterDeath()
 {
 	DisableInput();
 }
+
+
