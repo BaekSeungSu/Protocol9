@@ -198,7 +198,7 @@ void UControlComponent::MeleeAttack()
 			{
 				HitActors.Add(Hit.GetActor());
 
-				// Target->TakeDamage(Owner->GetAttack(),FDamageEvent(),Owner->GetController(), Owner);
+				//Target->TakeDamage(Owner->GetAttack(),FDamageEvent(),Owner->GetController(), Owner);
 				FVector Direction = (Hit.ImpactPoint - Owner->GetActorLocation()).GetSafeNormal();
 				Target->GetMesh()->AddImpulse(Direction * 100.0f);
 			}
