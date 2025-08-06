@@ -102,7 +102,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 					PlayerController->LookAction,
 					ETriggerEvent::Triggered,
 					ControlComponent,
-					&UControlComponent::Look);
+					&UControlComponent::Look); 
 			}
 
 			if (PlayerController->FireAction)
@@ -219,6 +219,18 @@ void AMainCharacter::SetLevel(int NewLevel)
 	}
 }
 
+void AMainCharacter::AddExp(int NewExp)
+{
+	Exp += NewExp;
+	UE_LOG(LogTemp, Display, TEXT("AddExp %d"), NewExp);
+	if (Exp>=MaxExp)
+	{
+		LevelUp();
+	}
+	
+}
+
+
 void AMainCharacter::LevelUp()
 {
 	if (Exp >= MaxExp)
@@ -226,6 +238,8 @@ void AMainCharacter::LevelUp()
 		CharacterLevel++;
 
 		Attack += LevelUpAttack;
+
+		Exp -= MaxExp;
 		
 		LevelUp();
 	}

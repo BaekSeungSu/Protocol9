@@ -4,13 +4,14 @@
 #include "GameFramework/Character.h"
 #include "MonsterBase.generated.h"
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMonsterDead, AMonsterBase*, DeadMonster);
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMonsterDeadLocation, FVector, DeadLocation);
 UENUM(BlueprintType)
 enum class EMonsterState : uint8
 {
     Idle        UMETA(DisplayName = "Idle"),
     Chasing     UMETA(DisplayName = "Chasing"),
-    Attacking   UMETA(DisplayName = "Attacking")
+    Attacking   UMETA(DisplayName = "Attacking"),
+    Dead        UMETA(DisplayName = "Dead")
 };
 
 UCLASS()
@@ -37,7 +38,6 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Attack")
     class UAnimMontage* AttackMontage;
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Movement")
     float WalkSpeed = 300.0f;
 
@@ -63,8 +63,12 @@ public:
     
     UPROPERTY(BlueprintAssignable)
     FOnMonsterDead OnMonsterDead;
+    
+    UPROPERTY(BlueprintAssignable)
+    FOnMonsterDeadLocation OnMonsterDeadLocation;
+
 protected:
-    void ChasePlayer();
+    virtual void ChasePlayer();
     void SetState(EMonsterState NewState);
     bool SetAnimInstance();
     void AttackPlayer();
@@ -80,7 +84,13 @@ protected:
     UFUNCTION()
     virtual void OnDeath();
     UFUNCTION()
+    void Ragdoll();
+    UFUNCTION()
+    void ClearMonster();
+    UFUNCTION()
     void DropItems() const;
+    UFUNCTION()
+    FVector FindGroundLocation() const;
     UFUNCTION()
     void GiveExp() const;
     UFUNCTION()
@@ -93,6 +103,9 @@ protected:
     void StopContinuousAttack();
     virtual void MoveToTarget();
     virtual FVector GetTargetLocation() const;
+    UPROPERTY()
+    class AAIController* AIController;
+    
 private:
     void UpdateAI();
     
@@ -100,8 +113,6 @@ private:
     
     float LastAttackTime;
     
-    UPROPERTY()
-    class AAIController* AIController;
     
     int32 CurrentHP;
     
@@ -119,9 +130,10 @@ private:
 
     UFUNCTION()
     void StartAIUpdateTimer();
-
+    UFUNCTION()
+    void EndDeath();
     UFUNCTION()
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
     FTimerHandle AIUpdateTimerHandle;
-    
+    FTimerHandle DeadTimerHandle;
 };

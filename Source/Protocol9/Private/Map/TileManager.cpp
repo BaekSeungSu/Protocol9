@@ -99,6 +99,7 @@ void ATileManager::UpdateTilesIfNeeded()
 	{
 		for (int i: {6, 7, 8})
 		{
+			TileArray[i]->SetActorRotation(FRotator(0,FMath::RandRange(0,3)*90,0));
 			TileArray[i]->SetActorLocation(TileArray[i]->GetActorLocation()+FVector(TileSize.X*3,0,0));
 		}
 		ShiftTileArray(ETileShiftDirection::Forward);
@@ -108,6 +109,7 @@ void ATileManager::UpdateTilesIfNeeded()
 	{
 		for (int i : {0, 1, 2})
 		{
+			TileArray[i]->SetActorRotation(FRotator(0,FMath::RandRange(0,3)*90,0));
 			TileArray[i]->SetActorLocation(TileArray[i]->GetActorLocation() - FVector(TileSize.X * 3, 0, 0));
 		}
 		ShiftTileArray(ETileShiftDirection::Backward);
@@ -117,6 +119,7 @@ void ATileManager::UpdateTilesIfNeeded()
 	{
 		for (int i : {2, 5, 8})
 		{
+			TileArray[i]->SetActorRotation(FRotator(0,FMath::RandRange(0,3)*90,0));
 			TileArray[i]->SetActorLocation(TileArray[i]->GetActorLocation()-FVector(0, TileSize.Y * 3, 0));
 			UE_LOG(LogTemp, Warning, TEXT("LEFT MOVED"));
 		}
@@ -127,6 +130,7 @@ void ATileManager::UpdateTilesIfNeeded()
 	{
 		for (int i : {0,3,6})
 		{
+			TileArray[i]->SetActorRotation(FRotator(0,FMath::RandRange(0,3)*90,0));
 			TileArray[i]->SetActorLocation(TileArray[i]->GetActorLocation() + FVector(0, TileSize.Y*3, 0));
 		}
 		ShiftTileArray(ETileShiftDirection::Right);
