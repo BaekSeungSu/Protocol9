@@ -57,7 +57,16 @@ void AMonsterBase::BeginPlay()
 	StartAIUpdateTimer();
 	FindAndSetTargetPlayer();
 	float RandomLifeTime = FMath::RandRange(5.0f, 10.0f);
-	GetWorld()->GetTimerManager().SetTimer(DeadTimerHandle, this, &AMonsterBase::OnDeath, RandomLifeTime, false);
+	if (GetMesh())
+	{
+		GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+	}
+
+	if (GetCapsuleComponent())
+	{
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+	}
+	//GetWorld()->GetTimerManager().SetTimer(DeadTimerHandle, this, &AMonsterBase::OnDeath, RandomLifeTime, false);
 }
 
 void AMonsterBase::UpdateAI()
@@ -234,11 +243,11 @@ void AMonsterBase::StopContinuousAttack()
 
 void AMonsterBase::MoveToTarget()
 {
-	FVector TargetLocation = GetTargetLocation();
+	FVector TargetLocation = GetTargetMonsterLocation();
 	AIController->MoveToLocation(TargetLocation);
 }
 
-FVector AMonsterBase::GetTargetLocation() const
+FVector AMonsterBase::GetTargetMonsterLocation() const
 {
 	if (TargetPlayer)
 	{
@@ -451,10 +460,14 @@ float AMonsterBase::TakeDamage(float DamageAmount, struct FDamageEvent const& Da
 	if (DamageEvent.IsOfType(FPointDamageEvent::ClassID))
 	{
 		const FPointDamageEvent* PointEvent = static_cast<const FPointDamageEvent*>(&DamageEvent);
-		UE_LOG(LogTemp, Warning, TEXT("Hitted Bone: %s"), *PointEvent->HitInfo.BoneName.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("Hit Bone: %s"), *PointEvent->HitInfo.BoneName.ToString());
+		if (*PointEvent->HitInfo.BoneName.ToString() == FName("head") || *PointEvent->HitInfo.BoneName.ToString() == FName("neck_01"))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("★★★★★★★★★★ Head Shot! ★★★★★★★★★★"));
+			ActualDamage *= 2.0f;
+		}
 	}
-	//찾아보니 TakeDamage는 하나만 있어도 ApplyPointDamage와 ApplyRadialDamage를 둘 다 대응 가능하고 DamageEvent를 상속받는 다른 두가지 DamageEvent를 자동으로 받아서 사용하면
-	//된다길래 하나만 만들었습니다. DamageType과 맞은 부위 뼈 이름을 출력하게 만들어 놓았으니 일단 이걸로 테스트 해보시면 될 것 같습니다.
+	
 	CurrentHP -= ActualDamage;
 	CurrentHP = FMath::Clamp(CurrentHP, 0.0f, MaxHP);
 	if (CurrentHP == 0.0f)

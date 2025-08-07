@@ -7,6 +7,10 @@ void AMeleeMonsterBase::PerformAttack()
 	{
 		GetMesh()->GetAnimInstance()->Montage_Play(AttackMontage);
 	}
+	if (AttackSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), AttackSound, GetActorLocation());
+	}
 }
 
 void AMeleeMonsterBase::AttackCheck()
