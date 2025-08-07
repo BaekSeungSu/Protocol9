@@ -51,7 +51,9 @@ public:
 	UFUNCTION()
 	void Look(const FInputActionValue& Value);
 	UFUNCTION()
-	void Fire(const FInputActionValue& Value);
+	void StartFire(const FInputActionValue& Value);
+	UFUNCTION()
+	void StopFire(const FInputActionValue& Value);
 	UFUNCTION()
 	void Melee(const FInputActionValue& Value);
 	UFUNCTION()
@@ -76,5 +78,8 @@ public:
 	
 	void DoNothing (){};
 
+	UFUNCTION()
 	void HandleCharacterDeath();
+
+	
 };

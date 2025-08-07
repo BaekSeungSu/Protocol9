@@ -40,11 +40,18 @@ void UHPComponent::SetCurrentHP(float NewCurrentHP)
 	}
 }
 
-void UHPComponent::TakeDamage(float Damage)
+void UHPComponent::HandleDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+	class AController* EventInstigator, AActor* DamageCauser)
 {
-	if (Damage > 0.0f)
+	if (bIsInvisible)
 	{
-		CurrentHP = FMath::Max(0.0f, CurrentHP - Damage);
+		return;
+	}
+	if (DamageAmount > 0.0f)
+	{
+		CurrentHP = FMath::Max(0.0f, CurrentHP - DamageAmount);
+
+		HPChanged.Broadcast(CurrentHP);
 	}
 
 	if (CurrentHP == 0)
@@ -58,9 +65,24 @@ void UHPComponent::AddHealth(float HealAmount)
 	if (HealAmount > 0.0f)
 	{
 		CurrentHP = FMath::Min(MaxHP, CurrentHP + HealAmount);
+
+		HPChanged.Broadcast(CurrentHP);
 	}
 	UE_LOG(LogTemp,Warning,TEXT("HP : %f"),CurrentHP);
 }
+
+void UHPComponent::LockHealth()
+{
+	bIsInvisible =true;
+	UE_LOG(LogTemp,Warning,TEXT("Invinsible Time!"));
+}
+
+void UHPComponent::UnlockHealth()
+{
+	bIsInvisible = false;
+	UE_LOG(LogTemp,Warning,TEXT("Invinsible Time End!"));
+}
+
 
 void UHPComponent::OnDeath()
 {

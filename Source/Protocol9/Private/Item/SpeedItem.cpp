@@ -1,6 +1,7 @@
 #include "Item/SpeedItem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Character/ControlComponent.h"
+#include "Item/ObjectPoolingComponent.h"
 #include "Components/SphereComponent.h"
 
 ASpeedItem::ASpeedItem()
@@ -13,6 +14,8 @@ ASpeedItem::ASpeedItem()
 
 void ASpeedItem::ActivateItem(AActor* Activator)
 {
+	SetActorHiddenInGame(true);
+	SetActorEnableCollision(false);
 	Super::ActivateItem(Activator);
 	if (Activator && Activator ->ActorHasTag("Player"))
 	{
@@ -38,8 +41,6 @@ void ASpeedItem::ActivateItem(AActor* Activator)
 			}
 		}
 	}
-	SetActorHiddenInGame(true);
-	SetActorEnableCollision(false);
 }
 
 void ASpeedItem::EndEffect() 
@@ -56,5 +57,8 @@ void ASpeedItem::EndEffect()
 	
 	GetWorld()->GetTimerManager().ClearTimer(EffectTimerHandle);
 	AffectedPlayer = nullptr;
-	DestroyItem();
+	if (OwningPool)
+	{
+		OwningPool->ReturnObjectToPool(this);
+	}
 }

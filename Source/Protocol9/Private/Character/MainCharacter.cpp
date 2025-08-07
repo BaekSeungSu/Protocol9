@@ -41,6 +41,9 @@ AMainCharacter::AMainCharacter()
 	MaxExp = 100;
 	CharacterLevel = 1;
 
+	DeathCameraSocket = TEXT("head");
+
+
 }
 
 void AMainCharacter::EquipDefaultWeapon()
@@ -55,12 +58,9 @@ void AMainCharacter::EquipDefaultWeapon()
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	GetMesh()->HideBoneByName(FName("weapon_r"), EPhysBodyOp::PBO_None);
-	GetMesh()->HideBoneByName(FName("neck_01"), EPhysBodyOp::PBO_None);
-	GetMesh()->HideBoneByName(FName("thigh_l"), EPhysBodyOp::PBO_None);
-	GetMesh()->HideBoneByName(FName("thigh_r"), EPhysBodyOp::PBO_None);
 
+	HideDefalutMesh();
+	
 	EquipDefaultWeapon();
 	
 }
@@ -77,6 +77,77 @@ void AMainCharacter::ResetAttack()
 	UE_LOG(LogTemp, Warning,TEXT("Return My Attack : %f"),CurrentAttack);
 }
 
+void AMainCharacter::SetupDeathCamera()
+{
+	OriginalSpringArmParent = SpringArmComponent->GetAttachParent();
+	OriginalSpringArmLocation = SpringArmComponent->GetRelativeLocation();
+	OriginalSpringArmRotation = SpringArmComponent->GetRelativeRotation();
+
+	if (GetMesh())
+	{
+		SpringArmComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		SpringArmComponent->AttachToComponent(
+			GetMesh(),
+			FAttachmentTransformRules::KeepWorldTransform,
+			DeathCameraSocket
+		);
+
+		// SpringArmComponent->bEnableCameraLag = true;
+		// SpringArmComponent->bEnableCameraRotationLag = true;
+		// SpringArmComponent->CameraLagSpeed = 3.0f;
+		// SpringArmComponent->CameraRotationLagSpeed = 3.0f;
+        
+		SpringArmComponent->SetRelativeLocation(FVector(0, 50, 0));  // 측면에서 보기
+		SpringArmComponent->SetRelativeRotation(FRotator(0, -90, 0));  // 캐릭터를 향해 보기
+	}
+
+}
+
+void AMainCharacter::ResetCameraToDefault()
+{
+	if (OriginalSpringArmParent)
+	{
+		SpringArmComponent->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		SpringArmComponent->AttachToComponent(
+			OriginalSpringArmParent,
+			FAttachmentTransformRules::KeepWorldTransform
+		);
+		SpringArmComponent->SetRelativeLocation(OriginalSpringArmLocation);
+		SpringArmComponent->SetRelativeRotation(OriginalSpringArmRotation);
+        
+		// SpringArmComponent->bEnableCameraLag = false;
+		// SpringArmComponent->bEnableCameraRotationLag = false;
+	}
+
+}
+
+float AMainCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+	class AController* EventInstigator, AActor* DamageCauser)
+{
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (HPComponent)
+	{
+		HPComponent->HandleDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	}
+	
+	return ActualDamage;
+}
+
+void AMainCharacter::HideDefalutMesh()
+{
+	GetMesh()->HideBoneByName(FName("weapon_r"), EPhysBodyOp::PBO_None);
+	GetMesh()->HideBoneByName(FName("neck_01"), EPhysBodyOp::PBO_None);
+	GetMesh()->HideBoneByName(FName("thigh_l"), EPhysBodyOp::PBO_None);
+	GetMesh()->HideBoneByName(FName("thigh_r"), EPhysBodyOp::PBO_None);
+}
+
+void AMainCharacter::ShowDefalutMesh()
+{
+	GetMesh()->UnHideBoneByName(FName("neck_01"));
+	GetMesh()->UnHideBoneByName(FName("thigh_l"));
+	GetMesh()->UnHideBoneByName(FName("thigh_r"));
+}
 
 
 void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -102,7 +173,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 					PlayerController->LookAction,
 					ETriggerEvent::Triggered,
 					ControlComponent,
-					&UControlComponent::Look);
+					&UControlComponent::Look); 
 			}
 
 			if (PlayerController->FireAction)
@@ -111,9 +182,20 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 					PlayerController->FireAction,
 					ETriggerEvent::Started,
 					ControlComponent,
-					&UControlComponent::Fire
+					&UControlComponent::StartFire
 					);
 			}
+
+			if (PlayerController->FireAction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->FireAction,
+					ETriggerEvent::Completed,
+					ControlComponent,
+					&UControlComponent::StopFire
+					);
+			}
+
 
 			if (PlayerController->MeleeAction)
 			{
@@ -157,7 +239,7 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 			{
 				EnhancedInput->BindAction(
 					PlayerController->DashAction,
-					ETriggerEvent::Triggered,
+					ETriggerEvent::Started,
 					ControlComponent,
 					&UControlComponent::Dash);
 			}
@@ -208,6 +290,20 @@ void AMainCharacter::SetLevel(int NewLevel)
 	}
 }
 
+void AMainCharacter::AddExp(int NewExp)
+{
+	Exp += NewExp;
+	UE_LOG(LogTemp, Display, TEXT("AddExp %d"), NewExp);
+	ExpChanged.Broadcast(Exp);
+	
+	if (Exp>=MaxExp)
+	{
+		LevelUp();
+	}
+	
+}
+
+
 void AMainCharacter::LevelUp()
 {
 	if (Exp >= MaxExp)
@@ -215,7 +311,12 @@ void AMainCharacter::LevelUp()
 		CharacterLevel++;
 
 		Attack += LevelUpAttack;
+
+		Exp -= MaxExp;
+
+		LevelUPEvent.Broadcast(CharacterLevel);
 		
 		LevelUp();
 	}
 }
+

@@ -17,6 +17,10 @@ class UPlayerUIComponent;
 class AWeaponBase;
 class UCharacterStateMachine;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FExpChangedSignature, int, Exp);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FLevelUPSignature, int, CharacterLevel);
+
+
 UCLASS()
 class PROTOCOL9_API AMainCharacter : public ACharacter
 {
@@ -24,9 +28,14 @@ class PROTOCOL9_API AMainCharacter : public ACharacter
 	
 public:
 	AMainCharacter();
-
 	
 protected:
+
+	//이벤트
+	UPROPERTY(BlueprintAssignable, Category = "Exp")
+	FExpChangedSignature ExpChanged;
+	UPROPERTY(BlueprintAssignable, Category = "Exp")
+	FLevelUPSignature LevelUPEvent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
 	float BasetAttack;
@@ -43,6 +52,13 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Exp")
 	int CharacterLevel;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+	FName DeathCameraSocket;
+
+	FVector OriginalSpringArmLocation;
+	FRotator OriginalSpringArmRotation;
+	USceneComponent* OriginalSpringArmParent;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	USpringArmComponent* SpringArmComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
@@ -95,7 +111,17 @@ public:
 	UAnimMontage* OnHandMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	UAnimMontage* MeleeMontage;
+
+	virtual float TakeDamage(float DamageAmount, 
+						struct FDamageEvent const& DamageEvent, 
+						class AController* EventInstigator, 
+						AActor* DamageCauser) override;
 	
+	void HideDefalutMesh();
+	void ShowDefalutMesh();
+
+	void SetupDeathCamera();
+	void ResetCameraToDefault();
 	
 	int GetAttack() const{return Attack;}
 	int GetExp() const {return Exp;}
@@ -104,6 +130,7 @@ public:
 	void SetAttack(int NewAttack);
 	void SetExp(int Exp);
 	void SetLevel(int Level);
+	void AddExp(int NewExp);
 	
 	void LevelUp();
 	

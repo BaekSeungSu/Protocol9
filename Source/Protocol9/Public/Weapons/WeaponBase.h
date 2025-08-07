@@ -21,6 +21,7 @@ public:
 	virtual void Reload_Implementation() override;
 	virtual void Tick(float DeltaTime) override;
 
+	int32 GetCurrentAmmo() const {return CurrentAmmo;}
 protected:
 	virtual void BeginPlay() override;
 	
@@ -38,7 +39,9 @@ protected:
 	
 	const FWeaponData* CurrentWeaponData;
 	FTimerHandle ReloadTimerHandle;
+	float LastFireTime;
 
+	
 	// 발사 관련 함수
 	void FireAction();
 	bool CanFire() const;
@@ -51,10 +54,12 @@ protected:
 	// Projectile 관련 함수
 	void FireProjectile();
 
+	void ProcessHit(const FHitResult& HitResult, const FVector& ShotDirection);
 	
 	void LoadWeaponData();
 	void FinishReload();
 
+	
 	
 private:
 };

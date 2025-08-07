@@ -3,6 +3,7 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Components/SphereComponent.h"
+#include "Item/ObjectPoolingComponent.h"
 
 AItemBase::AItemBase()
 {
@@ -17,7 +18,8 @@ AItemBase::AItemBase()
 	Collision -> SetupAttachment(NiagaraComp);
 	
 	Collision -> OnComponentBeginOverlap.AddDynamic(this,&AItemBase::OnItemOverlap);
-	Collision -> OnComponentEndOverlap.AddDynamic(this,&AItemBase::OnItemEndOverlap);
+
+	ItemLifeDuration = 60.0f;
 }
 
 void AItemBase::OnItemOverlap(
@@ -33,15 +35,7 @@ void AItemBase::OnItemOverlap(
 		ActivateItem(OtherActor);
 	}
 }
-void AItemBase::OnItemEndOverlap(
-	UPrimitiveComponent* OverlappedComp,
-	AActor* OtherActor,
-	UPrimitiveComponent* OtherComp,
-	int32 OtherBodyIndex
-	)
-{
-	
-}
+
 void AItemBase::ActivateItem(AActor* Activator)
 {
 	if (OverlapEffectSystem)
@@ -66,11 +60,6 @@ void AItemBase::EndEffect()
 {
 }
 
-void AItemBase::DestroyItem()
-{
-	Destroy();
-}
-
 void AItemBase::BeginPlay()
 {
 	Super::BeginPlay();
@@ -78,6 +67,28 @@ void AItemBase::BeginPlay()
 	if (NiagaraSystem)
 	{
 		NiagaraComp->SetAsset(NiagaraSystem);
+	}
+}
+
+
+void AItemBase::ItemLifeTime()
+{
+	if (ItemLifeDuration>0)
+	{
+		GetWorld()->GetTimerManager().SetTimer(
+				ItemLIfeTimerHandle,
+				this,
+				&AItemBase::ReturnToPool,
+				ItemLifeDuration,
+				false);
+	}
+}
+
+void AItemBase::ReturnToPool()
+{
+	if (OwningPool)
+	{
+		OwningPool->ReturnObjectToPool(this);
 	}
 }
 

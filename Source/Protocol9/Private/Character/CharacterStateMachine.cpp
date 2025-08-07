@@ -70,6 +70,9 @@ void UCharacterStateMachine::StopCurrentMontage()
 {
 	if (!Owner) return;
 
+	Owner->SetupDeathCamera();
+	Owner->ShowDefalutMesh();
+	
 	if (UAnimInstance* AnimInstance = Owner->GetMesh()->GetAnimInstance())
 	{
 		if (AnimInstance->IsAnyMontagePlaying())
