@@ -1,4 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -70,6 +69,10 @@ public:
 	void SwapWeapon1(const FInputActionValue& Value);
 	UFUNCTION()
 	void SwapWeapon2(const FInputActionValue& Value);
+	UFUNCTION()
+	void DeBug1(const FInputActionValue& Value);
+	UFUNCTION()
+	void DeBug2(const FInputActionValue& Value);
 
 	UFUNCTION()
 	void AddSpeed(float Multiplier);

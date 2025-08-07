@@ -3,9 +3,13 @@
 
 #include "Map/TileManager.h"
 
+#include "EngineUtils.h"
+#include "NavigationSystem.h"
+#include "DSP/AudioDebuggingUtilities.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "Map/Tile/TileBase.h"
+#include "NavMesh/NavMeshBoundsVolume.h"
 
 // Sets default values
 ATileManager::ATileManager()
@@ -37,10 +41,15 @@ void ATileManager::BeginPlay()
 
 	CurrentPlayerTileCoord = GetPlayerTileCoord();
 
-	for (auto It : TileArray)
+	if (!NavMeshBoundsVolume)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Cyan, FString::Printf(TEXT("TILE INDEX %d"),It->TileIndex));
+		for (TActorIterator<ANavMeshBoundsVolume>It(GetWorld()); It; ++It)
+		{
+			NavMeshBoundsVolume = *It;
+			break;
+		}
 	}
+	
 }
 
 // Called every frame
@@ -134,6 +143,18 @@ void ATileManager::UpdateTilesIfNeeded()
 			TileArray[i]->SetActorLocation(TileArray[i]->GetActorLocation() + FVector(0, TileSize.Y*3, 0));
 		}
 		ShiftTileArray(ETileShiftDirection::Right);
+	}
+
+	if (NavMeshBoundsVolume && TileArray.IsValidIndex(4))
+	{
+		FVector CenterTileLocation = TileArray[4]->GetActorLocation();
+		NavMeshBoundsVolume->SetActorLocation(CenterTileLocation);
+
+		UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+		if (NavSys)
+		{
+			NavSys->OnNavigationBoundsUpdated(NavMeshBoundsVolume);
+		}
 	}
 }
 

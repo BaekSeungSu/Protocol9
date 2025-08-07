@@ -55,6 +55,8 @@ protected:
 	UNiagaraSystem* NiagaraSystem;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Niagara")
 	UNiagaraSystem* OverlapEffectSystem;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Effect")
+	USoundBase* PickupSound;
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Item|Component")
 	USphereComponent* Collision;

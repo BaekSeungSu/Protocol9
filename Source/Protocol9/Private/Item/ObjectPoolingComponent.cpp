@@ -25,7 +25,8 @@ void UObjectPoolingComponent::InitializePool()			// 폴을 초기화 하는 함수 아이템
 
     // 데이터 테이블의 모든 행을 가져와 TArray에 저장
     TArray<FSpawnItem*> AllItems;
-    ItemSpawnTable->GetAllRows<FSpawnItem>(TEXT(""), AllItems);
+	static const FString ContextString = TEXT("ItemSpawnContext");
+    ItemSpawnTable->GetAllRows<FSpawnItem>(ContextString, AllItems);
 
     if (AllItems.IsEmpty())
     {
