@@ -2,6 +2,7 @@
 #include "UI/UWBP_HUD.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "Character/MainCharacter.h"
 #include "TimerManager.h"
 
 void AMainGameMode::BeginPlay()
@@ -49,6 +50,7 @@ void AMainGameMode::ShowHUD()
 	if (WBP_HUD)
 	{
 		HUDWidget = CreateWidget<UUWBP_HUD>(GetWorld(), WBP_HUD);
+
 		if (HUDWidget)
 		{
 			HUDWidget->AddToViewport();
@@ -57,10 +59,11 @@ void AMainGameMode::ShowHUD()
 			ElapsedTime = 0.0f;
 			GetWorldTimerManager().SetTimer(GameTimerHandle, this, &AMainGameMode::UpdateGameTimer, 1.0f, true);
 
-			UE_LOG(LogTemp, Warning, TEXT("HUD shown"));
+			NotifyCharacterHUDReady();
 		}
 	}
 }
+
 
 void AMainGameMode::ShowGameOver()
 {
@@ -91,5 +94,14 @@ void AMainGameMode::UpdateGameTimer()
 	if (HUDWidget)
 	{
 		HUDWidget->UpdateTimer(ElapsedTime);
+	}
+}
+
+void AMainGameMode::NotifyCharacterHUDReady()
+{
+	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
+	if (AMainCharacter* MC = Cast<AMainCharacter>(PlayerPawn))
+	{
+		MC->CacheHUD(); // MainCharacter에 바로 알려줌
 	}
 }

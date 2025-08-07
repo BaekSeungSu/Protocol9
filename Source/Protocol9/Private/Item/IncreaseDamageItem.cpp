@@ -28,6 +28,8 @@ void AIncreaseDamageItem::ActivateItem(AActor* Activator)
 			FString::Printf(TEXT("Increase Damage ")));				
 			
 			MyCharacter->AddAttack(MultiDamage);
+
+			MyCharacter->HandleAttackBoostEffect(); //UI ì•„ì´ì½˜ ì ë“±
 			
 			AffectedPlayer = MyCharacter; 
 			GetWorld()->GetTimerManager().SetTimer(
@@ -35,7 +37,7 @@ void AIncreaseDamageItem::ActivateItem(AActor* Activator)
 			this,
 			&AIncreaseDamageItem::EndEffect,
 			ItemDuration,
-			false);										// ÀÏÁ¤ ½Ã°£ µÚ¿¡ È¿°ú°¡ ³¡³ª´Â ÇÔ¼ö·Î ÀÌµ¿
+			false);										// ï¿½ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½ ï¿½Ú¿ï¿½ È¿ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½Ìµï¿½
 		}
 	}
 }
@@ -49,7 +51,7 @@ void AIncreaseDamageItem::EndEffect()
 			2.0f,
 			FColor::Red,
 			FString::Printf(TEXT("Increase Damage Effect End! ")));
-			AffectedPlayer->ResetAttack();							//µ¥¹ÌÁö Áõ°¡ ÇÔ¼ö Á¦°Å 
+			AffectedPlayer->ResetAttack();							//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ ï¿½ï¿½ï¿½ï¿½ 
 	}
 	
 	GetWorld()->GetTimerManager().ClearTimer(EffectTimerHandle);
