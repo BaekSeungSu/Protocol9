@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "MainCharacter.generated.h"
 
+class AMonsterBase;
 struct FInputActionValue;
 class USpringArmComponent;
 class UCameraComponent;
@@ -14,6 +15,8 @@ class UStaminaComponent;
 class UControlComponent;
 class UInventoryComponent;
 class UPlayerUIComponent;
+class UAudioComponent;
+class USoundComponent;
 class AWeaponBase;
 class UCharacterStateMachine;
 
@@ -28,15 +31,15 @@ class PROTOCOL9_API AMainCharacter : public ACharacter
 	
 public:
 	AMainCharacter();
-	
-protected:
 
 	//이벤트
 	UPROPERTY(BlueprintAssignable, Category = "Exp")
 	FExpChangedSignature ExpChanged;
 	UPROPERTY(BlueprintAssignable, Category = "Exp")
 	FLevelUPSignature LevelUPEvent;
-
+	
+protected:
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
 	float BasetAttack;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
@@ -52,17 +55,21 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Exp")
 	int CharacterLevel;
 
+	//죽었을때 사용
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
 	FName DeathCameraSocket;
-
+	
 	FVector OriginalSpringArmLocation;
 	FRotator OriginalSpringArmRotation;
 	USceneComponent* OriginalSpringArmParent;
-	
+
+	//컴포넌트
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	USpringArmComponent* SpringArmComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	UAudioComponent* AudioComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HP")
 	UHPComponent* HPComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stamina")
@@ -71,8 +78,8 @@ protected:
 	UControlComponent* ControlComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
 	UPlayerUIComponent* PlayerUIComponent;
-
-	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Sound")
+	USoundComponent* SoundComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	UInventoryComponent* InventoryComponent;
 
@@ -94,7 +101,7 @@ public:
 	UStaminaComponent* GetStaminaComponent() const { return StaminaComponent; }
 	UControlComponent* GetControlComponent() const { return ControlComponent; }
 	UHPComponent* GetHPComponent() const { return HPComponent; }
-	
+	USoundComponent* GetSoundComponent() const { return SoundComponent; }
 	UInventoryComponent* GetInventoryComponent() const {return InventoryComponent; }
 	UCharacterStateMachine* GetStateMachine() const { return StateMachine;}
 
@@ -102,7 +109,8 @@ public:
 	void AddAttack(float Multiplied);
 	UFUNCTION()
 	void ResetAttack();
-	
+
+	//무기관련 애님몽타주는 무기로 옮길예정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	UAnimMontage* FireMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
@@ -131,6 +139,12 @@ public:
 	void SetExp(int Exp);
 	void SetLevel(int Level);
 	void AddExp(int NewExp);
+
+	//몬스터 Exp 핸들러
+	UFUNCTION()
+	void SetMonsterDead(AMonsterBase* Monster);
+	UFUNCTION()
+	void OnMonsterDead(AMonsterBase* Monster);
 	
 	void LevelUp();
 	

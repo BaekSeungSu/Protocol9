@@ -6,10 +6,12 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/DamageType.h"
 #include "EnhancedInputComponent.h"
+#include "Character/SoundComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Weapons/InventoryComponent.h"
 #include "Weapons/WeaponBase.h"
 #include "Enemy/MonsterBase.h"
+
 #include "Engine/DamageEvents.h"
 
 
@@ -144,6 +146,11 @@ void UControlComponent::Melee(const FInputActionValue& Value)
 	
 	UAnimInstance* AnimInstance = Owner->GetMesh()->GetAnimInstance();
 	{
+		if (Owner->GetSoundComponent())
+		{
+			Owner->GetSoundComponent()->PlayMeleeSound();
+		}
+		
 		if (AnimInstance && Owner->MeleeMontage)
 		{
 			Owner->GetStateMachine()->SetState(ECharacterState::Melee);
@@ -306,9 +313,16 @@ void UControlComponent::Dash(const FInputActionValue& Value)
 void UControlComponent::StartJump(const FInputActionValue& Value)
 {
 	if (!bInputEnabled) return;
+
+	
 	
 	if (Value.Get<bool>())
 	{
+		if (Owner->GetSoundComponent())
+		{
+			Owner->GetSoundComponent()->PlayJumpSound();
+		}
+		
 		Owner->Jump();
 	}
 }
@@ -328,7 +342,6 @@ void UControlComponent::SwapWeapon1(const FInputActionValue& Value)
 
 	if (!bInputEnabled) return;
 
-	Owner->GetHPComponent()->OnDeath();
 	
 	UE_LOG(LogTemp,Warning,TEXT("Swap Weapon 1 "));
 
@@ -339,6 +352,32 @@ void UControlComponent::SwapWeapon2(const FInputActionValue& Value)
 	if (!bInputEnabled) return;
 	
 	UE_LOG(LogTemp,Warning,TEXT("Swap Weapon 2 "));
+}
+
+void UControlComponent::DeBug1(const FInputActionValue& Value)
+{
+	Owner->AddExp(20);
+
+	int Exp = Owner->GetExp();
+	
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Add Exp%d"), Exp));
+
+}
+
+void UControlComponent::DeBug2(const FInputActionValue& Value)
+{
+
+	UGameplayStatics::ApplyDamage(
+					Owner,
+					10,
+					Owner->GetController(),
+					Owner,
+					UDamageType::StaticClass()
+					);
+
+	int HP = Owner->GetHPComponent()->GetCurrentHP();
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Current HP %d"), HP));
 }
 
 
