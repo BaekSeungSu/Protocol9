@@ -6,16 +6,29 @@
 #include "Character/HPComponent.h"
 #include "Character/ControlComponent.h"
 #include "Character/CharacterStateMachine.h"
+#include "Character/SoundComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/AudioComponent.h"
 #include "Weapons/InventoryComponent.h"
 #include "Weapons/WeaponBase.h"
+#include "Kismet/GameplayStatics.h"
+#include "Enemy/MonsterSpawner.h"
+#include "Enemy/MonsterBase.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "UI/PlayerUIComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "UI/UWBP_HUD.h"
+#include "GameFramework/PlayerController.h"
+#include "GameMode/MainGameMode.h"
+#include "Blueprint/UserWidget.h"
 #include "Weapons/WeaponInterface.h"
 
 AMainCharacter::AMainCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
+
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio"));
+	AudioComponent->SetupAttachment(RootComponent);
 
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(RootComponent);
@@ -23,15 +36,16 @@ AMainCharacter::AMainCharacter()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
 
-	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 
 	StateMachine = CreateDefaultSubobject<UCharacterStateMachine>(TEXT("StateMachine"));
 
 	HPComponent = CreateDefaultSubobject<UHPComponent>(TEXT("HP"));
 	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina"));
 	ControlComponent = CreateDefaultSubobject<UControlComponent>(TEXT("Control"));
-
+	SoundComponent = CreateDefaultSubobject<USoundComponent>(TEXT("Sound"));
+	
 	PlayerUIComponent = CreateDefaultSubobject<UPlayerUIComponent>(TEXT("PlayerUI"));
+	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 	
 	BasetAttack = 20.0f;
 	LevelUpAttack = 1.2f;
@@ -62,7 +76,20 @@ void AMainCharacter::BeginPlay()
 	HideDefalutMesh();
 	
 	EquipDefaultWeapon();
+	AMonsterSpawner* Spawner = Cast<AMonsterSpawner>(UGameplayStatics::GetActorOfClass(GetWorld(), AMonsterSpawner::StaticClass()));
+	if (Spawner)
+	{
+		Spawner->OnMonsterSpawned.AddDynamic(this,&AMainCharacter::SetMonsterDead);
+	}
 	
+}
+
+void AMainCharacter::CacheHUD()
+{
+	if (AMainGameMode* GM = Cast<AMainGameMode>(UGameplayStatics::GetGameMode(this)))
+	{
+		CachedHUD = GM->GetHUDWidget();
+	}
 }
 
 void AMainCharacter::AddAttack(float Multiplied)
@@ -262,6 +289,25 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 					ControlComponent,
 					&UControlComponent::SwapWeapon2);
 			}
+
+			if
+			(PlayerController->DeBug1)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->DeBug1,
+					ETriggerEvent::Started,
+					ControlComponent,
+					&UControlComponent::DeBug1);
+			}
+
+			if (PlayerController->DeBug2)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->DeBug2,
+					ETriggerEvent::Started,
+					ControlComponent,
+					&UControlComponent::DeBug2);
+			}
 		}
 	}
 }
@@ -302,12 +348,26 @@ void AMainCharacter::AddExp(int NewExp)
 	}
 	
 }
+//몬스터 Exp 관련 이벤트
+void AMainCharacter::SetMonsterDead(AMonsterBase* Monster)
+{
+	if (Monster)
+	{
+		Monster->OnMonsterDead.AddDynamic(this,&AMainCharacter::OnMonsterDead);
+	}
+}
+
+void AMainCharacter::OnMonsterDead(AMonsterBase* Monster)
+{
+	AddExp(Monster->Exp);
+}
 
 
 void AMainCharacter::LevelUp()
 {
 	if (Exp >= MaxExp)
 	{
+		
 		CharacterLevel++;
 
 		Attack += LevelUpAttack;
@@ -319,4 +379,46 @@ void AMainCharacter::LevelUp()
 		LevelUp();
 	}
 }
+//UI
+void AMainCharacter::HandleInvincibilityEffect()
+{
+	if (CachedHUD)
+	{
+		CachedHUD->ShowInvincibilityEffect(true);
 
+		// 3초 후 다시 끄기
+		GetWorld()->GetTimerManager().ClearTimer(InvincibilityResetHandle);
+		GetWorld()->GetTimerManager().SetTimer(InvincibilityResetHandle, [this]()
+		{
+			CachedHUD->ShowInvincibilityEffect(false);
+		}, 3.f, false);
+	}
+}
+
+void AMainCharacter::HandleSpeedBoostEffect()
+{
+	if (CachedHUD)
+	{
+		CachedHUD->ShowSpeedBoostEffect(true);
+
+		GetWorld()->GetTimerManager().ClearTimer(SpeedBoostResetHandle);
+		GetWorld()->GetTimerManager().SetTimer(SpeedBoostResetHandle, [this]()
+		{
+			CachedHUD->ShowSpeedBoostEffect(false);
+		}, 3.f, false);
+	}
+}
+
+void AMainCharacter::HandleAttackBoostEffect()
+{
+	if (CachedHUD)
+	{
+		CachedHUD->ShowAttackBoostEffect(true);
+
+		GetWorld()->GetTimerManager().ClearTimer(AttackBoostResetHandle);
+		GetWorld()->GetTimerManager().SetTimer(AttackBoostResetHandle, [this]()
+		{
+			CachedHUD->ShowAttackBoostEffect(false);
+		}, 5.f, false);
+	}
+}

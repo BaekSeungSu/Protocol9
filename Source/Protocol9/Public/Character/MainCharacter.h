@@ -4,8 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "TimerManager.h"
+#include "UI/UWBP_HUD.h"
+#include "UI/PlayerUIComponent.h"
 #include "MainCharacter.generated.h"
 
+class AMonsterBase;
 struct FInputActionValue;
 class USpringArmComponent;
 class UCameraComponent;
@@ -14,6 +18,8 @@ class UStaminaComponent;
 class UControlComponent;
 class UInventoryComponent;
 class UPlayerUIComponent;
+class UAudioComponent;
+class USoundComponent;
 class AWeaponBase;
 class UCharacterStateMachine;
 
@@ -28,15 +34,15 @@ class PROTOCOL9_API AMainCharacter : public ACharacter
 	
 public:
 	AMainCharacter();
-	
-protected:
 
 	//이벤트
 	UPROPERTY(BlueprintAssignable, Category = "Exp")
 	FExpChangedSignature ExpChanged;
 	UPROPERTY(BlueprintAssignable, Category = "Exp")
 	FLevelUPSignature LevelUPEvent;
-
+	
+protected:
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
 	float BasetAttack;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
@@ -52,17 +58,21 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Exp")
 	int CharacterLevel;
 
+	//죽었을때 사용
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
 	FName DeathCameraSocket;
-
+	
 	FVector OriginalSpringArmLocation;
 	FRotator OriginalSpringArmRotation;
 	USceneComponent* OriginalSpringArmParent;
-	
+
+	//컴포넌트
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	USpringArmComponent* SpringArmComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	UAudioComponent* AudioComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HP")
 	UHPComponent* HPComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stamina")
@@ -71,8 +81,8 @@ protected:
 	UControlComponent* ControlComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
 	UPlayerUIComponent* PlayerUIComponent;
-
-	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Sound")
+	USoundComponent* SoundComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	UInventoryComponent* InventoryComponent;
 
@@ -81,20 +91,33 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "StateMachine")
 	UCharacterStateMachine* StateMachine;
-	
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUWBP_HUD> HUDWidgetClass;
+
 
 	void EquipDefaultWeapon();
 	
 	virtual void BeginPlay() override;
+	// HUD 참조 저장
+	UPROPERTY()
+	UUWBP_HUD* CachedHUD;
 
-public:	
+	// 각 효과 리셋용 타이머 핸들
+	FTimerHandle InvincibilityResetHandle;
+	FTimerHandle SpeedBoostResetHandle;
+	FTimerHandle AttackBoostResetHandle;
+
+
+public:
+	
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UStaminaComponent* GetStaminaComponent() const { return StaminaComponent; }
 	UControlComponent* GetControlComponent() const { return ControlComponent; }
 	UHPComponent* GetHPComponent() const { return HPComponent; }
-	
+	USoundComponent* GetSoundComponent() const { return SoundComponent; }
 	UInventoryComponent* GetInventoryComponent() const {return InventoryComponent; }
 	UCharacterStateMachine* GetStateMachine() const { return StateMachine;}
 
@@ -102,7 +125,8 @@ public:
 	void AddAttack(float Multiplied);
 	UFUNCTION()
 	void ResetAttack();
-	
+
+	//무기관련 애님몽타주는 무기로 옮길예정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	UAnimMontage* FireMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
@@ -131,8 +155,20 @@ public:
 	void SetExp(int Exp);
 	void SetLevel(int Level);
 	void AddExp(int NewExp);
+
+	//몬스터 Exp 핸들러
+	UFUNCTION()
+	void SetMonsterDead(AMonsterBase* Monster);
+	UFUNCTION()
+	void OnMonsterDead(AMonsterBase* Monster);
 	
 	void LevelUp();
-	
+	// HUD 효과 제어 함수
+	void HandleInvincibilityEffect();
+	void HandleSpeedBoostEffect();
+	void HandleAttackBoostEffect();
+
+	UFUNCTION()
+	void CacheHUD();
 
 };

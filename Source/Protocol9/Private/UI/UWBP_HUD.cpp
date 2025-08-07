@@ -19,3 +19,34 @@ void UUWBP_HUD::UpdateTimer(float ElapsedSeconds)
 	}
 }
 
+void UUWBP_HUD::ShowInvincibilityEffect(bool bEnable)
+{
+	if (Image_Invincibility)
+	{
+		FLinearColor Color = bEnable ? FLinearColor(1, 1, 1, 1) : FLinearColor(0.1, 0.1, 0.1, 1);
+		Image_Invincibility->SetColorAndOpacity(Color);
+	}
+}
+
+void UUWBP_HUD::ShowSpeedBoostEffect(bool bEnable)
+{
+	if (Image_SpeedBoost)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Image_SpeedBoost is valid."));
+		FLinearColor Color = bEnable ? FLinearColor(1, 1, 1, 1) : FLinearColor(0.1, 0.1, 0.1, 1);
+		Image_SpeedBoost->SetColorAndOpacity(Color);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Image_SpeedBoost is NULL!"));
+	}
+}
+
+void UUWBP_HUD::ShowAttackBoostEffect(bool bEnable)
+{
+	if (Image_AttackBoost)
+	{
+		FLinearColor Color = bEnable ? FLinearColor(1, 1, 1, 1) : FLinearColor(0.1, 0.1, 0.1, 1);
+		Image_AttackBoost->SetColorAndOpacity(Color);
+	}
+}
