@@ -7,7 +7,6 @@ AExperienceItem::AExperienceItem()
 //: AffectedPlayer(nullptr)
 {
 	AddExperience = 20;
-	//ItemDuration = 3.0f;
 	ItemType = "ExperienceItem";
 }
 
@@ -27,15 +26,6 @@ void AExperienceItem::ActivateItem(AActor* Activator)
 				FString::Printf(TEXT("Increased experience "))
 				);
 			MyCharacter ->AddExp(AddExperience);
-			//AffectedPlayer = MyCharacter; 
-
-			/*GetWorld()->GetTimerManager().SetTimer(
-				EffectTimerHandle,
-				this,
-				&AExperienceItem::EndEffect,
-				ItemDuration,
-				false);
-				*/										
 		}
 	}
 	if (OwningPool)
@@ -43,23 +33,3 @@ void AExperienceItem::ActivateItem(AActor* Activator)
 		OwningPool->ReturnObjectToPool(this);
 	}
 }
-
-/*
-void AExperienceItem::EndEffect() 
-{
-	
-	if (AffectedPlayer)
-	{
-		GEngine->AddOnScreenDebugMessage(
-			-1,
-			2.0f,
-			FColor::Red,
-			FString::Printf(TEXT("Increased experience End! ")));
-		                                                            //경험치 증가 로직 제거 
-	}
-	
-	GetWorld()->GetTimerManager().ClearTimer(EffectTimerHandle);
-	AffectedPlayer = nullptr;
-	DestroyItem();
-}
-*/

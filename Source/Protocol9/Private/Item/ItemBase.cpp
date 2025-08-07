@@ -4,6 +4,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "Components/SphereComponent.h"
 #include "Item/ObjectPoolingComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 AItemBase::AItemBase()
 {
@@ -19,7 +20,7 @@ AItemBase::AItemBase()
 	
 	Collision -> OnComponentBeginOverlap.AddDynamic(this,&AItemBase::OnItemOverlap);
 
-	ItemLifeDuration = 60.0f;
+	ItemLifeDuration = 5.0f;
 }
 
 void AItemBase::OnItemOverlap(
@@ -50,6 +51,15 @@ void AItemBase::ActivateItem(AActor* Activator)
 		   true
 		);
 	}
+
+	if (PickupSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(),
+			PickupSound,
+			GetActorLocation()
+			);
+	}
+	
 }
 FName AItemBase::GetItemType() const 
 {
