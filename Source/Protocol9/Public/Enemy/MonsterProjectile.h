@@ -34,7 +34,7 @@ protected:
     float ExplosionRadius = 400.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Explosion")
-    float ExplosionDamage = 60.0f;
+    float ExplosionDamage = 40.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Explosion")
     float MaxDamageRadius = 150.0f;

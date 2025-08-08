@@ -31,7 +31,8 @@ void ASpeedItem::ActivateItem(AActor* Activator)
 					FString::Printf(TEXT("Speed Up"))
 					);
 				ControlComp->AddSpeed(MultiSpeed);
-				AffectedPlayer = ControlComp; 
+				AffectedPlayer = ControlComp;
+				MyCharacter->HandleSpeedBoostEffect(); //UI : 아이템 아이콘 점등 기능 추가
 				GetWorld()->GetTimerManager().SetTimer(
 					EffectTimerHandle,
 					this,

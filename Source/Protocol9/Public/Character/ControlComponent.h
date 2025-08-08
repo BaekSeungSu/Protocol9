@@ -1,4 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,6 +6,10 @@
 #include "ControlComponent.generated.h"
 struct FInputActionValue;
 class AMainCharacter;
+
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCoolTimeSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLastSkillSignature);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROTOCOL9_API UControlComponent : public UActorComponent
@@ -17,6 +20,12 @@ public:
 	
 	UControlComponent();
 
+	//Ïù¥Î≤§Ìä∏
+	UPROPERTY(BlueprintAssignable, Category = "Skill")
+	FOnCoolTimeSignature OnCoolTime;
+	UPROPERTY(BlueprintAssignable, Category = "Skill")
+	FLastSkillSignature LastSkillCharge;
+	
 private:
 	bool bInputEnabled = true;
 	
@@ -70,9 +79,15 @@ public:
 	void SwapWeapon1(const FInputActionValue& Value);
 	UFUNCTION()
 	void SwapWeapon2(const FInputActionValue& Value);
+	UFUNCTION()
+	void DeBug1(const FInputActionValue& Value);
+	UFUNCTION()
+	void DeBug2(const FInputActionValue& Value);
 
+	//æ∆¿Ã≈€ Ω∫««µÂ ¡ı∞° «‘ºˆ
 	UFUNCTION()
 	void AddSpeed(float Multiplier);
+	//æ∆¿Ã≈€ Ω∫««µÂ ¡ı∞° ¡¶∞≈ «‘ºˆ
 	UFUNCTION()
 	void ResetSpeed();
 	

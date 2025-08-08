@@ -19,7 +19,11 @@ void ARangedMonsterBase::PerformAttack()
 		StopContinuousAttack();
 		return;
 	}
-    
+	StopMovement();
+	if (AttackMontage && GetMesh() && GetMesh()->GetAnimInstance())
+	{
+		GetMesh()->GetAnimInstance()->Montage_Play(AttackMontage);
+	}
     
 	FVector Direction = (TargetPlayer->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 	FRotator LookRotation = FRotationMatrix::MakeFromX(Direction).Rotator();

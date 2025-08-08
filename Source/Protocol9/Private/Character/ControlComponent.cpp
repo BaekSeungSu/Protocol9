@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/DamageType.h"
 #include "EnhancedInputComponent.h"
+#include "Character/SoundComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Weapons/InventoryComponent.h"
 #include "Weapons/WeaponBase.h"
@@ -96,6 +97,7 @@ void UControlComponent::Look(const FInputActionValue& Value)
 void UControlComponent::StartFire(const FInputActionValue& Value)
 {
 	if (!bInputEnabled || !Owner || !Owner->Controller) return;
+	if (Owner->GetStateMachine()->CanFire()) return;
 
 	UCharacterStateMachine* StateMachine = Owner->GetStateMachine();
 	if (!StateMachine) return;
@@ -131,6 +133,11 @@ void UControlComponent::Melee(const FInputActionValue& Value)
 	
 	UAnimInstance* AnimInstance = Owner->GetMesh()->GetAnimInstance();
 	{
+		if (Owner->GetSoundComponent())
+		{
+			Owner->GetSoundComponent()->PlayMeleeSound();
+		}
+		
 		if (AnimInstance && Owner->MeleeMontage)
 		{
 			Owner->GetStateMachine()->SetState(ECharacterState::Melee);
@@ -247,8 +254,14 @@ void UControlComponent::Dash(const FInputActionValue& Value)
 	if (!bInputEnabled) return;
 	
 	if (Owner->GetWorldTimerManager().IsTimerActive(DashTimer))	return;
+
+	if (Owner->GetStaminaComponent()->GetCurrentStaminaCount() <= 0)
+	{
+		OnCoolTime.Broadcast();
+		return;
+	}
 	
-	if ( Owner->GetCharacterMovement()->IsFalling() && Owner->GetStaminaComponent()->GetCurrentStaminaCount() > 0)
+	if ( Owner->GetCharacterMovement()->IsFalling())
 	{
 		FVector ForwardVector = Owner->GetActorForwardVector();
 		FVector DashVector = FVector(ForwardVector.X, ForwardVector.Y, 0) * DashPower;
@@ -256,6 +269,11 @@ void UControlComponent::Dash(const FInputActionValue& Value)
 		Owner->LaunchCharacter(DashVector, true, false);
 		
 		Owner->GetStaminaComponent()->UseStamina();
+
+		if (Owner->GetStaminaComponent()->GetCurrentStaminaCount() == 0)
+		{
+			LastSkillCharge.Broadcast();
+		}
 
 		Owner->GetWorldTimerManager().SetTimer(
 		DashTimer,
@@ -269,9 +287,16 @@ void UControlComponent::Dash(const FInputActionValue& Value)
 void UControlComponent::StartJump(const FInputActionValue& Value)
 {
 	if (!bInputEnabled) return;
+
+	
 	
 	if (Value.Get<bool>())
 	{
+		if (Owner->GetSoundComponent())
+		{
+			Owner->GetSoundComponent()->PlayJumpSound();
+		}
+		
 		Owner->Jump();
 	}
 }
@@ -304,7 +329,33 @@ void UControlComponent::SwapWeapon2(const FInputActionValue& Value)
 	UE_LOG(LogTemp,Warning,TEXT("Swap Weapon 2 "));
 }
 
+void UControlComponent::DeBug1(const FInputActionValue& Value)
+{
+	Owner->AddExp(20);
 
+	int Exp = Owner->GetExp();
+	
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Add Exp%d"), Exp));
+
+}
+
+void UControlComponent::DeBug2(const FInputActionValue& Value)
+{
+
+	UGameplayStatics::ApplyDamage(
+					Owner,
+					10,
+					Owner->GetController(),
+					Owner,
+					UDamageType::StaticClass()
+					);
+
+	int HP = Owner->GetHPComponent()->GetCurrentHP();
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Current HP %d"), HP));
+}
+
+//아이템 스피드 증가 함수
 void UControlComponent::AddSpeed(float Multiplier)
 {
 	if (Owner)
@@ -314,6 +365,7 @@ void UControlComponent::AddSpeed(float Multiplier)
 	UE_LOG(LogTemp,Warning,TEXT("Increase Speed : %f"),Owner->GetCharacterMovement()->MaxWalkSpeed);
 }
 
+//아이템 스피드 증가 제거 함수 
 void UControlComponent::ResetSpeed()
 {
 	if (Owner)
