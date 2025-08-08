@@ -18,5 +18,4 @@ void UMeleeAttackAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSeque
 			Control->MeleeAttack();
 		}
 	}
-
 }

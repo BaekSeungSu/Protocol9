@@ -71,12 +71,14 @@ void UHPComponent::AddHealth(float HealAmount)
 	UE_LOG(LogTemp,Warning,TEXT("HP : %f"),CurrentHP);
 }
 
+//아이템 무적 효과 적용 함수
 void UHPComponent::LockHealth()
 {
 	bIsInvisible =true;
 	UE_LOG(LogTemp,Warning,TEXT("Invinsible Time!"));
 }
 
+//아이템 무적 효과 제거 함수
 void UHPComponent::UnlockHealth()
 {
 	bIsInvisible = false;

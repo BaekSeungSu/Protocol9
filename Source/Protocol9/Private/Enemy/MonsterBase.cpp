@@ -12,7 +12,6 @@
 #include "GameFramework/PlayerController.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/DamageEvents.h"
-
 AMonsterBase::AMonsterBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -57,7 +56,8 @@ void AMonsterBase::BeginPlay()
 	StartAIUpdateTimer();
 	FindAndSetTargetPlayer();
 	float RandomLifeTime = FMath::RandRange(5.0f, 10.0f);
-	GetWorld()->GetTimerManager().SetTimer(DeadTimerHandle, this, &AMonsterBase::OnDeath, RandomLifeTime, false);
+	GetMesh()->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
+	//GetWorld()->GetTimerManager().SetTimer(DeadTimerHandle, this, &AMonsterBase::OnDeath, RandomLifeTime, false);
 }
 
 void AMonsterBase::UpdateAI()
@@ -110,11 +110,7 @@ void AMonsterBase::SetState(EMonsterState NewState)
 		break;
 
 	case EMonsterState::Attacking:
-		GetCharacterMovement()->MaxWalkSpeed = 0.0f;
-		if (AIController)
-		{
-			AIController->StopMovement();
-		}
+		//몬스터가 움찔하는 증강이 있어서 이동 멈추는 로직 공격 시점으로 이동
 		break;
 	}
 }
@@ -214,7 +210,7 @@ void AMonsterBase::PerformAttack()
 		StopContinuousAttack();
 		return;
 	}
-
+	StopMovement();
 	FVector Direction = (TargetPlayer->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 	FRotator LookRotation = FRotationMatrix::MakeFromX(Direction).Rotator();
 	SetActorRotation(LookRotation);
@@ -232,13 +228,22 @@ void AMonsterBase::StopContinuousAttack()
 	}
 }
 
+void AMonsterBase::StopMovement()
+{
+	GetCharacterMovement()->MaxWalkSpeed = 0.0f;
+	if (AIController)
+	{
+		AIController->StopMovement();
+	}
+}
+
 void AMonsterBase::MoveToTarget()
 {
-	FVector TargetLocation = GetTargetLocation();
+	FVector TargetLocation = GetTargetMonsterLocation();
 	AIController->MoveToLocation(TargetLocation);
 }
 
-FVector AMonsterBase::GetTargetLocation() const
+FVector AMonsterBase::GetTargetMonsterLocation() const
 {
 	if (TargetPlayer)
 	{
@@ -246,7 +251,7 @@ FVector AMonsterBase::GetTargetLocation() const
 
 		UNavigationSystemV1* NavSys = UNavigationSystemV1::GetNavigationSystem(GetWorld());
 		FNavLocation NavLocation;
-		const FVector QueryExtent = FVector(100, 100, 300);
+		const FVector QueryExtent = FVector(100, 100, 600);
 		if (NavSys && NavSys->ProjectPointToNavigation(TargetLocation, NavLocation, QueryExtent))
 		{
 			return NavLocation.Location;
@@ -298,7 +303,7 @@ void AMonsterBase::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted
 	{
 		if (TargetPlayer && IsInAttackRange())
 		{
-			SetState(EMonsterState::Chasing);
+			SetState(EMonsterState::Attacking);
 		}
 		else
 		{
@@ -344,9 +349,7 @@ void AMonsterBase::OnDeath()
 	Ragdoll();	
 
 	GiveExp();
-	
-	DropItems();
-	
+
 	OnMonsterDead.Broadcast(this);
 	OnMonsterDeadLocation.Broadcast(FindGroundLocation());
 	GetWorldTimerManager().SetTimer(DeadTimerHandle,this,&AMonsterBase::EndDeath, 5.0f, false);
@@ -372,7 +375,7 @@ void AMonsterBase::Ragdoll()
 	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
 }
 
-void AMonsterBase::ClearMonster()
+void AMonsterBase::DeleteMonster()
 {
 	//스포너에 보스 스폰 델리게이트에 연결해서 보스가 스폰 되는순간 멀티 델리게이트에 구독해놓은 모든 몬스터의 clearmonster가 호출되며 경험치나 아이템 드롭
 	//사망 몽타주 실행 없이 즉시 레벨에서 삭제
@@ -382,11 +385,6 @@ void AMonsterBase::ClearMonster()
 }
 
 
-void AMonsterBase::DropItems() const
-{
-	UWorld* World = GetWorld();
-	
-}
 
 FVector AMonsterBase::FindGroundLocation() const
 {
@@ -451,10 +449,14 @@ float AMonsterBase::TakeDamage(float DamageAmount, struct FDamageEvent const& Da
 	if (DamageEvent.IsOfType(FPointDamageEvent::ClassID))
 	{
 		const FPointDamageEvent* PointEvent = static_cast<const FPointDamageEvent*>(&DamageEvent);
-		UE_LOG(LogTemp, Warning, TEXT("Hitted Bone: %s"), *PointEvent->HitInfo.BoneName.ToString());
+		UE_LOG(LogTemp, Warning, TEXT("Hit Bone: %s"), *PointEvent->HitInfo.BoneName.ToString());
+		if (*PointEvent->HitInfo.BoneName.ToString() == FName("head") || *PointEvent->HitInfo.BoneName.ToString() == FName("neck_01"))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("★★★★★★★★★★ Head Shot! ★★★★★★★★★★"));
+			ActualDamage *= 2.0f;
+		}
 	}
-	//찾아보니 TakeDamage는 하나만 있어도 ApplyPointDamage와 ApplyRadialDamage를 둘 다 대응 가능하고 DamageEvent를 상속받는 다른 두가지 DamageEvent를 자동으로 받아서 사용하면
-	//된다길래 하나만 만들었습니다. DamageType과 맞은 부위 뼈 이름을 출력하게 만들어 놓았으니 일단 이걸로 테스트 해보시면 될 것 같습니다.
+	
 	CurrentHP -= ActualDamage;
 	CurrentHP = FMath::Clamp(CurrentHP, 0.0f, MaxHP);
 	if (CurrentHP == 0.0f)

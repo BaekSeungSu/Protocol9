@@ -85,12 +85,12 @@ int32 ATileManager::GetPlayerTileCoord() const
 
 	if (TileX < -1 || TileX > 1 || TileY < -1 || TileY > 1)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Character out of tile range! Coord: %d, %d"), TileX, TileY);
+		//UE_LOG(LogTemp, Warning, TEXT("Character out of tile range! Coord: %d, %d"), TileX, TileY);
 		return -1;
 	}
 	
 	int32 Index = (1 - TileX) * 3 + (TileY + 1); // 0~8로 변환
-	UE_LOG(LogTemp, Warning, TEXT("Character is on tile index: %d"), Index);
+	//UE_LOG(LogTemp, Warning, TEXT("Character is on tile index: %d"), Index);
 
 	return Index;
 }
@@ -215,7 +215,7 @@ void ATileManager::ShiftTileArray(ETileShiftDirection Direction)
 		TileArray[7] = Old[8];
 
 		TileArray[2] = Old[0];
-		TileArray[5] = Old[3];
+		TileArray[5] = Old[3];	
 		TileArray[8] = Old[6];
 		break;
 	default:

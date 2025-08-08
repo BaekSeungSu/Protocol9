@@ -380,7 +380,7 @@ void UControlComponent::DeBug2(const FInputActionValue& Value)
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Current HP %d"), HP));
 }
 
-
+//아이템 스피드 증가 함수
 void UControlComponent::AddSpeed(float Multiplier)
 {
 	if (Owner)
@@ -390,6 +390,7 @@ void UControlComponent::AddSpeed(float Multiplier)
 	UE_LOG(LogTemp,Warning,TEXT("Increase Speed : %f"),Owner->GetCharacterMovement()->MaxWalkSpeed);
 }
 
+//아이템 스피드 증가 제거 함수 
 void UControlComponent::ResetSpeed()
 {
 	if (Owner)

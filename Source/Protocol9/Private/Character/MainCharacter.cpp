@@ -102,12 +102,13 @@ void AMainCharacter::CacheHUD()
 	}
 }
 
+//아이템 공격력 증가 함수
 void AMainCharacter::AddAttack(float Multiplied)
 {
 	CurrentAttack *= Multiplied;
 	UE_LOG(LogTemp, Warning,TEXT("Increased	My Attack : %f"),CurrentAttack);
 }
-
+//아이템 공격력 증가 리셋 함수
 void AMainCharacter::ResetAttack()
 {
 	CurrentAttack = Attack;
