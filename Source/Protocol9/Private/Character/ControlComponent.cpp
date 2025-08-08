@@ -96,29 +96,16 @@ void UControlComponent::Look(const FInputActionValue& Value)
 void UControlComponent::StartFire(const FInputActionValue& Value)
 {
 	if (!bInputEnabled || !Owner || !Owner->Controller) return;
-	if (Owner->GetStateMachine()->CanFire()) return;
 
-	// GetCurrentAmmo 추가필요
-	// if (CurrentWeapon->GetCurrentAmmo() <= 0)
-	// {
-	// 	Reload(Value);
-	//	return;
-	// }
+	UCharacterStateMachine* StateMachine = Owner->GetStateMachine();
+	if (!StateMachine) return;
 	
-	AWeaponBase* CurrentWeapon = Owner->GetInventoryComponent()->GetCurrentWeapon();
-	if (CurrentWeapon && CurrentWeapon->Implements<UWeaponInterface>())
+	if (!StateMachine->CanFire())
 	{
-		IWeaponInterface::Execute_PrimaryFire(CurrentWeapon);
-	}
-	
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Fire"));
-
-	UAnimInstance* AnimInstance = Owner->GetMesh()->GetAnimInstance();
-	{
-		if (AnimInstance && Owner->FireMontage)
+		AWeaponBase* CurrentWeapon = Owner->GetInventoryComponent()->GetCurrentWeapon();
+		if (CurrentWeapon && CurrentWeapon->Implements<UWeaponInterface>())
 		{
-			float duration = AnimInstance->Montage_Play(Owner->FireMontage);
-			//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("%f"), duration));
+			IWeaponInterface::Execute_PrimaryFire(CurrentWeapon);
 		}
 	}
 }
@@ -239,44 +226,20 @@ void UControlComponent::MeleeAttack()
 
 void UControlComponent::Reload(const FInputActionValue& Value)
 {
-	if (!Owner->Controller) return;
+	if (!Owner || !Owner->Controller || !bInputEnabled) return;
 
-	if (!bInputEnabled) return;
-	
-	if (Owner->GetStateMachine()->CanFire()) return;
+	UCharacterStateMachine* StateMachine = Owner->GetStateMachine();
+	if (!StateMachine) return;
 
-	Owner->GetStateMachine()->SetState(ECharacterState::Reload);
-
-	if (Owner->GetInventoryComponent())
-	{
-		AWeaponBase* CurrentWeapon = Owner->GetInventoryComponent()->GetCurrentWeapon();
-		if (CurrentWeapon && CurrentWeapon->Implements<UWeaponInterface>())
-		{
-			IWeaponInterface::Execute_Reload(CurrentWeapon);
-		}
-	}
+	AWeaponBase* CurrentWeapon = Owner->GetInventoryComponent()->GetCurrentWeapon();
+	if (!CurrentWeapon) return;
 
 	
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, (TEXT("Reload!")));
-
-	UAnimInstance* AnimInstance = Owner->GetMesh()->GetAnimInstance();
+	if (CurrentWeapon->Implements<UWeaponInterface>())
 	{
-		if (AnimInstance && Owner->ReloadMontage)
-		{
-			float duration = AnimInstance->Montage_Play(Owner->ReloadMontage);
-
-			FOnMontageEnded ReloadEnded;
-			ReloadEnded.BindLambda([this](UAnimMontage* Montage, bool bInterrupted)
-			{
-				if (Owner && Owner->GetStateMachine())
-				{
-					Owner->GetStateMachine()->SetState(ECharacterState::Idle);
-				}
-			});
-
-			AnimInstance->Montage_SetEndDelegate(ReloadEnded, Owner->ReloadMontage);
-		}
+		IWeaponInterface::Execute_Reload(CurrentWeapon);
 	}
+	
 }
 
 void UControlComponent::Dash(const FInputActionValue& Value)
