@@ -18,12 +18,14 @@ class PROTOCOL9_API UStaminaComponent : public UActorComponent
 public:	
 	UStaminaComponent();
 
-protected:
 	//이벤트
 	UPROPERTY(BlueprintAssignable, Category = "Stamina")
 	FCurrentStaminaChangedSignature StaminaChanged;
 	UPROPERTY(BlueprintAssignable, Category = "Stamina")
 	FStaminaChargeTimeSignature RemainStaminaChargeTime;
+
+protected:
+	
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
 	int MaxStaminaCount;

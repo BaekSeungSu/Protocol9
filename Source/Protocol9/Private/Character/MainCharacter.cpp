@@ -27,16 +27,17 @@ AMainCharacter::AMainCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio"));
-	AudioComponent->SetupAttachment(RootComponent);
+	SituationAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Situation"));
+	SituationAudioComponent->SetupAttachment(RootComponent);
+	DialogueAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Dialogue"));
+	DialogueAudioComponent->SetupAttachment(RootComponent);
 
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(RootComponent);
 	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
-
-
+	
 	StateMachine = CreateDefaultSubobject<UCharacterStateMachine>(TEXT("StateMachine"));
 
 	HPComponent = CreateDefaultSubobject<UHPComponent>(TEXT("HP"));
@@ -46,7 +47,13 @@ AMainCharacter::AMainCharacter()
 	
 	PlayerUIComponent = CreateDefaultSubobject<UPlayerUIComponent>(TEXT("PlayerUI"));
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+
+	InitCharacterInfo();
 	
+}
+
+void AMainCharacter::InitCharacterInfo()
+{
 	BasetAttack = 20.0f;
 	LevelUpAttack = 1.2f;
 	Attack = BasetAttack;
@@ -54,10 +61,6 @@ AMainCharacter::AMainCharacter()
 	Exp = 0;
 	MaxExp = 100;
 	CharacterLevel = 1;
-
-	DeathCameraSocket = TEXT("head");
-
-
 }
 
 void AMainCharacter::EquipDefaultWeapon()
@@ -66,7 +69,6 @@ void AMainCharacter::EquipDefaultWeapon()
 	{
 		InventoryComponent->AddWeapon(DefaultWeaponClass);
 	}
-	
 }
 
 void AMainCharacter::BeginPlay()
@@ -76,6 +78,7 @@ void AMainCharacter::BeginPlay()
 	HideDefalutMesh();
 	
 	EquipDefaultWeapon();
+	
 	AMonsterSpawner* Spawner = Cast<AMonsterSpawner>(UGameplayStatics::GetActorOfClass(GetWorld(), AMonsterSpawner::StaticClass()));
 	if (Spawner)
 	{
@@ -118,14 +121,9 @@ void AMainCharacter::SetupDeathCamera()
 			FAttachmentTransformRules::KeepWorldTransform,
 			DeathCameraSocket
 		);
-
-		// SpringArmComponent->bEnableCameraLag = true;
-		// SpringArmComponent->bEnableCameraRotationLag = true;
-		// SpringArmComponent->CameraLagSpeed = 3.0f;
-		// SpringArmComponent->CameraRotationLagSpeed = 3.0f;
         
-		SpringArmComponent->SetRelativeLocation(FVector(0, 50, 0));  // 측면에서 보기
-		SpringArmComponent->SetRelativeRotation(FRotator(0, -90, 0));  // 캐릭터를 향해 보기
+		SpringArmComponent->SetRelativeLocation(FVector(0, 50, 0));  
+		SpringArmComponent->SetRelativeRotation(FRotator(0, -90, 0));
 	}
 
 }
@@ -141,9 +139,6 @@ void AMainCharacter::ResetCameraToDefault()
 		);
 		SpringArmComponent->SetRelativeLocation(OriginalSpringArmLocation);
 		SpringArmComponent->SetRelativeRotation(OriginalSpringArmRotation);
-        
-		// SpringArmComponent->bEnableCameraLag = false;
-		// SpringArmComponent->bEnableCameraRotationLag = false;
 	}
 
 }

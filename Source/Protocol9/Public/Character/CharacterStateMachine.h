@@ -13,8 +13,17 @@ enum class ECharacterState : uint8
 	Fire	UMETA(DisplayName = "Fire"),
 	Melee	UMETA(DisplayName = "Melee"),
 	Reload	UMETA(DisplayName = "Reload"),
-	Dead	UMETA(DisplayName = "Dead"),
 };
+
+UENUM(BlueprintType)
+enum class EHPState : uint8
+{
+	LowHealth		UMETA(DisplayName = "LowHealth"),
+	NormalHealth	UMETA(DisplayName = "NormalHealth"),
+	Dead		UMETA(DisplayName = "Dead"),
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLowHealthSignature);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStateChanged,
 	ECharacterState,
@@ -31,9 +40,17 @@ class PROTOCOL9_API UCharacterStateMachine : public UActorComponent
 public:	
 	UCharacterStateMachine();
 
+	//이벤트
+	UPROPERTY(BlueprintAssignable, Category = "State")
+	FOnStateChanged OnStateChanged;
+	UPROPERTY(BlueprintAssignable, Category = "State")
+	FLowHealthSignature LowHealthEvent;
+	
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	ECharacterState CurrentState = ECharacterState::Idle;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+	EHPState CurrentHPState = EHPState::NormalHealth;
 
 	float AnimationStartTime = 0.0f;
 	float CurrentAnimationDuration  = 0.0f;
@@ -43,8 +60,7 @@ protected:
 	
 public:
 
-	UPROPERTY(BlueprintAssignable, Category = "State")
-	FOnStateChanged OnStateChanged;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	UAnimMontage* DeathMontage;
 	
@@ -52,16 +68,16 @@ public:
 	void HandleCharacterDeath();
 	
 	bool CanReload() const{return CurrentState == ECharacterState::Reload
-		|| CurrentState == ECharacterState::Dead;}
+		|| CurrentHPState == EHPState::Dead;}
 
 	bool CanFire() const{return CurrentState == ECharacterState::Reload
-		|| CurrentState == ECharacterState::Dead
+		|| CurrentHPState == EHPState::Dead
 		|| CurrentState == ECharacterState::Melee;}
 
-	bool CanMelee() const{return CurrentState == ECharacterState::Dead
+	bool CanMelee() const{return CurrentHPState == EHPState::Dead
 		|| CurrentState == ECharacterState::Melee;}
 
-	bool CanSwapWeapon() const{return CurrentState != ECharacterState::Dead;}
+	bool CanSwapWeapon() const{return CurrentHPState != EHPState::Dead;}
 	
 	virtual void BeginPlay() override;
 
@@ -71,6 +87,10 @@ public:
 	
 	void SetState(ECharacterState NewState);
 	void ResetState();
+	
+	void SetHPState(EHPState NewHPState);
+	void ResetHPState();
+	
 private:
 	
 	void StopCurrentMontage();

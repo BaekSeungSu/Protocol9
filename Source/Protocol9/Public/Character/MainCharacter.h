@@ -60,7 +60,7 @@ protected:
 
 	//죽었을때 사용
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-	FName DeathCameraSocket;
+	FName DeathCameraSocket = TEXT("head");
 	
 	FVector OriginalSpringArmLocation;
 	FRotator OriginalSpringArmRotation;
@@ -71,8 +71,10 @@ protected:
 	USpringArmComponent* SpringArmComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComponent;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	UAudioComponent* AudioComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Audio")
+	UAudioComponent* SituationAudioComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Audio")
+	UAudioComponent* DialogueAudioComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HP")
 	UHPComponent* HPComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stamina")
@@ -85,12 +87,11 @@ protected:
 	USoundComponent* SoundComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	UInventoryComponent* InventoryComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "StateMachine")
+	UCharacterStateMachine* StateMachine;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<AWeaponBase> DefaultWeaponClass;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "StateMachine")
-	UCharacterStateMachine* StateMachine;
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUWBP_HUD> HUDWidgetClass;
@@ -99,6 +100,10 @@ protected:
 	void EquipDefaultWeapon();
 	
 	virtual void BeginPlay() override;
+
+	//캐릭터 정보 초기화
+	void InitCharacterInfo();
+	
 	// HUD 참조 저장
 	UPROPERTY()
 	UUWBP_HUD* CachedHUD;
@@ -120,7 +125,9 @@ public:
 	USoundComponent* GetSoundComponent() const { return SoundComponent; }
 	UInventoryComponent* GetInventoryComponent() const {return InventoryComponent; }
 	UCharacterStateMachine* GetStateMachine() const { return StateMachine;}
-
+	UAudioComponent* GetSituationAudioComponent() const { return SituationAudioComponent; }
+	UAudioComponent* GetDialogueAudioComponent() const { return DialogueAudioComponent; }
+	
 	UFUNCTION()
 	void AddAttack(float Multiplied);
 	UFUNCTION()
@@ -133,13 +140,15 @@ public:
 	UAnimMontage* ReloadMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	UAnimMontage* OnHandMontage;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	UAnimMontage* MeleeMontage;
 
-	virtual float TakeDamage(float DamageAmount, 
-						struct FDamageEvent const& DamageEvent, 
-						class AController* EventInstigator, 
-						AActor* DamageCauser) override;
+	virtual float TakeDamage(
+		float DamageAmount, 
+		struct FDamageEvent const& DamageEvent, 
+		class AController* EventInstigator, 
+		AActor* DamageCauser) override;
 	
 	void HideDefalutMesh();
 	void ShowDefalutMesh();
@@ -163,6 +172,7 @@ public:
 	void OnMonsterDead(AMonsterBase* Monster);
 	
 	void LevelUp();
+	
 	// HUD 효과 제어 함수
 	void HandleInvincibilityEffect();
 	void HandleSpeedBoostEffect();

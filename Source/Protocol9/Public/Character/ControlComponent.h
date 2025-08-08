@@ -7,6 +7,10 @@
 struct FInputActionValue;
 class AMainCharacter;
 
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCoolTimeSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLastSkillSignature);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROTOCOL9_API UControlComponent : public UActorComponent
 {
@@ -16,6 +20,12 @@ public:
 	
 	UControlComponent();
 
+	//이벤트
+	UPROPERTY(BlueprintAssignable, Category = "Skill")
+	FOnCoolTimeSignature OnCoolTime;
+	UPROPERTY(BlueprintAssignable, Category = "Skill")
+	FLastSkillSignature LastSkillCharge;
+	
 private:
 	bool bInputEnabled = true;
 	

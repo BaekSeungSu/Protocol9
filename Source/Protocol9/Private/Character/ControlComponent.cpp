@@ -100,12 +100,11 @@ void UControlComponent::StartFire(const FInputActionValue& Value)
 	if (!bInputEnabled || !Owner || !Owner->Controller) return;
 	if (Owner->GetStateMachine()->CanFire()) return;
 
-	// GetCurrentAmmo 추가필요
-	// if (CurrentWeapon->GetCurrentAmmo() <= 0)
-	// {
-	// 	Reload(Value);
-	//	return;
-	// }
+	if (Owner->GetInventoryComponent()->GetCurrentWeapon()->GetCurrentAmmo() == 0)
+	{
+		Reload(Value);
+		return;
+	}
 	
 	AWeaponBase* CurrentWeapon = Owner->GetInventoryComponent()->GetCurrentWeapon();
 	if (CurrentWeapon && CurrentWeapon->Implements<UWeaponInterface>())
@@ -250,8 +249,9 @@ void UControlComponent::Reload(const FInputActionValue& Value)
 
 	if (!bInputEnabled) return;
 	
-	if (Owner->GetStateMachine()->CanFire()) return;
-
+	if (Owner->GetStateMachine()->CanFire()
+		/*&& Owner->GetInventoryComponent()->GetCurrentWeapon()->GetCurrentAmmo() == */) return;
+		//현재 무기탄약이 가득차있으면 리턴 무기의 max탄약 Get해야함 
 	Owner->GetStateMachine()->SetState(ECharacterState::Reload);
 
 	if (Owner->GetInventoryComponent())
@@ -291,8 +291,14 @@ void UControlComponent::Dash(const FInputActionValue& Value)
 	if (!bInputEnabled) return;
 	
 	if (Owner->GetWorldTimerManager().IsTimerActive(DashTimer))	return;
+
+	if (Owner->GetStaminaComponent()->GetCurrentStaminaCount() <= 0)
+	{
+		OnCoolTime.Broadcast();
+		return;
+	}
 	
-	if ( Owner->GetCharacterMovement()->IsFalling() && Owner->GetStaminaComponent()->GetCurrentStaminaCount() > 0)
+	if ( Owner->GetCharacterMovement()->IsFalling())
 	{
 		FVector ForwardVector = Owner->GetActorForwardVector();
 		FVector DashVector = FVector(ForwardVector.X, ForwardVector.Y, 0) * DashPower;
@@ -300,6 +306,11 @@ void UControlComponent::Dash(const FInputActionValue& Value)
 		Owner->LaunchCharacter(DashVector, true, false);
 		
 		Owner->GetStaminaComponent()->UseStamina();
+
+		if (Owner->GetStaminaComponent()->GetCurrentStaminaCount() == 0)
+		{
+			LastSkillCharge.Broadcast();
+		}
 
 		Owner->GetWorldTimerManager().SetTimer(
 		DashTimer,
