@@ -1,5 +1,5 @@
 #include "Weapons/InventoryComponent.h"
-
+#include "Character/MainCharacter.h"
 #include "GameFramework/Character.h"
 #include "Weapons/WeaponBase.h"
 
@@ -31,6 +31,12 @@ void UInventoryComponent::AddWeapon(TSubclassOf<AWeaponBase> WeaponClass)
 
 	if (NewWeapon)
 	{
+		AMainCharacter* OwningCharacterAsMain = Cast<AMainCharacter>(OwningCharacter);
+		if (OwningCharacterAsMain)
+		{
+			NewWeapon->SetOwningCharacter(OwningCharacterAsMain);
+		}
+		
 		NewWeapon->AttachToComponent(OwningCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket"));
 		WeaponSlots.Add(NewWeapon);
 		CurrentWeaponIndex = WeaponSlots.Num() - 1;
