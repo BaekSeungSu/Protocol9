@@ -7,6 +7,7 @@
 #include "TimerManager.h"
 #include "UI/UWBP_HUD.h"
 #include "UI/PlayerUIComponent.h"
+#include "Character/StaminaComponent.h"
 #include "MainCharacter.generated.h"
 
 class AMonsterBase;
@@ -125,11 +126,15 @@ public:
 	USoundComponent* GetSoundComponent() const { return SoundComponent; }
 	UInventoryComponent* GetInventoryComponent() const {return InventoryComponent; }
 	UCharacterStateMachine* GetStateMachine() const { return StateMachine;}
+
 	UAudioComponent* GetSituationAudioComponent() const { return SituationAudioComponent; }
 	UAudioComponent* GetDialogueAudioComponent() const { return DialogueAudioComponent; }
 	
+	
+	//아이템 공격력 증가 함수 
 	UFUNCTION()
 	void AddAttack(float Multiplied);
+	//아이템 공격력 증가 리셋 함수
 	UFUNCTION()
 	void ResetAttack();
 
@@ -173,12 +178,22 @@ public:
 	
 	void LevelUp();
 	
-	// HUD 효과 제어 함수
+	// UI : 아이템 점등 효과
 	void HandleInvincibilityEffect();
 	void HandleSpeedBoostEffect();
 	void HandleAttackBoostEffect();
-
+	// UI : GameMod HUD 호출
 	UFUNCTION()
 	void CacheHUD();
+	// UI : 경험치, HP, 레벨, 스태미나 바인딩
+	UFUNCTION()
+	void HandleHPChanged(float CurrentHP);
+	UFUNCTION()
+	void HandleEXPChanged(int CurrentExp);
+	UFUNCTION()
+	void HandleLevelChanged(int NewLevel);
+	UFUNCTION()
+	void HandleStaminaChanged(int CurrentStamina);
+
 
 };

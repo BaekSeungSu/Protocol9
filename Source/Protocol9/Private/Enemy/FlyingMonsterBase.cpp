@@ -27,7 +27,7 @@ void AFlyingMonsterBase::InitializeMovement()
 	// 중력 영향 받지 않음
 	GetCharacterMovement()->GravityScale = 0.0f;
 }
-FVector AFlyingMonsterBase::GetTargetLocation() const
+FVector AFlyingMonsterBase::GetTargetMonsterLocation() const
 {
 	if (TargetPlayer)
 	{
@@ -47,7 +47,11 @@ void AFlyingMonsterBase::PerformAttack()
 		StopContinuousAttack();
 		return;
 	}
-	
+	StopMovement();
+	if (AttackMontage && GetMesh() && GetMesh()->GetAnimInstance())
+	{
+		GetMesh()->GetAnimInstance()->Montage_Play(AttackMontage);
+	}
 	if (ProjectileClass)
 	{
 		FVector SpawnLocation = GetProjectileSpawnLocation();
@@ -87,7 +91,7 @@ bool AFlyingMonsterBase::IsInAttackRange() const
 void AFlyingMonsterBase::MoveToTarget()
 {
 	FVector CurrentLocation = GetActorLocation();
-	FVector TargetLocation = GetTargetLocation();
+	FVector TargetLocation = GetTargetMonsterLocation();
 	FVector Direction = (TargetLocation - CurrentLocation).GetSafeNormal();
 	
     if (!Direction.IsNearlyZero())

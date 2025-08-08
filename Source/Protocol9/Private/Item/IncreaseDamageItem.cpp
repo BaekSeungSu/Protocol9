@@ -29,7 +29,7 @@ void AIncreaseDamageItem::ActivateItem(AActor* Activator)
 			
 			MyCharacter->AddAttack(MultiDamage);
 
-			MyCharacter->HandleAttackBoostEffect(); //UI 아이콘 점등
+			MyCharacter->HandleAttackBoostEffect(); //UI : 아이템 아이콘 점등 기능 추가
 			
 			AffectedPlayer = MyCharacter; 
 			GetWorld()->GetTimerManager().SetTimer(

@@ -16,7 +16,6 @@
 #include "Enemy/MonsterBase.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "UI/PlayerUIComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "UI/UWBP_HUD.h"
 #include "GameFramework/PlayerController.h"
 #include "GameMode/MainGameMode.h"
@@ -74,6 +73,17 @@ void AMainCharacter::EquipDefaultWeapon()
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	//UI 바인딩 : 체력, 경험치, 레벨업, 스태미나 변경 시 HUD 갱신
+	if (HPComponent)
+	{
+		HPComponent->HPChanged.AddDynamic(this, &AMainCharacter::HandleHPChanged);
+		ExpChanged.AddDynamic(this, &AMainCharacter::HandleEXPChanged);
+		LevelUPEvent.AddDynamic(this, &AMainCharacter::HandleLevelChanged);
+	}
+	if (StaminaComponent)
+	{
+		StaminaComponent->StaminaChanged.AddDynamic(this, &AMainCharacter::HandleStaminaChanged);
+	}
 
 	HideDefalutMesh();
 	
@@ -95,12 +105,13 @@ void AMainCharacter::CacheHUD()
 	}
 }
 
+//아이템 공격력 증가 함수
 void AMainCharacter::AddAttack(float Multiplied)
 {
 	CurrentAttack *= Multiplied;
 	UE_LOG(LogTemp, Warning,TEXT("Increased	My Attack : %f"),CurrentAttack);
 }
-
+//아이템 공격력 증가 리셋 함수
 void AMainCharacter::ResetAttack()
 {
 	CurrentAttack = Attack;
@@ -370,11 +381,11 @@ void AMainCharacter::LevelUp()
 		Exp -= MaxExp;
 
 		LevelUPEvent.Broadcast(CharacterLevel);
-		
+		ExpChanged.Broadcast(Exp);//UI 경험치바 초기화 
 		LevelUp();
 	}
 }
-//UI
+//UI 파트
 void AMainCharacter::HandleInvincibilityEffect()
 {
 	if (CachedHUD)
@@ -415,5 +426,34 @@ void AMainCharacter::HandleAttackBoostEffect()
 		{
 			CachedHUD->ShowAttackBoostEffect(false);
 		}, 5.f, false);
+	}
+}
+void AMainCharacter::HandleHPChanged(float CurrentHP)
+{
+	if (CachedHUD && HPComponent)
+	{
+		float MaxHP = HPComponent->GetMaxHP();
+		CachedHUD->UpdateHPBar(CurrentHP, MaxHP);
+	}
+}
+void AMainCharacter::HandleEXPChanged(int CurrentExp)
+{
+	if (CachedHUD)
+	{
+		CachedHUD->UpdateEXPBar(CurrentExp, MaxExp);
+	}
+}
+void AMainCharacter::HandleLevelChanged(int NewLevel)
+{
+	if (CachedHUD)
+	{
+		CachedHUD->UpdateLevelText(NewLevel);
+	}
+}
+void AMainCharacter::HandleStaminaChanged(int CurrentStamina)
+{
+	if (CachedHUD)
+	{
+		CachedHUD->UpdateStaminaBar(CurrentStamina);
 	}
 }

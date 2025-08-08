@@ -32,7 +32,7 @@ void ASpeedItem::ActivateItem(AActor* Activator)
 					);
 				ControlComp->AddSpeed(MultiSpeed);
 				AffectedPlayer = ControlComp;
-				MyCharacter->HandleSpeedBoostEffect(); //UI 추가
+				MyCharacter->HandleSpeedBoostEffect(); //UI : 아이템 아이콘 점등 기능 추가
 				GetWorld()->GetTimerManager().SetTimer(
 					EffectTimerHandle,
 					this,

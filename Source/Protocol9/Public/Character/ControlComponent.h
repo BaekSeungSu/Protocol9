@@ -84,8 +84,10 @@ public:
 	UFUNCTION()
 	void DeBug2(const FInputActionValue& Value);
 
+	//아이템 스피드 증가 함수
 	UFUNCTION()
 	void AddSpeed(float Multiplier);
+	//아이템 스피드 증가 제거 함수
 	UFUNCTION()
 	void ResetSpeed();
 	

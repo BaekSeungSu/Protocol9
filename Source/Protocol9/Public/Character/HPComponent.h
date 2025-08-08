@@ -56,14 +56,16 @@ public:
 						struct FDamageEvent const& DamageEvent, 
 						class AController* EventInstigator, 
 						AActor* DamageCauser);
-
+	
 	UFUNCTION(BlueprintCallable, Category = "HP")
 	void AddHealth(float HealAmount);
 	UFUNCTION(BlueprintCallable, Category = "HP")
 	void OnDeath();
 
+	//아이템 무적 효과 함수
 	UFUNCTION(BlueprintCallable, Category = "HP")
 	void LockHealth();
+	//아이템 무적 효과 제거 함수
 	UFUNCTION(BlueprintCallable, Category = "HP")
 	void UnlockHealth();
 
