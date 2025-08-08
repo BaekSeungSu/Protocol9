@@ -16,6 +16,11 @@
 #include "Enemy/MonsterBase.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "UI/PlayerUIComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "UI/UWBP_HUD.h"
+#include "GameFramework/PlayerController.h"
+#include "GameMode/MainGameMode.h"
+#include "Blueprint/UserWidget.h"
 #include "Weapons/WeaponInterface.h"
 
 AMainCharacter::AMainCharacter()
@@ -77,6 +82,14 @@ void AMainCharacter::BeginPlay()
 		Spawner->OnMonsterSpawned.AddDynamic(this,&AMainCharacter::SetMonsterDead);
 	}
 	
+}
+
+void AMainCharacter::CacheHUD()
+{
+	if (AMainGameMode* GM = Cast<AMainGameMode>(UGameplayStatics::GetGameMode(this)))
+	{
+		CachedHUD = GM->GetHUDWidget();
+	}
 }
 
 void AMainCharacter::AddAttack(float Multiplied)
@@ -366,4 +379,46 @@ void AMainCharacter::LevelUp()
 		LevelUp();
 	}
 }
+//UI
+void AMainCharacter::HandleInvincibilityEffect()
+{
+	if (CachedHUD)
+	{
+		CachedHUD->ShowInvincibilityEffect(true);
 
+		// 3초 후 다시 끄기
+		GetWorld()->GetTimerManager().ClearTimer(InvincibilityResetHandle);
+		GetWorld()->GetTimerManager().SetTimer(InvincibilityResetHandle, [this]()
+		{
+			CachedHUD->ShowInvincibilityEffect(false);
+		}, 3.f, false);
+	}
+}
+
+void AMainCharacter::HandleSpeedBoostEffect()
+{
+	if (CachedHUD)
+	{
+		CachedHUD->ShowSpeedBoostEffect(true);
+
+		GetWorld()->GetTimerManager().ClearTimer(SpeedBoostResetHandle);
+		GetWorld()->GetTimerManager().SetTimer(SpeedBoostResetHandle, [this]()
+		{
+			CachedHUD->ShowSpeedBoostEffect(false);
+		}, 3.f, false);
+	}
+}
+
+void AMainCharacter::HandleAttackBoostEffect()
+{
+	if (CachedHUD)
+	{
+		CachedHUD->ShowAttackBoostEffect(true);
+
+		GetWorld()->GetTimerManager().ClearTimer(AttackBoostResetHandle);
+		GetWorld()->GetTimerManager().SetTimer(AttackBoostResetHandle, [this]()
+		{
+			CachedHUD->ShowAttackBoostEffect(false);
+		}, 5.f, false);
+	}
+}

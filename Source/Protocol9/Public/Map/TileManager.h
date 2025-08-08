@@ -37,10 +37,13 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category="Character Class")
 	ACharacter* Character;
+	
 	UPROPERTY(EditAnywhere, Category="Tile Size")
 	FVector TileSize = FVector(10000.0f,10000.0f,30.0f);
-
-	UPROPERTY()
+	
+	UPROPERTY(EditAnywhere, Category="NavMesh")
+	class ANavMeshBoundsVolume* NavMeshBoundsVolume;
+	
 	TArray<ATileBase*> TileArray;
 
 	int32 CurrentPlayerTileCoord;

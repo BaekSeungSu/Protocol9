@@ -14,6 +14,9 @@ class PROTOCOL9_API AMainGameMode : public AGameModeBase
 
 public:
 	virtual void BeginPlay() override;
+	
+	UUWBP_HUD* GetHUDWidget() const { return HUDWidget; }
+
 
 	// 위젯 클래스 설정
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
@@ -40,6 +43,9 @@ public:
 
 	// 타이머 갱신
 	void UpdateGameTimer();
+	
+	UFUNCTION(BlueprintCallable)
+	void NotifyCharacterHUDReady();
 
 private:
 	UPROPERTY()
