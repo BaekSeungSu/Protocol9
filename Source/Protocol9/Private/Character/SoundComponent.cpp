@@ -1,5 +1,8 @@
 
 #include "Character/SoundComponent.h"
+
+#include "Character/CharacterStateMachine.h"
+#include "Character/ControlComponent.h"
 #include "Character/HPComponent.h"
 #include "Character/MainCharacter.h"
 #include "Components/AudioComponent.h"
@@ -18,44 +21,78 @@ void USoundComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AudioComponent = Owner->FindComponentByClass<UAudioComponent>();
+	Situation = Owner->GetSituationAudioComponent();
+	Dialogue = Owner->GetDialogueAudioComponent();
 
 	if (Owner)
 	{
 		Owner->GetHPComponent()->OnDeathEvent.AddDynamic(this, &USoundComponent::PlayDeathSound);
 		Owner->LevelUPEvent.AddDynamic(this, &USoundComponent::PlayLevelUpSound);
+		Owner->GetStateMachine()->LowHealthEvent.AddDynamic(this, &USoundComponent::PlayLowHealthSound);
+		Owner->GetControlComponent()->OnCoolTime.AddDynamic(this, &USoundComponent::PlayOnCoolTimeSound);
+		Owner->GetControlComponent()->LastSkillCharge.AddDynamic(this, &USoundComponent::PlayLastChargeSound);
 	}
 }
 
 void USoundComponent::PlayMeleeSound()
 {
-	AudioComponent->SetSound(MeleeCue);
-	AudioComponent->Play();
+	Situation->SetSound(MeleeCue);
+	Situation->Play();
 }
 
 void USoundComponent::PlayJumpSound()
 {
-	AudioComponent->SetSound(JumpCue);
-	AudioComponent->Play();
+	Situation->SetSound(JumpCue);
+	Situation->Play();
 }
 
 void USoundComponent::PlayDeathSound()
 {
-	if (AudioComponent->IsPlaying())
+	if (Situation->IsPlaying())
 	{
-		AudioComponent->Stop();
+		Situation->Stop();
 	}
-	AudioComponent->SetSound(DeathCue);
-	AudioComponent->Play();
+	Situation->SetSound(DeathCue);
+	Situation->Play();
 }
 
 void USoundComponent::PlayLevelUpSound(int CharacterLevel)
 {
-	if (AudioComponent->IsPlaying())
+	if (Dialogue->IsPlaying())
 	{
-		AudioComponent->Stop();
+		Dialogue->Stop();
 	}
-	AudioComponent->SetSound(LevelUpCue);
-	AudioComponent->Play();
+	Dialogue->SetSound(LevelUpCue);
+	Dialogue->Play();
+}
+
+void USoundComponent::PlayOnCoolTimeSound()
+{
+	if (Dialogue->IsPlaying())
+	{
+		Dialogue->Stop();
+	}
+	Dialogue->SetSound(OnCoolTimeCue);
+	Dialogue->Play();
+}
+
+void USoundComponent::PlayLowHealthSound()
+{
+	Situation->SetSound(LowHealthCue);
+	Situation->Play();
+}
+
+void USoundComponent::PlayBuffedSound()
+{
+}
+
+void USoundComponent::PlayLastChargeSound()
+{
+	if (Dialogue->IsPlaying())
+	{
+		Dialogue->Stop();
+	}
+	Dialogue->SetSound(LastChargeCue);
+	Dialogue->Play();
 }
 

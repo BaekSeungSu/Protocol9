@@ -29,7 +29,7 @@ void AInvincibilityItem::ActivateItem(AActor* Activator)
 			
 			HPComponent->LockHealth();								//���� ���� �߰�
 
-			//UI 추가
+			//UI : 아이템 아이콘 점등 기능 추가
 			AMainCharacter* MyCharacter = Cast<AMainCharacter>(Activator);
 			if (MyCharacter)
 			{

@@ -9,6 +9,7 @@
 #include "WeaponData.generated.h"
 
 class UNiagaraSystem;
+class UAnimMontage;
 USTRUCT(BlueprintType)
 struct FWeaponData : public FTableRowBase
 {
@@ -29,7 +30,12 @@ public:
 		  RecoilYaw(0),
 		  SpreadAngle(0),
 		  CrosshairRecoilAmount(0),
-		  RecoilCameraShake(nullptr)
+		  RecoilCameraShake(nullptr),
+		  MuzzleFlash(nullptr),
+		  HitParticle(nullptr),
+		  FireSound(nullptr),
+		  FireMontage(nullptr),
+		  ReloadMontage(nullptr)
 	{
 	}
 	
@@ -72,6 +78,11 @@ public:
 	UNiagaraSystem* HitParticle;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|FX")
 	USoundBase* FireSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Animation")
+	UAnimMontage* FireMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Animation")
+	UAnimMontage* ReloadMontage;
 	
 };
 

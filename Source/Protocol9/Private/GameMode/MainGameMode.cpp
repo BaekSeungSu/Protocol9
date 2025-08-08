@@ -10,7 +10,6 @@ void AMainGameMode::BeginPlay()
 	Super::BeginPlay();
 
 	FString CurrentLevel = GetWorld()->GetMapName();
-	// 맵 이름은 "UEDPIE_0_MenuLevel" 이런 식으로 붙기 때문에 Contains 사용
 	if (CurrentLevel.Contains(TEXT("MenuLevel")))
 	{
 		ShowMainMenu(false);
@@ -102,6 +101,6 @@ void AMainGameMode::NotifyCharacterHUDReady()
 	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
 	if (AMainCharacter* MC = Cast<AMainCharacter>(PlayerPawn))
 	{
-		MC->CacheHUD(); // MainCharacter에 바로 알려줌
+		MC->CacheHUD();
 	}
 }

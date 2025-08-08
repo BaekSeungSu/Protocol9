@@ -36,7 +36,7 @@ void UCharacterStateMachine::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void UCharacterStateMachine::HandleCharacterDeath()
 {
-	SetState(ECharacterState::Dead);
+	SetHPState(EHPState::Dead);
 	StopCurrentMontage();
 	
 	UAnimInstance* AnimInstance = Owner->GetMesh()->GetAnimInstance();
@@ -64,6 +64,24 @@ void UCharacterStateMachine::SetState(ECharacterState NewState)
 void UCharacterStateMachine::ResetState()
 {
 	SetState(ECharacterState::Idle);
+}
+
+void UCharacterStateMachine::SetHPState(EHPState NewHPState)
+{
+	if (NewHPState == CurrentHPState) return;
+
+	if (NewHPState == EHPState::LowHealth && CurrentHPState == EHPState::NormalHealth)
+	{
+		LowHealthEvent.Broadcast();
+	}
+	
+	CurrentHPState = NewHPState;
+	
+}
+
+void UCharacterStateMachine::ResetHPState()
+{
+	SetHPState(EHPState::NormalHealth);
 }
 
 void UCharacterStateMachine::StopCurrentMontage()
