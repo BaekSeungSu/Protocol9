@@ -47,7 +47,11 @@ void AFlyingMonsterBase::PerformAttack()
 		StopContinuousAttack();
 		return;
 	}
-	
+	StopMovement();
+	if (AttackMontage && GetMesh() && GetMesh()->GetAnimInstance())
+	{
+		GetMesh()->GetAnimInstance()->Montage_Play(AttackMontage);
+	}
 	if (ProjectileClass)
 	{
 		FVector SpawnLocation = GetProjectileSpawnLocation();

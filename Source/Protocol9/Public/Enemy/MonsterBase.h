@@ -26,7 +26,6 @@ protected:
     virtual void BeginPlay() override;
 
 public:
-    
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")
     EMonsterState CurrentState;
 
@@ -60,6 +59,9 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
     float AIUpdateInterval = 0.1f;
+
+    UFUNCTION()
+    void DeleteMonster();
     
     UPROPERTY(BlueprintAssignable)
     FOnMonsterDead OnMonsterDead;
@@ -85,8 +87,7 @@ protected:
     virtual void OnDeath();
     UFUNCTION()
     void Ragdoll();
-    UFUNCTION()
-    void ClearMonster();
+    
     UFUNCTION()
     FVector FindGroundLocation() const;
     UFUNCTION()
@@ -99,6 +100,8 @@ protected:
     bool bShouldContinueAttacking = false;
     UFUNCTION()
     void StopContinuousAttack();
+    UFUNCTION()
+    void StopMovement();
     virtual void MoveToTarget();
     virtual FVector GetTargetMonsterLocation() const;
     UPROPERTY()
@@ -131,6 +134,7 @@ private:
     void StartAIUpdateTimer();
     UFUNCTION()
     void EndDeath();
+    
     UFUNCTION()
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
     FTimerHandle AIUpdateTimerHandle;
