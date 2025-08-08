@@ -12,7 +12,6 @@
 #include "GameFramework/PlayerController.h"
 #include "Components/CapsuleComponent.h"
 #include "Engine/DamageEvents.h"
-
 AMonsterBase::AMonsterBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -57,15 +56,7 @@ void AMonsterBase::BeginPlay()
 	StartAIUpdateTimer();
 	FindAndSetTargetPlayer();
 	float RandomLifeTime = FMath::RandRange(5.0f, 10.0f);
-	if (GetMesh())
-	{
-		GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
-	}
-
-	if (GetCapsuleComponent())
-	{
-		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
-	}
+	GetMesh()->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
 	//GetWorld()->GetTimerManager().SetTimer(DeadTimerHandle, this, &AMonsterBase::OnDeath, RandomLifeTime, false);
 }
 
@@ -119,11 +110,7 @@ void AMonsterBase::SetState(EMonsterState NewState)
 		break;
 
 	case EMonsterState::Attacking:
-		GetCharacterMovement()->MaxWalkSpeed = 0.0f;
-		if (AIController)
-		{
-			AIController->StopMovement();
-		}
+		//몬스터가 움찔하는 증강이 있어서 이동 멈추는 로직 공격 시점으로 이동
 		break;
 	}
 }
@@ -223,7 +210,7 @@ void AMonsterBase::PerformAttack()
 		StopContinuousAttack();
 		return;
 	}
-
+	StopMovement();
 	FVector Direction = (TargetPlayer->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 	FRotator LookRotation = FRotationMatrix::MakeFromX(Direction).Rotator();
 	SetActorRotation(LookRotation);
@@ -241,6 +228,15 @@ void AMonsterBase::StopContinuousAttack()
 	}
 }
 
+void AMonsterBase::StopMovement()
+{
+	GetCharacterMovement()->MaxWalkSpeed = 0.0f;
+	if (AIController)
+	{
+		AIController->StopMovement();
+	}
+}
+
 void AMonsterBase::MoveToTarget()
 {
 	FVector TargetLocation = GetTargetMonsterLocation();
@@ -255,7 +251,7 @@ FVector AMonsterBase::GetTargetMonsterLocation() const
 
 		UNavigationSystemV1* NavSys = UNavigationSystemV1::GetNavigationSystem(GetWorld());
 		FNavLocation NavLocation;
-		const FVector QueryExtent = FVector(100, 100, 300);
+		const FVector QueryExtent = FVector(100, 100, 600);
 		if (NavSys && NavSys->ProjectPointToNavigation(TargetLocation, NavLocation, QueryExtent))
 		{
 			return NavLocation.Location;
@@ -307,7 +303,7 @@ void AMonsterBase::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted
 	{
 		if (TargetPlayer && IsInAttackRange())
 		{
-			SetState(EMonsterState::Chasing);
+			SetState(EMonsterState::Attacking);
 		}
 		else
 		{
@@ -381,7 +377,7 @@ void AMonsterBase::Ragdoll()
 	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
 }
 
-void AMonsterBase::ClearMonster()
+void AMonsterBase::DeleteMonster()
 {
 	//스포너에 보스 스폰 델리게이트에 연결해서 보스가 스폰 되는순간 멀티 델리게이트에 구독해놓은 모든 몬스터의 clearmonster가 호출되며 경험치나 아이템 드롭
 	//사망 몽타주 실행 없이 즉시 레벨에서 삭제

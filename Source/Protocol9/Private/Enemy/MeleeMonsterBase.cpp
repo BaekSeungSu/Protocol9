@@ -3,6 +3,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 void AMeleeMonsterBase::PerformAttack()
 {
+	StopMovement();
 	if (AttackMontage && GetMesh() && GetMesh()->GetAnimInstance())
 	{
 		GetMesh()->GetAnimInstance()->Montage_Play(AttackMontage);

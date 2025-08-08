@@ -3,6 +3,7 @@
 
 #include "Enemy/MonsterSpawner.h"
 #include "Enemy/MonsterBase.h"
+#include "Enemy/BossMonsterBase.h"
 #include "NavigationSystem.h"
 #include "Character/MainCharacter.h"
 #include "Kismet/GameplayStatics.h"
@@ -10,7 +11,25 @@
 AMonsterSpawner::AMonsterSpawner()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
+}
+
+void AMonsterSpawner::SpawnLevelUp(int32 PlayerLevel)
+{
+	if (CurrentSpawnLevel < PlayerLevel)
+	{
+		if (PlayerLevel > 0 && PlayerLevel < MAX_LEVEL)
+		{
+			CurrentSpawnLevel = PlayerLevel;
+			SpawnMonstersForLevel(CurrentSpawnLevel);
+		}
+		else if (PlayerLevel == MAX_LEVEL)
+		{
+			CurrentSpawnLevel = PlayerLevel;
+			Player->LevelUPEvent.RemoveDynamic(this, &AMonsterSpawner::SpawnLevelUp);
+			SpawnBossMonster();
+		}
+	}
 }
 
 void AMonsterSpawner::BeginPlay()
@@ -22,16 +41,7 @@ void AMonsterSpawner::BeginPlay()
 	if (CurrentSpawnLevel == 0)
 		return;
 	SpawnMonstersForLevel(CurrentSpawnLevel);
-}
-
-void AMonsterSpawner::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-	if (CurrentSpawnLevel < Player->GetCharacterLevel())
-	{
-		CurrentSpawnLevel = Player->GetCharacterLevel();
-		SpawnMonstersForLevel(CurrentSpawnLevel);
-	}
+	Player->LevelUPEvent.AddDynamic(this, &AMonsterSpawner::SpawnLevelUp);
 }
 
 void AMonsterSpawner::SpawnAllMonsters()
@@ -59,6 +69,7 @@ void AMonsterSpawner::SpawnMonstersForLevel(int32 Level)
 	if (!MonsterSpawnTable)
 		return;
 	TArray<FMonsterSpawnRow*> MonsterSpawnRows;
+	
 	MonsterSpawnTable->GetAllRows(TEXT("MonsterSpawnTableRead"), MonsterSpawnRows);
 	for (const auto* Data : MonsterSpawnRows)
 	{
@@ -84,7 +95,20 @@ void AMonsterSpawner::ReSpawnMonster(AMonsterBase* Monster)
 
 void AMonsterSpawner::SpawnBossMonster()
 {
-	//델리게이트를 만들고 
+	DeleteAllMonsters();
+	if (!BossMonsterClass)
+		return;
+	FVector SpawnLocation = GetRandomNavLocation();
+	SpawnLocation.Z = BossMonsterClass->GetDefaultObject<ABossMonsterBase>()->GetMonsterHalfHeight();
+	FRotator SpawnRotation = FRotator::ZeroRotator;
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	ABossMonsterBase* NewBoss = GetWorld()->SpawnActor<ABossMonsterBase>(
+		BossMonsterClass,
+		SpawnLocation,
+		SpawnRotation,
+		SpawnParams
+	);
 }
 
 
@@ -95,15 +119,19 @@ FVector AMonsterSpawner::GetRandomNavLocation()
 	FVector Origin = Player->GetActorLocation();
 	UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(GetWorld());
 	FNavLocation NavLocation;
-	if (NavSys && NavSys->GetRandomReachablePointInRadius(Origin, SpawnRadius, NavLocation))
+	if (NavSys)
 	{
+		for (int i=0 ; i< MaxSpawnAttemps ; i++) // 플레이어 바로 앞에서 몬스터가 스폰되면 불쾌해서 만약 최소 거리보다 가까운 위치에 스폰될 것 같으면 최대 10번까지는 다시 새로운 위치를 찾게 했습니다.
+		{
+			if (NavSys->GetRandomReachablePointInRadius(Origin, MaxSpawnRadius, NavLocation))
+			{
+				if (FVector::Dist(Origin, NavLocation.Location) >= MinSpawnRadius)
+					break;
+			}
+		}
 		return NavLocation.Location;
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("NavSys->GetRandomReachablePointInRadius() failed"));
-		return Origin + FMath::VRand() * 5000.0f;
-	}
+	return Origin + (Player->GetActorForwardVector() * MinSpawnRadius);
 }
 
 void AMonsterSpawner::SpawnMonster(TSubclassOf<AMonsterBase> MonsterClass)
@@ -121,11 +149,25 @@ void AMonsterSpawner::SpawnMonster(TSubclassOf<AMonsterBase> MonsterClass)
 		SpawnRotation,
 		SpawnParams
 	);
-	
 	if (!NewMonster)
 		return;
+	SpawnedMonsters.Add(NewMonster);
 	NewMonster->OnMonsterDead.AddDynamic(this, &AMonsterSpawner::ReSpawnMonster);
+	NewMonster->OnMonsterDead.AddDynamic(this, &AMonsterSpawner::ClearSpawnedMonster);
 	OnMonsterSpawned.Broadcast(NewMonster);
+}
+
+void AMonsterSpawner::ClearSpawnedMonster(AMonsterBase* Monster)
+{
+	SpawnedMonsters.Remove(Monster);
+}
+
+void AMonsterSpawner::DeleteAllMonsters()
+{
+	for (AMonsterBase* Monster : SpawnedMonsters)
+	{
+		Monster->DeleteMonster();
+	}
 }
 
 
