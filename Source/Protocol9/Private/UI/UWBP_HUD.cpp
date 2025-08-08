@@ -50,3 +50,44 @@ void UUWBP_HUD::ShowAttackBoostEffect(bool bEnable)
 		Image_AttackBoost->SetColorAndOpacity(Color);
 	}
 }
+void UUWBP_HUD::UpdateHPBar(float CurrentHP, float MaxHP)
+{
+	if (HP)
+	{
+		HP->SetPercent(CurrentHP / MaxHP);
+	}
+}
+void UUWBP_HUD::UpdateEXPBar(int CurrentExp, int MaxExp)
+{
+	if (EXP && MaxExp > 0)
+	{
+		float Percent = static_cast<float>(CurrentExp) / static_cast<float>(MaxExp);
+		EXP->SetPercent(Percent);
+	}
+}
+void UUWBP_HUD::UpdateLevelText(int CharacterLevel)
+{
+	if (TXT_Level)
+	{
+		FString LevelStr = FString::Printf(TEXT("LV. %d"), CharacterLevel);
+		TXT_Level->SetText(FText::FromString(LevelStr));
+	}
+}
+void UUWBP_HUD::UpdateStaminaBar(int CurrentStamina)
+{
+	TArray<UImage*> StaminaImages = {
+		Image_Stamina1, Image_Stamina2, Image_Stamina3
+	};
+
+	for (int i = 0; i < StaminaImages.Num(); ++i)
+	{
+		if (StaminaImages[i])
+		{
+			FLinearColor Color = (i < CurrentStamina)
+				? FLinearColor(1, 1, 1, 1)          
+				: FLinearColor(0.2f, 0.2f, 0.2f, 1);
+			
+			StaminaImages[i]->SetColorAndOpacity(Color);
+		}
+	}
+}

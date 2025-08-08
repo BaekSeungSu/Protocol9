@@ -7,6 +7,7 @@
 #include "TimerManager.h"
 #include "UI/UWBP_HUD.h"
 #include "UI/PlayerUIComponent.h"
+#include "Character/StaminaComponent.h"
 #include "MainCharacter.generated.h"
 
 class AMonsterBase;
@@ -163,12 +164,22 @@ public:
 	void OnMonsterDead(AMonsterBase* Monster);
 	
 	void LevelUp();
-	// HUD 효과 제어 함수
+	// UI : 아이템 점등 효과
 	void HandleInvincibilityEffect();
 	void HandleSpeedBoostEffect();
 	void HandleAttackBoostEffect();
-
+	// UI : GameMod HUD 호출
 	UFUNCTION()
 	void CacheHUD();
+	// UI : 경험치, HP, 레벨, 스태미나 바인딩
+	UFUNCTION()
+	void HandleHPChanged(float CurrentHP);
+	UFUNCTION()
+	void HandleEXPChanged(int CurrentExp);
+	UFUNCTION()
+	void HandleLevelChanged(int NewLevel);
+	UFUNCTION()
+	void HandleStaminaChanged(int CurrentStamina);
+
 
 };
