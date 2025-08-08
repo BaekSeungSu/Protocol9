@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Enemy/MonsterBase.h"
+#include "Item/ItemBox.h"
 #include "Enemy/MonsterSpawner.h"
 #include "PoolingManager.generated.h"
 
@@ -27,5 +28,8 @@ protected:
 	void MonsterDeathLocation(FVector Location);
 	UFUNCTION()
 	void OnMonsterSpawned(AMonsterBase* NewMonster);
+
+	UFUNCTION()
+	void BoxDestroyedLocation(FVector Location);
 
 };
