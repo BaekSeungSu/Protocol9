@@ -104,10 +104,6 @@ public:
 	void ResetAttack();
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	UAnimMontage* FireMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	UAnimMontage* ReloadMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	UAnimMontage* OnHandMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	UAnimMontage* MeleeMontage;
