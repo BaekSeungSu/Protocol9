@@ -8,6 +8,7 @@
 #include "GameFramework/DamageType.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "Character/CharacterStateMachine.h"
 
 AWeaponBase::AWeaponBase()
 {
@@ -19,34 +20,71 @@ AWeaponBase::AWeaponBase()
 	SetRootComponent(WeaponMesh);
 
 	CurrentWeaponData = nullptr;
+
 }
 
 void AWeaponBase::PrimaryFire_Implementation()
 {
-	IWeaponInterface::PrimaryFire_Implementation();
+	FireAction();
 }
 
 void AWeaponBase::StopFire_Implementation()
 {
-	IWeaponInterface::StopFire_Implementation();
+	
 }
 
 void AWeaponBase::Reload_Implementation()
 {
-	IWeaponInterface::Reload_Implementation();
 	if (bIsReloading || CurrentAmmo == CurrentWeaponData->MagazineSize)
 	{
 		return;
+	}
+	if (OwningCharacter && OwningCharacter->GetStateMachine())
+	{
+		OwningCharacter->GetStateMachine()->SetState(ECharacterState::Reload);
 	}
 
 	bIsReloading = true;
 	UE_LOG(LogTemp, Warning, TEXT("Reload"));
 
-	GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &AWeaponBase::FinishReload, CurrentWeaponData->ReloadTime, false);
-	
+	UAnimMontage* ReloadMontage = GetReloadMontage();
+	if (ReloadMontage)
+	{
+		const float ReloadDuration = OwningCharacter->GetMesh()->GetAnimInstance()->Montage_Play(ReloadMontage);
+		if (ReloadDuration > 0.0f)
+		{
+			GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &AWeaponBase::FinishReload, ReloadDuration, false);
+			UE_LOG(LogTemp, Log, TEXT("Reload timer set for %f seconds based on montage length."), ReloadDuration);
+			FOnMontageEnded ReloadMontageEndedDelegate;
+			ReloadMontageEndedDelegate.BindUObject(this, &AWeaponBase::OnReloadMontageEnded);
+			OwningCharacter->GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(ReloadMontageEndedDelegate, ReloadMontage);
+		}
+	}
 }
 
 
+void AWeaponBase::SetOwningCharacter(AMainCharacter* NewOwner)
+{
+	OwningCharacter = NewOwner;
+}
+
+UAnimMontage* AWeaponBase::GetFireMontage() const
+{
+	if (CurrentWeaponData)
+	{
+		return CurrentWeaponData->FireMontage;
+	}
+	return nullptr;
+}
+
+UAnimMontage* AWeaponBase::GetReloadMontage() const
+{
+	if (CurrentWeaponData)
+	{
+		return CurrentWeaponData->ReloadMontage;
+	}
+	return nullptr;
+}
 
 void AWeaponBase::BeginPlay()
 {
@@ -64,11 +102,32 @@ void AWeaponBase::Tick(float DeltaTime)
 }
 void AWeaponBase::FireAction()
 {
-	if (!CanFire()) return;
-	
+	if (!CanFire())
+	{
+		if (CurrentAmmo <= 0)
+		{
+			IWeaponInterface::Execute_Reload(this);
+		}
+		return;
+	}
 	LastFireTime = GetWorld()->GetTimeSeconds();
 	CurrentAmmo--;
 	ApplyRecoil();
+	
+	
+	if (CurrentWeaponData->MuzzleFlash)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAttached(CurrentWeaponData->MuzzleFlash, WeaponMesh, TEXT("MuzzleSocket"), FVector(0.f), FRotator(0.f), EAttachLocation::KeepRelativeOffset, true);
+	}
+	if (CurrentWeaponData->FireSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), CurrentWeaponData->FireSound, GetActorLocation());
+	}
+
+	if (OwningCharacter && CurrentWeaponData ->FireMontage)
+	{
+		OwningCharacter->GetMesh()->GetAnimInstance()->Montage_Play(CurrentWeaponData->FireMontage);
+	}
 	
 	if (CurrentWeaponData)
 	{
@@ -81,15 +140,7 @@ void AWeaponBase::FireAction()
 			FireProjectile();
 		}
 	}
-
-	if (CurrentWeaponData->MuzzleFlash)
-	{
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), CurrentWeaponData->MuzzleFlash, WeaponMesh->GetSocketLocation(TEXT("MuzzleSocket")));
-	}
-	if (CurrentWeaponData->FireSound)
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), CurrentWeaponData->FireSound, GetActorLocation());
-	}
+	
 }
 
 bool AWeaponBase::CanFire() const
@@ -222,6 +273,19 @@ void AWeaponBase::ProcessHit(const FHitResult& HitResult, const FVector& ShotDir
 	}
 }
 
+void AWeaponBase::OnReloadMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (bInterrupted)
+	{
+		bIsReloading = false;
+		GetWorld()->GetTimerManager().ClearTimer(ReloadTimerHandle);
+	}
+
+	if (OwningCharacter && OwningCharacter->GetStateMachine())
+	{
+		OwningCharacter->GetStateMachine()->SetState(ECharacterState::Idle);
+	}
+}
 
 void AWeaponBase::LoadWeaponData()
 {
@@ -230,6 +294,7 @@ void AWeaponBase::LoadWeaponData()
 
 	CurrentWeaponData = WeaponDataTable->FindRow<FWeaponData>(WeaponDataRowName, TEXT(""));
 	CurrentAmmo = CurrentWeaponData->MagazineSize;
+	LastFireTime = -100.0f; 
 }
 
 void AWeaponBase::FinishReload()
