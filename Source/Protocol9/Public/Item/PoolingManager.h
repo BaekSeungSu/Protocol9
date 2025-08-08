@@ -2,6 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Enemy/MonsterBase.h"
+#include "Enemy/MonsterSpawner.h"
 #include "PoolingManager.generated.h"
 
 class UObjectPoolingComponent;
@@ -20,5 +22,10 @@ protected:
 	virtual void BeginPlay() override;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UObjectPoolingComponent* ObjectPoolingComponent;
+
+	UFUNCTION()
+	void MonsterDeathLocation(FVector Location);
+	UFUNCTION()
+	void OnMonsterSpawned(AMonsterBase* NewMonster);
 
 };

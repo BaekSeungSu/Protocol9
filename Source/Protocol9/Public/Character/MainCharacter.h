@@ -121,8 +121,10 @@ public:
 	UInventoryComponent* GetInventoryComponent() const {return InventoryComponent; }
 	UCharacterStateMachine* GetStateMachine() const { return StateMachine;}
 
+	//아이템 공격력 증가 함수 
 	UFUNCTION()
 	void AddAttack(float Multiplied);
+	//아이템 공격력 증가 리셋 함수
 	UFUNCTION()
 	void ResetAttack();
 

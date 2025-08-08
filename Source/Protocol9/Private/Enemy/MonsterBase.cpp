@@ -353,9 +353,7 @@ void AMonsterBase::OnDeath()
 	Ragdoll();	
 
 	GiveExp();
-	
-	DropItems();
-	
+
 	OnMonsterDead.Broadcast(this);
 	OnMonsterDeadLocation.Broadcast(FindGroundLocation());
 	GetWorldTimerManager().SetTimer(DeadTimerHandle,this,&AMonsterBase::EndDeath, 5.0f, false);
@@ -391,11 +389,6 @@ void AMonsterBase::ClearMonster()
 }
 
 
-void AMonsterBase::DropItems() const
-{
-	UWorld* World = GetWorld();
-	
-}
 
 FVector AMonsterBase::FindGroundLocation() const
 {

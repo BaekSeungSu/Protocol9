@@ -88,8 +88,6 @@ protected:
     UFUNCTION()
     void ClearMonster();
     UFUNCTION()
-    void DropItems() const;
-    UFUNCTION()
     FVector FindGroundLocation() const;
     UFUNCTION()
     void GiveExp() const;
