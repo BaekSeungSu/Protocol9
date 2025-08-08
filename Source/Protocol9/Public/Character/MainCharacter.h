@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "TimerManager.h"
+#include "UI/UWBP_HUD.h"
+#include "UI/PlayerUIComponent.h"
 #include "MainCharacter.generated.h"
 
 class AMonsterBase;
@@ -88,13 +91,26 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "StateMachine")
 	UCharacterStateMachine* StateMachine;
-	
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUWBP_HUD> HUDWidgetClass;
+
 
 	void EquipDefaultWeapon();
 	
 	virtual void BeginPlay() override;
+	// HUD 참조 저장
+	UPROPERTY()
+	UUWBP_HUD* CachedHUD;
 
-public:	
+	// 각 효과 리셋용 타이머 핸들
+	FTimerHandle InvincibilityResetHandle;
+	FTimerHandle SpeedBoostResetHandle;
+	FTimerHandle AttackBoostResetHandle;
+
+
+public:
+	
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -147,6 +163,12 @@ public:
 	void OnMonsterDead(AMonsterBase* Monster);
 	
 	void LevelUp();
-	
+	// HUD 효과 제어 함수
+	void HandleInvincibilityEffect();
+	void HandleSpeedBoostEffect();
+	void HandleAttackBoostEffect();
+
+	UFUNCTION()
+	void CacheHUD();
 
 };

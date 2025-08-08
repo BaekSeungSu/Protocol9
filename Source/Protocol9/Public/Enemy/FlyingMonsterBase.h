@@ -25,7 +25,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	void InitializeMovement();
-	virtual FVector GetTargetLocation() const override;
+	virtual FVector GetTargetMonsterLocation() const override;
 	virtual void PerformAttack() override;
 	virtual bool IsInAttackRange() const override;
 	virtual void MoveToTarget() override;

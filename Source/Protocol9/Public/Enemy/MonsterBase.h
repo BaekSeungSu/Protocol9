@@ -102,10 +102,11 @@ protected:
     UFUNCTION()
     void StopContinuousAttack();
     virtual void MoveToTarget();
-    virtual FVector GetTargetLocation() const;
+    virtual FVector GetTargetMonsterLocation() const;
     UPROPERTY()
     class AAIController* AIController;
-    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+    class USoundBase* AttackSound;
 private:
     void UpdateAI();
     

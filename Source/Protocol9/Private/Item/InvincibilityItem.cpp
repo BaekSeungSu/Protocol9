@@ -27,7 +27,14 @@ void AInvincibilityItem::ActivateItem(AActor* Activator)
 			FColor::Blue,
 			FString::Printf(TEXT("Invincibility Time! ")));				
 			
-			HPComponent->LockHealth();								//¹«Àû ·ÎÁ÷ Ãß°¡
+			HPComponent->LockHealth();								//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
+
+			//UI ì¶”ê°€
+			AMainCharacter* MyCharacter = Cast<AMainCharacter>(Activator);
+			if (MyCharacter)
+			{
+				MyCharacter->HandleInvincibilityEffect();
+			}
 			
 			GetWorld()->GetTimerManager().SetTimer(
 			EffectTimerHandle,
@@ -52,7 +59,7 @@ void AInvincibilityItem::EndEffect()
 			FColor::Red,
 			FString::Printf(TEXT("Invincibility Time End! ")));
 			HPComponent->UnlockHealth();
-		}		// ¹«Àû off ·ÎÁ÷ Ãß°¡                         
+		}		// ï¿½ï¿½ï¿½ï¿½ off ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½                         
 	}
 	
 	GetWorld()->GetTimerManager().ClearTimer(EffectTimerHandle);
