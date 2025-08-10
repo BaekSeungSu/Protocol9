@@ -2,7 +2,7 @@
 
 AWeapon_Pistol::AWeapon_Pistol()
 {
-	
+	bIsFullAuto = false;
 }
 
 void AWeapon_Pistol::PrimaryFire_Implementation()

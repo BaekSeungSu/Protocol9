@@ -6,25 +6,31 @@
 
 class USphereComponent;
 class UProjectileMovementComponent;
-UCLASS()
+class UNiagaraComponent;
+
+UCLASS(Abstract)
 class PROTOCOL9_API ABaseProjectile : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	ABaseProjectile();
-
+	void FireInDirection(const FVector& ShootDirection);
+	void SetDamage(float NewDamage) {Damage = NewDamage;}
+	
 protected:
-	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USphereComponent* ProjectileCollision;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UProjectileMovementComponent* ProjectileMovement;
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UNiagaraComponent* ProjectileEffect;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Property")
+	float Damage;
+	
 	UFUNCTION()
-	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
 private:
 
 };

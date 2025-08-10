@@ -12,20 +12,27 @@ class PROTOCOL9_API UInventoryComponent : public UActorComponent
 
 public:	
 	UInventoryComponent();
+	
 	void AddWeapon(TSubclassOf<AWeaponBase> WeaponClass);
-	AWeaponBase* GetCurrentWeapon();
-	void SwapToNextWeapon();
-	void SwapWeaponSlots();
+	AWeaponBase* GetCurrentWeapon() const;
+
+	void EquipWeaponAtIndex(int32 SlotIndex);
 	
 protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(VisibleInstanceOnly, Category="Inventory")
-	TArray<AWeaponBase*> WeaponSlots;
+	AWeaponBase* CurrentWeapon;
+	
+	UPROPERTY(VisibleInstanceOnly, Category="Inventory")
+	TArray<TSubclassOf<AWeaponBase>> WeaponClasses;
 
 	UPROPERTY(VisibleInstanceOnly, Category="Inventory")
 	int32 CurrentWeaponIndex;
-	
+
+
+	const int32 MaxWeaponSlots = 2;
 private:
+	void SpawnAndEquipWeapon(int32 SlotIndex);
 	
 };
