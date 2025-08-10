@@ -25,7 +25,6 @@ public:
 		  FireRate(0.0f),
 		  Range(0.0f),
 		  MagazineSize(0),
-		  ReloadTime(0),
 		  RecoilPitch(0),
 		  RecoilYaw(0),
 		  SpreadAngle(0),
@@ -35,7 +34,10 @@ public:
 		  HitParticle(nullptr),
 		  FireSound(nullptr),
 		  FireMontage(nullptr),
-		  ReloadMontage(nullptr)
+		  ReloadMontage(nullptr),
+		  AttachLocationOffset(FVector::ZeroVector),
+		  AttachRotationOffset(FRotator::ZeroRotator),
+		  AttachScale(1.0f)
 	{
 	}
 	
@@ -48,7 +50,7 @@ public:
 	TSubclassOf<AWeaponBase> WeaponClass;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Class")
 	TSubclassOf<ABaseProjectile> ProjectileClass;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Stats")
 	float Damage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Stats")
@@ -58,8 +60,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Ammo")
 	int32 MagazineSize;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Ammo")
-	float ReloadTime;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Recoil")
 	float RecoilPitch;
@@ -83,6 +83,13 @@ public:
 	UAnimMontage* FireMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Animation")
 	UAnimMontage* ReloadMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Offset")
+	FVector AttachLocationOffset;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Offset")
+	FRotator AttachRotationOffset;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Offset")
+	FVector AttachScale;
 	
 };
 
