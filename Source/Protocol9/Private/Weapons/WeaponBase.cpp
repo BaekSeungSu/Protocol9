@@ -20,7 +20,7 @@ AWeaponBase::AWeaponBase()
 	SetRootComponent(WeaponMesh);
 
 	CurrentWeaponData = nullptr;
-
+	bIsFullAuto = false;
 }
 
 void AWeaponBase::PrimaryFire_Implementation()
@@ -89,7 +89,6 @@ UAnimMontage* AWeaponBase::GetReloadMontage() const
 void AWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
-	LoadWeaponData();
 	
 }
 
@@ -100,6 +99,18 @@ void AWeaponBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
+
+void AWeaponBase::AttachToOwnerSocket()
+{
+	if (!OwningCharacter || !CurrentWeaponData) return;
+
+	AttachToComponent(OwningCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket"));
+
+	SetActorRelativeLocation(CurrentWeaponData->AttachLocationOffset);
+	SetActorRelativeRotation(CurrentWeaponData->AttachRotationOffset);
+	SetActorRelativeScale3D(CurrentWeaponData->AttachScale);
+}
+
 void AWeaponBase::FireAction()
 {
 	if (!CanFire())
@@ -151,11 +162,15 @@ bool AWeaponBase::CanFire() const
 		return false;
 	}
 
-	const float TimeBetweenShots = 60.0f / CurrentWeaponData->FireRate;
-	if (GetWorld()->GetTimeSeconds() < LastFireTime + TimeBetweenShots)
+	if (!bIsFullAuto)
 	{
-		return false;
+		const float TimeBetweenShots = 60.0f / CurrentWeaponData->FireRate;
+		if (GetWorld()->GetTimeSeconds() < LastFireTime + TimeBetweenShots)
+		{
+			return false;
+		}	
 	}
+	
 	
 	return true;
 }
@@ -193,7 +208,7 @@ void AWeaponBase::ApplyRecoil()
 
 void AWeaponBase::FireHitScan()
 {
-	FVector FireDirection = CalculateHitScanDirection();
+	FVector FireDirection = CalculateFireDirection();
 	if (FireDirection.IsZero()) return;
 	
 	FVector TraceStart;
@@ -206,7 +221,7 @@ void AWeaponBase::FireHitScan()
 	CollisionParams.AddIgnoredActor(this);
 
 	FHitResult HitResult;
-	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_GameTraceChannel1, CollisionParams);
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Pawn, CollisionParams);
 
 	FVector MuzzleLocation = WeaponMesh->GetSocketLocation(TEXT("MuzzleSocket"));
 	
@@ -222,7 +237,7 @@ void AWeaponBase::FireHitScan()
 	
 }
 
-FVector AWeaponBase::CalculateHitScanDirection() const
+FVector AWeaponBase::CalculateFireDirection() const
 {
 	AController* OwnerController = GetOwner()->GetInstigatorController();
 	AMainCharacter* OwnerCharacter = Cast<AMainCharacter>(GetOwner());
@@ -256,6 +271,27 @@ FVector AWeaponBase::CalculateHitScanDirection() const
 
 void AWeaponBase::FireProjectile()
 {
+	if (!CurrentWeaponData || !CurrentWeaponData->ProjectileClass) return;
+
+	AController* OwnerController = GetOwner()->GetInstigatorController();
+	if (!OwnerController) return;
+
+	FVector MuzzleLocation = WeaponMesh->GetSocketLocation(TEXT("MuzzleSocket"));
+	FVector FireDirection = CalculateFireDirection();
+	FRotator FireRotation = FireDirection.Rotation();
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = GetInstigator();
+
+	
+	ABaseProjectile* SpawnedProjectile = GetWorld()->SpawnActor<ABaseProjectile>(CurrentWeaponData->ProjectileClass, MuzzleLocation, FireRotation, SpawnParams);
+	if (SpawnedProjectile)
+	{
+		SpawnedProjectile->SetDamage(CurrentWeaponData->Damage);
+		SpawnedProjectile->FireInDirection(FireDirection);
+	}
+	
 }
 
 void AWeaponBase::ProcessHit(const FHitResult& HitResult, const FVector& ShotDirection)
@@ -293,6 +329,7 @@ void AWeaponBase::LoadWeaponData()
 	if (WeaponDataRowName.IsNone()) return;
 
 	CurrentWeaponData = WeaponDataTable->FindRow<FWeaponData>(WeaponDataRowName, TEXT(""));
+	if (!CurrentWeaponData) return; 
 	CurrentAmmo = CurrentWeaponData->MagazineSize;
 	LastFireTime = -100.0f; 
 }

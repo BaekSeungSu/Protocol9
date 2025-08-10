@@ -23,10 +23,16 @@ public:
 	virtual void Reload_Implementation() override;
 	virtual void Tick(float DeltaTime) override;
 
-	int32 GetCurrentAmmo() const {return CurrentAmmo;}
+	void AttachToOwnerSocket();
+	void LoadWeaponData();
 	void SetOwningCharacter(AMainCharacter* NewOwner);
 	UAnimMontage* GetFireMontage() const;
 	UAnimMontage* GetReloadMontage() const;
+	
+	void FireAction();
+	
+	int32 GetCurrentAmmo() const {return CurrentAmmo;}
+	
 protected:
 	virtual void BeginPlay() override;
 	
@@ -46,16 +52,15 @@ protected:
 	const FWeaponData* CurrentWeaponData;
 	FTimerHandle ReloadTimerHandle;
 	float LastFireTime;
-
+	bool bIsFullAuto;
 	
 	// 발사 관련 함수
-	void FireAction();
 	bool CanFire() const;
 	void ApplyRecoil();
-
+	
 	// HitScan 관련 함수
 	void FireHitScan();
-	FVector CalculateHitScanDirection() const;
+	FVector CalculateFireDirection() const;
 	
 	// Projectile 관련 함수
 	void FireProjectile();
@@ -63,7 +68,6 @@ protected:
 	void ProcessHit(const FHitResult& HitResult, const FVector& ShotDirection);
 
 	void OnReloadMontageEnded(UAnimMontage* Montage, bool bInterrupted);
-	void LoadWeaponData();
 	void FinishReload();
 
 	
