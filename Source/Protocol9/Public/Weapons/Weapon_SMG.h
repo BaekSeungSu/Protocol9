@@ -8,8 +8,6 @@ UCLASS()
 class PROTOCOL9_API AWeapon_SMG : public AWeaponBase
 {
 	GENERATED_BODY()
-	
-
 public:
 	AWeapon_SMG();
 	virtual void PrimaryFire_Implementation() override;
