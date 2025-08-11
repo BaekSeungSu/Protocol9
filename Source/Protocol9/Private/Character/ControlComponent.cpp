@@ -436,4 +436,12 @@ void UControlComponent::FinishSwapWeapon(int32 SlotIndex)
 	}
 }
 
+void UControlComponent::SetMaxSpeed(float NewMaxSpeed)
+{
+	MaxSpeed = NewMaxSpeed;
+	if (Owner && Owner->GetCharacterMovement())
+	{
+		Owner->GetCharacterMovement()->MaxWalkSpeed = NewMaxSpeed;
+	}
+}
 

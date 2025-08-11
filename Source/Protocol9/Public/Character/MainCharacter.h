@@ -47,8 +47,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
 	float BasetAttack;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
-	float LevelUpAttack;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
 	float Attack;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
 	float CurrentAttack;
