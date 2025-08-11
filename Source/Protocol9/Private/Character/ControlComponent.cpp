@@ -381,4 +381,12 @@ void UControlComponent::HandleCharacterDeath()
 	DisableInput();
 }
 
+void UControlComponent::SetMaxSpeed(float NewMaxSpeed)
+{
+	MaxSpeed = NewMaxSpeed;
+	if (Owner && Owner->GetCharacterMovement())
+	{
+		Owner->GetCharacterMovement()->MaxWalkSpeed = NewMaxSpeed;
+	}
+}
 
