@@ -64,9 +64,15 @@ void AMainCharacter::InitCharacterInfo()
 
 void AMainCharacter::EquipDefaultWeapon()
 {
-	if (InventoryComponent && DefaultWeaponClass)
+	if (InventoryComponent && DefaultWeaponClasses.Num()>0)
 	{
-		InventoryComponent->AddWeapon(DefaultWeaponClass);
+		for (TSubclassOf<AWeaponBase> WeaponClass : DefaultWeaponClasses)
+		{
+			if (WeaponClass)
+			{
+				InventoryComponent->AddWeapon(WeaponClass);
+			}
+		}
 	}
 }
 
@@ -455,5 +461,13 @@ void AMainCharacter::HandleStaminaChanged(int CurrentStamina)
 	if (CachedHUD)
 	{
 		CachedHUD->UpdateStaminaBar(CurrentStamina);
+	}
+}
+
+void AMainCharacter::OnNotify_EquipWeapon()
+{
+	if (InventoryComponent)
+	{
+		InventoryComponent->EquipWeaponAtIndex(PendingWeaponSlot);
 	}
 }
