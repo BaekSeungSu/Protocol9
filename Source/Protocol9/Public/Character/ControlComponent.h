@@ -82,7 +82,11 @@ public:
 	UFUNCTION()
 	void DeBug2(const FInputActionValue& Value);
 
-	//������ ���ǵ� ���� �Լ�
+
+	UFUNCTION(BlueprintCallable,Category="Speed")
+	void SetMaxSpeed(float NewMaxSpeed);
+	UFUNCTION(BlueprintPure,Category="Speed")
+	float GetMaxSpeed() const {return MaxSpeed;};
 	UFUNCTION()
 	void AddSpeed(float Multiplier);
 	//������ ���ǵ� ���� ���� �Լ�

@@ -12,6 +12,7 @@
 #include "Weapons/WeaponBase.h"
 #include "Enemy/MonsterBase.h"
 #include "Engine/DamageEvents.h"
+#include "Item/ItemBox.h"
 
 
 UControlComponent::UControlComponent()
@@ -176,7 +177,8 @@ void UControlComponent::MeleeAttack()
 
 	FCollisionObjectQueryParams ObjectQueryParams;
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_Pawn);
-
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+	
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(GetOwner());
 	
@@ -205,17 +207,17 @@ void UControlComponent::MeleeAttack()
 				HitActors.Add(Hit.GetActor());
 
 				FVector Direction = (Hit.ImpactPoint - Owner->GetActorLocation()).GetSafeNormal();
-				
-				if (AMonsterBase* Monster = Cast<AMonsterBase>(Target))
-				{
-					UGameplayStatics::ApplyDamage(
+
+				UGameplayStatics::ApplyDamage(
 					Target,
 					Owner->GetAttack(),
 					Owner->GetController(),
 					Owner,
 					UDamageType::StaticClass()
 					);
-					
+				
+				if (AMonsterBase* Monster = Cast<AMonsterBase>(Target))
+				{
 					Monster->GetMesh()->AddImpulse(Direction * 100.0f);
 					HitCount++;
 
@@ -435,4 +437,12 @@ void UControlComponent::FinishSwapWeapon(int32 SlotIndex)
 	}
 }
 
+void UControlComponent::SetMaxSpeed(float NewMaxSpeed)
+{
+	MaxSpeed = NewMaxSpeed;
+	if (Owner && Owner->GetCharacterMovement())
+	{
+		Owner->GetCharacterMovement()->MaxWalkSpeed = NewMaxSpeed;
+	}
+}
 
