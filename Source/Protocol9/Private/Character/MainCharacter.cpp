@@ -84,6 +84,14 @@ void AMainCharacter::BeginPlay()
 	{
 		StaminaComponent->StaminaChanged.AddDynamic(this, &AMainCharacter::HandleStaminaChanged);
 	}
+	// 무기 탄약 변경 이벤트 바인딩
+	/*if (InventoryComponent)
+	{
+		if (AWeaponBase* CurrentWeapon = InventoryComponent->GetCurrentWeapon())
+		{
+			CurrentWeapon->OnAmmoChanged.AddDynamic(this, &AMainCharacter::HandleAmmoChanged);
+		}
+	}*/
 
 	HideDefalutMesh();
 	
@@ -457,3 +465,12 @@ void AMainCharacter::HandleStaminaChanged(int CurrentStamina)
 		CachedHUD->UpdateStaminaBar(CurrentStamina);
 	}
 }
+/*void AMainCharacter::HandleAmmoChanged(int32 CurrentAmmo, int32 MaxAmmo)
+{
+	if (CachedHUD)
+	{
+		CachedHUD->UpdateAmmo(CurrentAmmo, MaxAmmo);
+	}
+}*/
+
+
