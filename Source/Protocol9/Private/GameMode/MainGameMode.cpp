@@ -281,7 +281,7 @@ void AMainGameMode::ShowGameOver(bool bVictory, int32 InKillCount)
 		}
 	}), 0.0f, false);
 }
-#include "GameInstance/MainGameInstance.h"  // 상단 include 필요
+
 
 void AMainGameMode::OnRetryClicked()
 {
