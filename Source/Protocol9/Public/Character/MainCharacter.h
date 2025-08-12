@@ -197,4 +197,9 @@ public:
 	void SetPendingWeaponSlot(int32 NewSlot) {PendingWeaponSlot = NewSlot; }
 private:
 	int32 PendingWeaponSlot;
+	// UI:탄약 업데이트용 함수
+	/*UFUNCTION()
+	void HandleAmmoChanged(int32 CurrentAmmo, int32 MaxAmmo);*/
+
+
 };
