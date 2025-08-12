@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -25,10 +24,7 @@ public:
 	FOnCoolTimeSignature OnCoolTime;
 	UPROPERTY(BlueprintAssignable, Category = "Skill")
 	FLastSkillSignature LastSkillCharge;
-	
-private:
-	bool bInputEnabled = true;
-	
+
 protected:
 	AMainCharacter* Owner;
 
@@ -96,5 +92,9 @@ public:
 	UFUNCTION()
 	void HandleCharacterDeath();
 
-	
+private:
+	bool bInputEnabled = true;
+
+	void BeginSwapWeapon(int32 SlotIndex);
+	void FinishSwapWeapon(int32 SlotIndex);
 };
