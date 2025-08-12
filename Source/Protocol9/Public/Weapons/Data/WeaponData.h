@@ -35,6 +35,7 @@ public:
 		  FireSound(nullptr),
 		  FireMontage(nullptr),
 		  ReloadMontage(nullptr),
+		  EquipMontage(nullptr),
 		  AttachLocationOffset(FVector::ZeroVector),
 		  AttachRotationOffset(FRotator::ZeroRotator),
 		  AttachScale(1.0f)
@@ -83,6 +84,8 @@ public:
 	UAnimMontage* FireMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Animation")
 	UAnimMontage* ReloadMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Animation")
+	UAnimMontage* EquipMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Offset")
 	FVector AttachLocationOffset;
