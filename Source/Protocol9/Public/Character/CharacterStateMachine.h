@@ -13,6 +13,7 @@ enum class ECharacterState : uint8
 	Fire	UMETA(DisplayName = "Fire"),
 	Melee	UMETA(DisplayName = "Melee"),
 	Reload	UMETA(DisplayName = "Reload"),
+	Swapping UMETA(DisplayName = "Swapping")
 };
 
 UENUM(BlueprintType)
@@ -77,7 +78,12 @@ public:
 	bool CanMelee() const{return CurrentHPState == EHPState::Dead
 		|| CurrentState == ECharacterState::Melee;}
 
-	bool CanSwapWeapon() const{return CurrentHPState != EHPState::Dead;}
+	bool CanSwapWeapon() const
+	{
+		const bool bIsActionFree = (CurrentState == ECharacterState::Idle);
+		const bool bIsAlive = (CurrentHPState != EHPState::Dead);
+		return bIsActionFree && bIsAlive;
+	}
 	
 	virtual void BeginPlay() override;
 
