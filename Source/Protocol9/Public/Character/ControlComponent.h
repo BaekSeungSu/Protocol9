@@ -10,6 +10,8 @@ class AMainCharacter;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCoolTimeSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLastSkillSignature);
 
+class AMainCharacter;
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROTOCOL9_API UControlComponent : public UActorComponent
 {
@@ -80,10 +82,10 @@ public:
 	UFUNCTION()
 	void DeBug2(const FInputActionValue& Value);
 
-	//¾ÆÀÌÅÛ ½ºÇÇµå Áõ°¡ ÇÔ¼ö
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Çµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
 	UFUNCTION()
 	void AddSpeed(float Multiplier);
-	//¾ÆÀÌÅÛ ½ºÇÇµå Áõ°¡ Á¦°Å ÇÔ¼ö
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Çµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
 	UFUNCTION()
 	void ResetSpeed();
 	
