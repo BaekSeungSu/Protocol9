@@ -3,8 +3,6 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
-#include "Kismet/GameplayStatics.h"
-
 
 ABaseProjectile::ABaseProjectile()
 {
@@ -12,7 +10,8 @@ ABaseProjectile::ABaseProjectile()
 
 	ProjectileCollision = CreateDefaultSubobject<USphereComponent>(TEXT("ProjectileCollision"));
 	SetRootComponent(ProjectileCollision);
-	ProjectileCollision->SetCollisionProfileName(TEXT("BlockAllDynamic"));
+	ProjectileCollision->BodyInstance.SetCollisionProfileName(TEXT("Projectile"));
+	ProjectileCollision->InitSphereRadius(10.0f);
 	ProjectileCollision->OnComponentHit.AddDynamic(this, &ABaseProjectile::OnHit);
 
 	ProjectileEffect = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ProjectileEffect"));
@@ -42,6 +41,10 @@ void ABaseProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UP
 {
 	ProjectileMovement->StopMovementImmediately();
 	ProjectileEffect->Deactivate();
+	if (HitEffect)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), HitEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
+	}
 }
 
 
