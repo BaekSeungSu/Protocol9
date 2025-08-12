@@ -4,6 +4,18 @@
 #include "GameFramework/Actor.h"
 #include "TileBase.generated.h"
 
+USTRUCT(BlueprintType)
+struct FSpawnSpec
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<AActor> Class;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(ClampMin="0"))
+	int32 Count = 0;
+};
+
 UCLASS()
 class PROTOCOL9_API ATileBase : public AActor
 {
@@ -28,26 +40,29 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class UStaticMeshComponent* StaticMeshComponent;
 
-	// 인스턴스 메시 리스트
-	UPROPERTY(EditAnywhere, Category = "Instance")
-	TArray<UStaticMesh*> InstanceMeshList;
+	// 클래스별 스폰 스펙
+	UPROPERTY(EditAnywhere, Category = "SpawnClass")
+	TArray<FSpawnSpec> SpawnSpecs;
 
-	// 생성된 인스턴스 컴포넌트 추적
+	// 생성된 인스턴스 추적
 	UPROPERTY()
-	TArray<class UInstancedStaticMeshComponent*> SpawnedInstance;
-
-	// 스폰 수량
-	UPROPERTY(EditAnywhere, Category = "Instance")
-	int32 SpawnQuantity = 10;
+	TArray<AActor*> SpawnedClass;
 
 	// 중첩 방지 반경
 	UPROPERTY(EditAnywhere, Category = "Instance")
 	float SpawnRadius = 50.f;
+
+	// 스폰 시도 횟수 배율
+	UPROPERTY(EditAnywhere, Category = "Instance")
+	int32 MaxAttemptsPerSpawn = 20;
 	
 	UPROPERTY(EditAnywhere, Category = "Tile info")
 	int32 TileIndex;
 	
-	#if WITH_EDITOR
-		void PrintIndex ();
-	#endif
+	UFUNCTION(BlueprintCallable, Category="Spawn")
+	void RebuildInstances();
+	
+#if WITH_EDITOR
+	void PrintIndex();
+#endif
 };
