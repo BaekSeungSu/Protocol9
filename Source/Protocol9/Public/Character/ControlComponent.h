@@ -19,7 +19,7 @@ public:
 	
 	UControlComponent();
 
-	//Ïù¥Î≤§Ìä∏
+	//¿Ã∫•∆Æ
 	UPROPERTY(BlueprintAssignable, Category = "Skill")
 	FOnCoolTimeSignature OnCoolTime;
 	UPROPERTY(BlueprintAssignable, Category = "Skill")
@@ -80,10 +80,13 @@ public:
 	UFUNCTION()
 	void DeBug2(const FInputActionValue& Value);
 
-	//æ∆¿Ã≈€ Ω∫««µÂ ¡ı∞° «‘ºˆ
+
+	UFUNCTION(BlueprintCallable,Category="Speed")
+	void SetMaxSpeed(float NewMaxSpeed);
+	UFUNCTION(BlueprintPure,Category="Speed")
+	float GetMaxSpeed() const {return MaxSpeed;};
 	UFUNCTION()
 	void AddSpeed(float Multiplier);
-	//æ∆¿Ã≈€ Ω∫««µÂ ¡ı∞° ¡¶∞≈ «‘ºˆ
 	UFUNCTION()
 	void ResetSpeed();
 	
