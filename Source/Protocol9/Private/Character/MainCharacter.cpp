@@ -16,7 +16,6 @@
 #include "Enemy/MonsterBase.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "UI/PlayerUIComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "UI/UWBP_HUD.h"
 #include "GameFramework/PlayerController.h"
 #include "GameMode/MainGameMode.h"
@@ -27,16 +26,17 @@ AMainCharacter::AMainCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio"));
-	AudioComponent->SetupAttachment(RootComponent);
+	SituationAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Situation"));
+	SituationAudioComponent->SetupAttachment(RootComponent);
+	DialogueAudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Dialogue"));
+	DialogueAudioComponent->SetupAttachment(RootComponent);
 
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(RootComponent);
 	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
-
-
+	
 	StateMachine = CreateDefaultSubobject<UCharacterStateMachine>(TEXT("StateMachine"));
 
 	HPComponent = CreateDefaultSubobject<UHPComponent>(TEXT("HP"));
@@ -46,7 +46,13 @@ AMainCharacter::AMainCharacter()
 	
 	PlayerUIComponent = CreateDefaultSubobject<UPlayerUIComponent>(TEXT("PlayerUI"));
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+
+	InitCharacterInfo();
 	
+}
+
+void AMainCharacter::InitCharacterInfo()
+{
 	BasetAttack = 20.0f;
 	LevelUpAttack = 1.2f;
 	Attack = BasetAttack;
@@ -54,10 +60,6 @@ AMainCharacter::AMainCharacter()
 	Exp = 0;
 	MaxExp = 100;
 	CharacterLevel = 1;
-
-	DeathCameraSocket = TEXT("head");
-
-
 }
 
 void AMainCharacter::EquipDefaultWeapon()
@@ -66,16 +68,27 @@ void AMainCharacter::EquipDefaultWeapon()
 	{
 		InventoryComponent->AddWeapon(DefaultWeaponClass);
 	}
-	
 }
 
 void AMainCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	//UI 바인딩 : 체력, 경험치, 레벨업, 스태미나 변경 시 HUD 갱신
+	if (HPComponent)
+	{
+		HPComponent->HPChanged.AddDynamic(this, &AMainCharacter::HandleHPChanged);
+		ExpChanged.AddDynamic(this, &AMainCharacter::HandleEXPChanged);
+		LevelUPEvent.AddDynamic(this, &AMainCharacter::HandleLevelChanged);
+	}
+	if (StaminaComponent)
+	{
+		StaminaComponent->StaminaChanged.AddDynamic(this, &AMainCharacter::HandleStaminaChanged);
+	}
 
 	HideDefalutMesh();
 	
 	EquipDefaultWeapon();
+	
 	AMonsterSpawner* Spawner = Cast<AMonsterSpawner>(UGameplayStatics::GetActorOfClass(GetWorld(), AMonsterSpawner::StaticClass()));
 	if (Spawner)
 	{
@@ -92,12 +105,13 @@ void AMainCharacter::CacheHUD()
 	}
 }
 
+//아이템 공격력 증가 함수
 void AMainCharacter::AddAttack(float Multiplied)
 {
 	CurrentAttack *= Multiplied;
 	UE_LOG(LogTemp, Warning,TEXT("Increased	My Attack : %f"),CurrentAttack);
 }
-
+//아이템 공격력 증가 리셋 함수
 void AMainCharacter::ResetAttack()
 {
 	CurrentAttack = Attack;
@@ -118,14 +132,9 @@ void AMainCharacter::SetupDeathCamera()
 			FAttachmentTransformRules::KeepWorldTransform,
 			DeathCameraSocket
 		);
-
-		// SpringArmComponent->bEnableCameraLag = true;
-		// SpringArmComponent->bEnableCameraRotationLag = true;
-		// SpringArmComponent->CameraLagSpeed = 3.0f;
-		// SpringArmComponent->CameraRotationLagSpeed = 3.0f;
         
-		SpringArmComponent->SetRelativeLocation(FVector(0, 50, 0));  // 측면에서 보기
-		SpringArmComponent->SetRelativeRotation(FRotator(0, -90, 0));  // 캐릭터를 향해 보기
+		SpringArmComponent->SetRelativeLocation(FVector(0, 50, 0));  
+		SpringArmComponent->SetRelativeRotation(FRotator(0, -90, 0));
 	}
 
 }
@@ -141,9 +150,6 @@ void AMainCharacter::ResetCameraToDefault()
 		);
 		SpringArmComponent->SetRelativeLocation(OriginalSpringArmLocation);
 		SpringArmComponent->SetRelativeRotation(OriginalSpringArmRotation);
-        
-		// SpringArmComponent->bEnableCameraLag = false;
-		// SpringArmComponent->bEnableCameraRotationLag = false;
 	}
 
 }
@@ -375,11 +381,11 @@ void AMainCharacter::LevelUp()
 		Exp -= MaxExp;
 
 		LevelUPEvent.Broadcast(CharacterLevel);
-		
+		ExpChanged.Broadcast(Exp);//UI 경험치바 초기화 
 		LevelUp();
 	}
 }
-//UI
+//UI 파트
 void AMainCharacter::HandleInvincibilityEffect()
 {
 	if (CachedHUD)
@@ -420,5 +426,34 @@ void AMainCharacter::HandleAttackBoostEffect()
 		{
 			CachedHUD->ShowAttackBoostEffect(false);
 		}, 5.f, false);
+	}
+}
+void AMainCharacter::HandleHPChanged(float CurrentHP)
+{
+	if (CachedHUD && HPComponent)
+	{
+		float MaxHP = HPComponent->GetMaxHP();
+		CachedHUD->UpdateHPBar(CurrentHP, MaxHP);
+	}
+}
+void AMainCharacter::HandleEXPChanged(int CurrentExp)
+{
+	if (CachedHUD)
+	{
+		CachedHUD->UpdateEXPBar(CurrentExp, MaxExp);
+	}
+}
+void AMainCharacter::HandleLevelChanged(int NewLevel)
+{
+	if (CachedHUD)
+	{
+		CachedHUD->UpdateLevelText(NewLevel);
+	}
+}
+void AMainCharacter::HandleStaminaChanged(int CurrentStamina)
+{
+	if (CachedHUD)
+	{
+		CachedHUD->UpdateStaminaBar(CurrentStamina);
 	}
 }

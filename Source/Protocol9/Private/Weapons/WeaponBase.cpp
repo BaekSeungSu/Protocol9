@@ -8,6 +8,7 @@
 #include "GameFramework/DamageType.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "Character/CharacterStateMachine.h"
 
 AWeaponBase::AWeaponBase()
 {
@@ -19,39 +20,75 @@ AWeaponBase::AWeaponBase()
 	SetRootComponent(WeaponMesh);
 
 	CurrentWeaponData = nullptr;
+	bIsFullAuto = false;
 }
 
 void AWeaponBase::PrimaryFire_Implementation()
 {
-	IWeaponInterface::PrimaryFire_Implementation();
+	FireAction();
 }
 
 void AWeaponBase::StopFire_Implementation()
 {
-	IWeaponInterface::StopFire_Implementation();
+	
 }
 
 void AWeaponBase::Reload_Implementation()
 {
-	IWeaponInterface::Reload_Implementation();
 	if (bIsReloading || CurrentAmmo == CurrentWeaponData->MagazineSize)
 	{
 		return;
+	}
+	if (OwningCharacter && OwningCharacter->GetStateMachine())
+	{
+		OwningCharacter->GetStateMachine()->SetState(ECharacterState::Reload);
 	}
 
 	bIsReloading = true;
 	UE_LOG(LogTemp, Warning, TEXT("Reload"));
 
-	GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &AWeaponBase::FinishReload, CurrentWeaponData->ReloadTime, false);
-	
+	UAnimMontage* ReloadMontage = GetReloadMontage();
+	if (ReloadMontage)
+	{
+		const float ReloadDuration = OwningCharacter->GetMesh()->GetAnimInstance()->Montage_Play(ReloadMontage);
+		if (ReloadDuration > 0.0f)
+		{
+			GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &AWeaponBase::FinishReload, ReloadDuration, false);
+			UE_LOG(LogTemp, Log, TEXT("Reload timer set for %f seconds based on montage length."), ReloadDuration);
+			FOnMontageEnded ReloadMontageEndedDelegate;
+			ReloadMontageEndedDelegate.BindUObject(this, &AWeaponBase::OnReloadMontageEnded);
+			OwningCharacter->GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(ReloadMontageEndedDelegate, ReloadMontage);
+		}
+	}
 }
 
 
+void AWeaponBase::SetOwningCharacter(AMainCharacter* NewOwner)
+{
+	OwningCharacter = NewOwner;
+}
+
+UAnimMontage* AWeaponBase::GetFireMontage() const
+{
+	if (CurrentWeaponData)
+	{
+		return CurrentWeaponData->FireMontage;
+	}
+	return nullptr;
+}
+
+UAnimMontage* AWeaponBase::GetReloadMontage() const
+{
+	if (CurrentWeaponData)
+	{
+		return CurrentWeaponData->ReloadMontage;
+	}
+	return nullptr;
+}
 
 void AWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
-	LoadWeaponData();
 	
 }
 
@@ -62,13 +99,46 @@ void AWeaponBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
+
+void AWeaponBase::AttachToOwnerSocket()
+{
+	if (!OwningCharacter || !CurrentWeaponData) return;
+
+	AttachToComponent(OwningCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket"));
+
+	SetActorRelativeLocation(CurrentWeaponData->AttachLocationOffset);
+	SetActorRelativeRotation(CurrentWeaponData->AttachRotationOffset);
+	SetActorRelativeScale3D(CurrentWeaponData->AttachScale);
+}
+
 void AWeaponBase::FireAction()
 {
-	if (!CanFire()) return;
-	
+	if (!CanFire())
+	{
+		if (CurrentAmmo <= 0)
+		{
+			IWeaponInterface::Execute_Reload(this);
+		}
+		return;
+	}
 	LastFireTime = GetWorld()->GetTimeSeconds();
 	CurrentAmmo--;
 	ApplyRecoil();
+	
+	
+	if (CurrentWeaponData->MuzzleFlash)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAttached(CurrentWeaponData->MuzzleFlash, WeaponMesh, TEXT("MuzzleSocket"), FVector(0.f), FRotator(0.f), EAttachLocation::KeepRelativeOffset, true);
+	}
+	if (CurrentWeaponData->FireSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), CurrentWeaponData->FireSound, GetActorLocation());
+	}
+
+	if (OwningCharacter && CurrentWeaponData ->FireMontage)
+	{
+		OwningCharacter->GetMesh()->GetAnimInstance()->Montage_Play(CurrentWeaponData->FireMontage);
+	}
 	
 	if (CurrentWeaponData)
 	{
@@ -81,15 +151,7 @@ void AWeaponBase::FireAction()
 			FireProjectile();
 		}
 	}
-
-	if (CurrentWeaponData->MuzzleFlash)
-	{
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), CurrentWeaponData->MuzzleFlash, WeaponMesh->GetSocketLocation(TEXT("MuzzleSocket")));
-	}
-	if (CurrentWeaponData->FireSound)
-	{
-		UGameplayStatics::PlaySoundAtLocation(GetWorld(), CurrentWeaponData->FireSound, GetActorLocation());
-	}
+	
 }
 
 bool AWeaponBase::CanFire() const
@@ -100,11 +162,15 @@ bool AWeaponBase::CanFire() const
 		return false;
 	}
 
-	const float TimeBetweenShots = 60.0f / CurrentWeaponData->FireRate;
-	if (GetWorld()->GetTimeSeconds() < LastFireTime + TimeBetweenShots)
+	if (!bIsFullAuto)
 	{
-		return false;
+		const float TimeBetweenShots = 60.0f / CurrentWeaponData->FireRate;
+		if (GetWorld()->GetTimeSeconds() < LastFireTime + TimeBetweenShots)
+		{
+			return false;
+		}	
 	}
+	
 	
 	return true;
 }
@@ -142,7 +208,7 @@ void AWeaponBase::ApplyRecoil()
 
 void AWeaponBase::FireHitScan()
 {
-	FVector FireDirection = CalculateHitScanDirection();
+	FVector FireDirection = CalculateFireDirection();
 	if (FireDirection.IsZero()) return;
 	
 	FVector TraceStart;
@@ -171,7 +237,7 @@ void AWeaponBase::FireHitScan()
 	
 }
 
-FVector AWeaponBase::CalculateHitScanDirection() const
+FVector AWeaponBase::CalculateFireDirection() const
 {
 	AController* OwnerController = GetOwner()->GetInstigatorController();
 	AMainCharacter* OwnerCharacter = Cast<AMainCharacter>(GetOwner());
@@ -205,6 +271,27 @@ FVector AWeaponBase::CalculateHitScanDirection() const
 
 void AWeaponBase::FireProjectile()
 {
+	if (!CurrentWeaponData || !CurrentWeaponData->ProjectileClass) return;
+
+	AController* OwnerController = GetOwner()->GetInstigatorController();
+	if (!OwnerController) return;
+
+	FVector MuzzleLocation = WeaponMesh->GetSocketLocation(TEXT("MuzzleSocket"));
+	FVector FireDirection = CalculateFireDirection();
+	FRotator FireRotation = FireDirection.Rotation();
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = GetInstigator();
+
+	
+	ABaseProjectile* SpawnedProjectile = GetWorld()->SpawnActor<ABaseProjectile>(CurrentWeaponData->ProjectileClass, MuzzleLocation, FireRotation, SpawnParams);
+	if (SpawnedProjectile)
+	{
+		SpawnedProjectile->SetDamage(CurrentWeaponData->Damage);
+		SpawnedProjectile->FireInDirection(FireDirection);
+	}
+	
 }
 
 void AWeaponBase::ProcessHit(const FHitResult& HitResult, const FVector& ShotDirection)
@@ -222,6 +309,19 @@ void AWeaponBase::ProcessHit(const FHitResult& HitResult, const FVector& ShotDir
 	}
 }
 
+void AWeaponBase::OnReloadMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (bInterrupted)
+	{
+		bIsReloading = false;
+		GetWorld()->GetTimerManager().ClearTimer(ReloadTimerHandle);
+	}
+
+	if (OwningCharacter && OwningCharacter->GetStateMachine())
+	{
+		OwningCharacter->GetStateMachine()->SetState(ECharacterState::Idle);
+	}
+}
 
 void AWeaponBase::LoadWeaponData()
 {
@@ -229,7 +329,9 @@ void AWeaponBase::LoadWeaponData()
 	if (WeaponDataRowName.IsNone()) return;
 
 	CurrentWeaponData = WeaponDataTable->FindRow<FWeaponData>(WeaponDataRowName, TEXT(""));
+	if (!CurrentWeaponData) return; 
 	CurrentAmmo = CurrentWeaponData->MagazineSize;
+	LastFireTime = -100.0f; 
 }
 
 void AWeaponBase::FinishReload()

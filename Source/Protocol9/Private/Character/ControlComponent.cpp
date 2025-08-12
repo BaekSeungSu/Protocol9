@@ -11,7 +11,6 @@
 #include "Weapons/InventoryComponent.h"
 #include "Weapons/WeaponBase.h"
 #include "Enemy/MonsterBase.h"
-
 #include "Engine/DamageEvents.h"
 
 
@@ -100,27 +99,15 @@ void UControlComponent::StartFire(const FInputActionValue& Value)
 	if (!bInputEnabled || !Owner || !Owner->Controller) return;
 	if (Owner->GetStateMachine()->CanFire()) return;
 
-	// GetCurrentAmmo 추가필요
-	// if (CurrentWeapon->GetCurrentAmmo() <= 0)
-	// {
-	// 	Reload(Value);
-	//	return;
-	// }
+	UCharacterStateMachine* StateMachine = Owner->GetStateMachine();
+	if (!StateMachine) return;
 	
-	AWeaponBase* CurrentWeapon = Owner->GetInventoryComponent()->GetCurrentWeapon();
-	if (CurrentWeapon && CurrentWeapon->Implements<UWeaponInterface>())
+	if (!StateMachine->CanFire())
 	{
-		IWeaponInterface::Execute_PrimaryFire(CurrentWeapon);
-	}
-	
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Fire"));
-
-	UAnimInstance* AnimInstance = Owner->GetMesh()->GetAnimInstance();
-	{
-		if (AnimInstance && Owner->FireMontage)
+		AWeaponBase* CurrentWeapon = Owner->GetInventoryComponent()->GetCurrentWeapon();
+		if (CurrentWeapon && CurrentWeapon->Implements<UWeaponInterface>())
 		{
-			float duration = AnimInstance->Montage_Play(Owner->FireMontage);
-			//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("%f"), duration));
+			IWeaponInterface::Execute_PrimaryFire(CurrentWeapon);
 		}
 	}
 }
@@ -246,44 +233,20 @@ void UControlComponent::MeleeAttack()
 
 void UControlComponent::Reload(const FInputActionValue& Value)
 {
-	if (!Owner->Controller) return;
+	if (!Owner || !Owner->Controller || !bInputEnabled) return;
 
-	if (!bInputEnabled) return;
-	
-	if (Owner->GetStateMachine()->CanFire()) return;
+	UCharacterStateMachine* StateMachine = Owner->GetStateMachine();
+	if (!StateMachine) return;
 
-	Owner->GetStateMachine()->SetState(ECharacterState::Reload);
-
-	if (Owner->GetInventoryComponent())
-	{
-		AWeaponBase* CurrentWeapon = Owner->GetInventoryComponent()->GetCurrentWeapon();
-		if (CurrentWeapon && CurrentWeapon->Implements<UWeaponInterface>())
-		{
-			IWeaponInterface::Execute_Reload(CurrentWeapon);
-		}
-	}
+	AWeaponBase* CurrentWeapon = Owner->GetInventoryComponent()->GetCurrentWeapon();
+	if (!CurrentWeapon) return;
 
 	
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, (TEXT("Reload!")));
-
-	UAnimInstance* AnimInstance = Owner->GetMesh()->GetAnimInstance();
+	if (CurrentWeapon->Implements<UWeaponInterface>())
 	{
-		if (AnimInstance && Owner->ReloadMontage)
-		{
-			float duration = AnimInstance->Montage_Play(Owner->ReloadMontage);
-
-			FOnMontageEnded ReloadEnded;
-			ReloadEnded.BindLambda([this](UAnimMontage* Montage, bool bInterrupted)
-			{
-				if (Owner && Owner->GetStateMachine())
-				{
-					Owner->GetStateMachine()->SetState(ECharacterState::Idle);
-				}
-			});
-
-			AnimInstance->Montage_SetEndDelegate(ReloadEnded, Owner->ReloadMontage);
-		}
+		IWeaponInterface::Execute_Reload(CurrentWeapon);
 	}
+	
 }
 
 void UControlComponent::Dash(const FInputActionValue& Value)
@@ -291,8 +254,14 @@ void UControlComponent::Dash(const FInputActionValue& Value)
 	if (!bInputEnabled) return;
 	
 	if (Owner->GetWorldTimerManager().IsTimerActive(DashTimer))	return;
+
+	if (Owner->GetStaminaComponent()->GetCurrentStaminaCount() <= 0)
+	{
+		OnCoolTime.Broadcast();
+		return;
+	}
 	
-	if ( Owner->GetCharacterMovement()->IsFalling() && Owner->GetStaminaComponent()->GetCurrentStaminaCount() > 0)
+	if ( Owner->GetCharacterMovement()->IsFalling())
 	{
 		FVector ForwardVector = Owner->GetActorForwardVector();
 		FVector DashVector = FVector(ForwardVector.X, ForwardVector.Y, 0) * DashPower;
@@ -300,6 +269,11 @@ void UControlComponent::Dash(const FInputActionValue& Value)
 		Owner->LaunchCharacter(DashVector, true, false);
 		
 		Owner->GetStaminaComponent()->UseStamina();
+
+		if (Owner->GetStaminaComponent()->GetCurrentStaminaCount() == 0)
+		{
+			LastSkillCharge.Broadcast();
+		}
 
 		Owner->GetWorldTimerManager().SetTimer(
 		DashTimer,
@@ -342,6 +316,7 @@ void UControlComponent::SwapWeapon1(const FInputActionValue& Value)
 
 	if (!bInputEnabled) return;
 
+	Owner->GetHPComponent()->OnDeath();
 	
 	UE_LOG(LogTemp,Warning,TEXT("Swap Weapon 1 "));
 
@@ -380,7 +355,7 @@ void UControlComponent::DeBug2(const FInputActionValue& Value)
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Current HP %d"), HP));
 }
 
-
+//아이템 스피드 증가 함수
 void UControlComponent::AddSpeed(float Multiplier)
 {
 	if (Owner)
@@ -390,6 +365,7 @@ void UControlComponent::AddSpeed(float Multiplier)
 	UE_LOG(LogTemp,Warning,TEXT("Increase Speed : %f"),Owner->GetCharacterMovement()->MaxWalkSpeed);
 }
 
+//아이템 스피드 증가 제거 함수 
 void UControlComponent::ResetSpeed()
 {
 	if (Owner)

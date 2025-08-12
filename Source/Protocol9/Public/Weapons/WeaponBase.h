@@ -5,8 +5,10 @@
 #include "Weapons/WeaponInterface.h"
 #include "WeaponBase.generated.h"
 
+class AMainCharacter;
 class UStaticMeshComponent;
 class UDataTable;
+class UAnimMontage;
 struct FWeaponData;
 
 UCLASS()
@@ -21,7 +23,16 @@ public:
 	virtual void Reload_Implementation() override;
 	virtual void Tick(float DeltaTime) override;
 
+	void AttachToOwnerSocket();
+	void LoadWeaponData();
+	void SetOwningCharacter(AMainCharacter* NewOwner);
+	UAnimMontage* GetFireMontage() const;
+	UAnimMontage* GetReloadMontage() const;
+	
+	void FireAction();
+	
 	int32 GetCurrentAmmo() const {return CurrentAmmo;}
+	
 protected:
 	virtual void BeginPlay() override;
 	
@@ -35,28 +46,28 @@ protected:
 	int32 CurrentAmmo;
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="State")
 	bool bIsReloading;
-
+	UPROPERTY()
+	AMainCharacter* OwningCharacter;
 	
 	const FWeaponData* CurrentWeaponData;
 	FTimerHandle ReloadTimerHandle;
 	float LastFireTime;
-
+	bool bIsFullAuto;
 	
 	// 발사 관련 함수
-	void FireAction();
 	bool CanFire() const;
 	void ApplyRecoil();
-
+	
 	// HitScan 관련 함수
 	void FireHitScan();
-	FVector CalculateHitScanDirection() const;
+	FVector CalculateFireDirection() const;
 	
 	// Projectile 관련 함수
 	void FireProjectile();
 
 	void ProcessHit(const FHitResult& HitResult, const FVector& ShotDirection);
-	
-	void LoadWeaponData();
+
+	void OnReloadMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 	void FinishReload();
 
 	

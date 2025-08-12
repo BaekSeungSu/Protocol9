@@ -2,14 +2,13 @@
 
 AWeapon_Pistol::AWeapon_Pistol()
 {
-	
+	bIsFullAuto = false;
 }
 
 void AWeapon_Pistol::PrimaryFire_Implementation()
 {
 	Super::PrimaryFire_Implementation();
-	UE_LOG(LogTemp, Warning, TEXT("Pistol Fired!!"));
-	FireAction();
+	
 }
 
 void AWeapon_Pistol::Reload_Implementation()
