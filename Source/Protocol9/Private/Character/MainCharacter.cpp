@@ -463,3 +463,11 @@ void AMainCharacter::HandleStaminaChanged(int CurrentStamina)
 		CachedHUD->UpdateStaminaBar(CurrentStamina);
 	}
 }
+
+void AMainCharacter::OnNotify_EquipWeapon()
+{
+	if (InventoryComponent)
+	{
+		InventoryComponent->EquipWeaponAtIndex(PendingWeaponSlot);
+	}
+}
