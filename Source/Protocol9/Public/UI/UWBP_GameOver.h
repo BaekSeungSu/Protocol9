@@ -17,24 +17,24 @@ public:
 	/** 화면 세팅: 승리/패배, 킬 수, Retry 콜백 */
 	void Setup(bool bVictory, int32 InKillCount, FSimpleDelegate InOnRetry);
 
-	/** 텍스트만 따로 바꿔야 할 때도 사용 가능 */
-	void SetKillCount(int32 InKillCount);
-	
-	UFUNCTION(BlueprintCallable)
+	/** 외부(게임모드)에서 포커스를 주기 위한 안전한 접근자 */
 	UButton* GetRetryButton() const { return Button_Retry; }
 
 protected:
+	// UUserWidget
 	virtual void NativeConstruct() override;
 
-	/** 디자이너에서 만든 위젯 변수명과 반드시 동일 */
-	UPROPERTY(meta = (BindWidget)) UTextBlock* TXT_Title;
-	UPROPERTY(meta = (BindWidget)) UTextBlock* TXT_KillCount;
-	UPROPERTY(meta = (BindWidget)) UButton* Button_Retry;
+	// 디자이너 바인딩
+	UPROPERTY(meta = (BindWidget)) UTextBlock* TXT_Title = nullptr;
+	UPROPERTY(meta = (BindWidget)) UTextBlock* TXT_KillCount = nullptr;
+	UPROPERTY(meta = (BindWidget)) UButton*    Button_Retry = nullptr;
 
+	// 버튼 콜백
 	UFUNCTION() void HandleRetryClicked();
 
 private:
-	FSimpleDelegate OnRetry;
 	void SetTitle(bool bVictory);
-	
+	void SetKillCount(int32 InKillCount);
+
+	FSimpleDelegate OnRetry;
 };
