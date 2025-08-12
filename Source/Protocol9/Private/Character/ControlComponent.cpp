@@ -313,19 +313,13 @@ void UControlComponent::StopJump(const FInputActionValue& Value)
 
 void UControlComponent::SwapWeapon1(const FInputActionValue& Value)
 {
-
-	if (!bInputEnabled) return;
-
-	Owner->GetHPComponent()->OnDeath();
-	
+	BeginSwapWeapon(0);
 	UE_LOG(LogTemp,Warning,TEXT("Swap Weapon 1 "));
-
 }
 
 void UControlComponent::SwapWeapon2(const FInputActionValue& Value)
 {
-	if (!bInputEnabled) return;
-	
+	BeginSwapWeapon(1);
 	UE_LOG(LogTemp,Warning,TEXT("Swap Weapon 2 "));
 }
 
@@ -378,6 +372,67 @@ void UControlComponent::ResetSpeed()
 void UControlComponent::HandleCharacterDeath()
 {
 	DisableInput();
+}
+
+void UControlComponent::BeginSwapWeapon(int32 SlotIndex)
+{
+	if (!bInputEnabled || !Owner) return;
+
+	UCharacterStateMachine* StateMachine = Owner->GetStateMachine();
+	UInventoryComponent* Inventory = Owner->GetInventoryComponent();
+	if (!StateMachine || !Inventory) return;
+
+	if (!StateMachine->CanSwapWeapon() || Inventory->GetCurrentWeaponIndex() == SlotIndex) return;
+	if (!Inventory->HasWeaponInSlot(SlotIndex)) return;;
+	
+	if (AWeaponBase* CurrentWeapon = Inventory->GetCurrentWeapon())
+	{
+		if (CurrentWeapon->Implements<UWeaponInterface>())
+		{
+			IWeaponInterface::Execute_StopFire(CurrentWeapon);
+		}
+		CurrentWeapon->SetActorHiddenInGame(true);
+	}
+
+	UAnimMontage* EquipMontage = Inventory->GetEquipMontageForSlot(SlotIndex);
+
+	if (EquipMontage)
+	{
+		StateMachine->SetState(ECharacterState::Swapping);
+		const float Duration = Owner->GetMesh()->GetAnimInstance()->Montage_Play(EquipMontage);
+
+		FOnMontageEnded SwapEndedDelegate;
+		SwapEndedDelegate.BindLambda([this, StateMachine](UAnimMontage* Montage, bool bInterrupted)
+		{
+			if (StateMachine)
+			{
+				StateMachine->SetState(ECharacterState::Idle);
+			}
+		});
+		Owner->GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(SwapEndedDelegate, EquipMontage);
+		Owner->SetPendingWeaponSlot(SlotIndex);
+	}
+	else
+	{
+		UE_LOG(LogTemp,Warning,TEXT("No Equip Montage"));
+		FinishSwapWeapon(SlotIndex);
+	}
+}
+
+void UControlComponent::FinishSwapWeapon(int32 SlotIndex)
+{
+	if (!Owner) return;
+
+	UInventoryComponent* Inventory = Owner->GetInventoryComponent();
+	if (Inventory)
+	{
+		Inventory->EquipWeaponAtIndex(SlotIndex);	
+	}
+
+	if (Owner->GetStateMachine())
+	{
+		Owner->GetStateMachine()->SetState(ECharacterState::Idle);
+	}
 }
 
 

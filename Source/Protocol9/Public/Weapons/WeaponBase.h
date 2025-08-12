@@ -32,6 +32,8 @@ public:
 	void FireAction();
 	
 	int32 GetCurrentAmmo() const {return CurrentAmmo;}
+	UDataTable* GetWeaponDataTable() const {return WeaponDataTable;}
+	FName GetWeaponDataRowName() const {return WeaponDataRowName;}
 	
 protected:
 	virtual void BeginPlay() override;
@@ -44,12 +46,11 @@ protected:
 	FName WeaponDataRowName;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Ammo")
 	int32 CurrentAmmo;
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="State")
-	bool bIsReloading;
+	
 	UPROPERTY()
 	AMainCharacter* OwningCharacter;
 	
-	const FWeaponData* CurrentWeaponData;
+	FWeaponData* CurrentWeaponData;
 	FTimerHandle ReloadTimerHandle;
 	float LastFireTime;
 	bool bIsFullAuto;

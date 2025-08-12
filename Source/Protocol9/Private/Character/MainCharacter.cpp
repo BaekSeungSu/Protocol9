@@ -64,9 +64,15 @@ void AMainCharacter::InitCharacterInfo()
 
 void AMainCharacter::EquipDefaultWeapon()
 {
-	if (InventoryComponent && DefaultWeaponClass)
+	if (InventoryComponent && DefaultWeaponClasses.Num()>0)
 	{
-		InventoryComponent->AddWeapon(DefaultWeaponClass);
+		for (TSubclassOf<AWeaponBase> WeaponClass : DefaultWeaponClasses)
+		{
+			if (WeaponClass)
+			{
+				InventoryComponent->AddWeapon(WeaponClass);
+			}
+		}
 	}
 }
 
@@ -84,14 +90,6 @@ void AMainCharacter::BeginPlay()
 	{
 		StaminaComponent->StaminaChanged.AddDynamic(this, &AMainCharacter::HandleStaminaChanged);
 	}
-	// 무기 탄약 변경 이벤트 바인딩
-	/*if (InventoryComponent)
-	{
-		if (AWeaponBase* CurrentWeapon = InventoryComponent->GetCurrentWeapon())
-		{
-			CurrentWeapon->OnAmmoChanged.AddDynamic(this, &AMainCharacter::HandleAmmoChanged);
-		}
-	}*/
 
 	HideDefalutMesh();
 	
@@ -465,12 +463,3 @@ void AMainCharacter::HandleStaminaChanged(int CurrentStamina)
 		CachedHUD->UpdateStaminaBar(CurrentStamina);
 	}
 }
-/*void AMainCharacter::HandleAmmoChanged(int32 CurrentAmmo, int32 MaxAmmo)
-{
-	if (CachedHUD)
-	{
-		CachedHUD->UpdateAmmo(CurrentAmmo, MaxAmmo);
-	}
-}*/
-
-
