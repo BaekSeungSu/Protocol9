@@ -8,7 +8,6 @@ AWeapon_Pistol::AWeapon_Pistol()
 void AWeapon_Pistol::PrimaryFire_Implementation()
 {
 	Super::PrimaryFire_Implementation();
-	
 }
 
 void AWeapon_Pistol::Reload_Implementation()
