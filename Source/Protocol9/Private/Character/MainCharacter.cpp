@@ -471,15 +471,6 @@ void AMainCharacter::HandleStaminaChanged(int CurrentStamina)
 		CachedHUD->UpdateStaminaBar(CurrentStamina);
 	}
 }
-/*void AMainCharacter::HandleAmmoChanged(int32 CurrentAmmo, int32 MaxAmmo)
-{
-	if (CachedHUD)
-	{
-		CachedHUD->UpdateAmmo(CurrentAmmo, MaxAmmo);
-	}
-}*/
-
-
 
 void AMainCharacter::OnNotify_EquipWeapon()
 {
@@ -488,3 +479,4 @@ void AMainCharacter::OnNotify_EquipWeapon()
 		InventoryComponent->EquipWeaponAtIndex(PendingWeaponSlot);
 	}
 }
+
