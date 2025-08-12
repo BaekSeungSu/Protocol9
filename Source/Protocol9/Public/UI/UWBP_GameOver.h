@@ -19,6 +19,9 @@ public:
 
 	/** 텍스트만 따로 바꿔야 할 때도 사용 가능 */
 	void SetKillCount(int32 InKillCount);
+	
+	UFUNCTION(BlueprintCallable)
+	UButton* GetRetryButton() const { return Button_Retry; }
 
 protected:
 	virtual void NativeConstruct() override;
@@ -26,11 +29,12 @@ protected:
 	/** 디자이너에서 만든 위젯 변수명과 반드시 동일 */
 	UPROPERTY(meta = (BindWidget)) UTextBlock* TXT_Title;
 	UPROPERTY(meta = (BindWidget)) UTextBlock* TXT_KillCount;
-	UPROPERTY(meta = (BindWidget)) UButton*    Button_Retry;
+	UPROPERTY(meta = (BindWidget)) UButton* Button_Retry;
 
 	UFUNCTION() void HandleRetryClicked();
 
 private:
 	FSimpleDelegate OnRetry;
 	void SetTitle(bool bVictory);
+	
 };

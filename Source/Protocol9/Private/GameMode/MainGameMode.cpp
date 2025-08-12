@@ -9,7 +9,21 @@
 #include "GameInstance/MainGameInstance.h"
 #include "UI/UWBP_ResultStats.h"
 #include "TimerManager.h"
+#include "GameFramework/PlayerController.h"
 #include "Components/Button.h"
+#include "UI/UWBP_GameOver.h"
+
+
+namespace
+{
+	inline void FlushAllPressedKeys(APlayerController* PC)
+	{
+		if (PC)
+		{
+			PC->FlushPressedKeys(); // 잔여 키 입력 버퍼 삭제
+		}
+	}
+}
 
 void AMainGameMode::BeginPlay()
 {
@@ -84,6 +98,8 @@ void AMainGameMode::ShowPressAnyKey()
 		Mode.SetWidgetToFocus(CurrentWidget->TakeWidget());
 		Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 		PC->SetInputMode(Mode);
+
+		FlushAllPressedKeys(PC); // ★ 잔여 입력 제거
 	}
 }
 
@@ -110,7 +126,7 @@ void AMainGameMode::ShowMainMenu()
 	CurrentWidget->AddToViewport();
 	UE_LOG(LogTemp, Warning, TEXT("Main Menu UI shown"));
 
-	// 여기서 UI 전용 입력 모드 적용 + 커서 on
+	// UI 전용 입력 모드 적용 + 커서 on
 	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
 	{
 		PC->bShowMouseCursor = true;
@@ -121,8 +137,11 @@ void AMainGameMode::ShowMainMenu()
 		Mode.SetWidgetToFocus(CurrentWidget->TakeWidget());
 		Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 		PC->SetInputMode(Mode);
+
+		FlushAllPressedKeys(PC); // ★ 잔여 입력 제거
 	}
 }
+
 
 void AMainGameMode::ShowHUD()
 {
@@ -250,7 +269,6 @@ void AMainGameMode::ShowGameOver(bool bVictory, int32 InKillCount)
 
 	if (WBP_GameOver)
 	{
-		// UWBP_GameOver로 캐스팅해서 결과 전달
 		if (UWBP_GameOver* Screen = CreateWidget<UWBP_GameOver>(GetWorld(), WBP_GameOver))
 		{
 			Screen->AddToViewport();
@@ -264,24 +282,38 @@ void AMainGameMode::ShowGameOver(bool bVictory, int32 InKillCount)
 				PC->bEnableMouseOverEvents = true;
 
 				FInputModeUIOnly Mode;
-				Mode.SetWidgetToFocus(Screen->TakeWidget());
-				Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+				if (UButton* RetryBtn = Screen->GetRetryButton())
+				{
+					Mode.SetWidgetToFocus(RetryBtn->TakeWidget());
+				}
+				else
+				{
+					Mode.SetWidgetToFocus(Screen->TakeWidget());
+				}
 				PC->SetInputMode(Mode);
+
+				FlushAllPressedKeys(PC);  // 잔여 입력 제거
 			}
+
+			// 아주 짧게 딜레이 후 Pause 진입
+			GetWorldTimerManager().ClearTimer(PauseTimerHandle);
+			GetWorldTimerManager().SetTimer(
+				PauseTimerHandle,
+				FTimerDelegate::CreateLambda([this]()
+				{
+					if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+					{
+						UGameplayStatics::SetGamePaused(this, true);
+					}
+				}),
+				0.05f,
+				false
+			); 
 		}
 	}
-	GetWorldTimerManager().ClearTimer(PauseTimerHandle);
-	// 약간의 지연 뒤 UI Only + Pause
-	GetWorldTimerManager().SetTimer(PauseTimerHandle,
-		FTimerDelegate::CreateLambda([this]()
-	{
-		if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
-		{
-			UGameplayStatics::SetGamePaused(this, true);
-		}
-	}), 0.0f, false);
 }
-#include "GameInstance/MainGameInstance.h"  // 상단 include 필요
+
+
 
 void AMainGameMode::OnRetryClicked()
 {
@@ -297,7 +329,7 @@ void AMainGameMode::OnRetryClicked()
 	// UI 정리 후 메뉴로 이동(조용한 상태)
 	UGameplayStatics::SetGamePaused(this, false);
 	if (CurrentWidget) { CurrentWidget->RemoveFromParent(); CurrentWidget = nullptr; }
-	UGameplayStatics::OpenLevel(this, FName(TEXT("/Game/Maps/MenuLevel")));
+	UGameplayStatics::OpenLevel(this, FName(TEXT("MenuLevel")));
 }
 
 
@@ -344,7 +376,7 @@ void AMainGameMode::ShowResultStats()
 		return;
 	}
 
-	// 결과 위젯 생성 (BP 부모가 UWBP_ResultStats 여도 OK)
+	// 결과 위젯 생성
 	UUWBP_ResultStats* Stats = CreateWidget<UUWBP_ResultStats>(GetWorld(), WBP_ResultStats);
 	if (!Stats)
 	{
@@ -363,14 +395,15 @@ void AMainGameMode::ShowResultStats()
 	{
 		Stats->Btn_Restart->OnClicked.Clear();
 		Stats->Btn_Restart->OnClicked.AddDynamic(this, &AMainGameMode::OnRestartClicked);
+		Stats->Btn_Restart->SetClickMethod(EButtonClickMethod::PreciseClick);
 	}
 	if (Stats->Btn_Return)
 	{
 		Stats->Btn_Return->OnClicked.Clear();
 		Stats->Btn_Return->OnClicked.AddDynamic(this, &AMainGameMode::OnReturnMenuClicked);
+		Stats->Btn_Return->SetClickMethod(EButtonClickMethod::PreciseClick);
 	}
 
-	// UIOnly + 커서 ON, 게임은 일시정지 유지
 	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
 	{
 		PC->bShowMouseCursor = true;
@@ -378,12 +411,20 @@ void AMainGameMode::ShowResultStats()
 		PC->bEnableMouseOverEvents = true;
 
 		FInputModeUIOnly Mode;
-		Mode.SetWidgetToFocus(Stats->TakeWidget());
+		if (Stats->Btn_Return)  // ← 버튼에 포커스 주는 것을 우선
+			Mode.SetWidgetToFocus(Stats->Btn_Return->TakeWidget());
+		else
+			Mode.SetWidgetToFocus(Stats->TakeWidget());
+
 		Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 		PC->SetInputMode(Mode);
+
+		FlushAllPressedKeys(PC);  // 잔여 입력 제거
 	}
+
 	UGameplayStatics::SetGamePaused(this, true);
 }
+
 void AMainGameMode::OnRestartClicked()
 {
 	UGameplayStatics::SetGamePaused(this, false);
@@ -429,6 +470,6 @@ void AMainGameMode::OnReturnMenuClicked()
 	}
 
 	// 메뉴로
-	UGameplayStatics::OpenLevel(this, FName(TEXT("/Game/Maps/MenuLevel")));
+	UGameplayStatics::OpenLevel(this, FName(TEXT("MenuLevel")));
 }
 
