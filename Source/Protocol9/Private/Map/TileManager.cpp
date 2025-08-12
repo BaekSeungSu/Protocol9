@@ -104,47 +104,118 @@ void ATileManager::UpdateTilesIfNeeded()
 		return;
 
 	//전방 이동
+	// if (NewCenterIndex == 1)
+	// {
+	// 	for (int i: {6, 7, 8})
+	// 	{
+	// 		TileArray[i]->SetActorRotation(FRotator(0,FMath::RandRange(0,3)*90,0));
+	// 		TileArray[i]->SetActorLocation(TileArray[i]->GetActorLocation()+FVector(TileSize.X*3,0,0));
+	// 	}
+	// 	ShiftTileArray(ETileShiftDirection::Forward);
+	// }
+	// //후방 이동
+	// else if (NewCenterIndex == 7)
+	// {
+	// 	for (int i : {0, 1, 2})
+	// 	{
+	// 		TileArray[i]->SetActorRotation(FRotator(0,FMath::RandRange(0,3)*90,0));
+	// 		TileArray[i]->SetActorLocation(TileArray[i]->GetActorLocation() - FVector(TileSize.X * 3, 0, 0));
+	// 	}
+	// 	ShiftTileArray(ETileShiftDirection::Backward);
+	// }
+	// // 좌측 이동
+	// else if (NewCenterIndex == 3)
+	// {
+	// 	for (int i : {2, 5, 8})
+	// 	{
+	// 		TileArray[i]->SetActorRotation(FRotator(0,FMath::RandRange(0,3)*90,0));
+	// 		TileArray[i]->SetActorLocation(TileArray[i]->GetActorLocation()-FVector(0, TileSize.Y * 3, 0));
+	// 		UE_LOG(LogTemp, Warning, TEXT("LEFT MOVED"));
+	// 	}
+	// 	ShiftTileArray(ETileShiftDirection::Left);
+	// }
+	// //우측 이동
+	// else if (NewCenterIndex == 5)
+	// {
+	// 	for (int i : {0,3,6})
+	// 	{
+	// 		TileArray[i]->SetActorRotation(FRotator(0,FMath::RandRange(0,3)*90,0));
+	// 		TileArray[i]->SetActorLocation(TileArray[i]->GetActorLocation() + FVector(0, TileSize.Y*3, 0));
+	// 	}
+	// 	ShiftTileArray(ETileShiftDirection::Right);
+	// }
+
 	if (NewCenterIndex == 1)
 	{
-		for (int i: {6, 7, 8})
+		TArray<ATileBase*> Moved = { TileArray[6], TileArray[7], TileArray[8] };
+
+		for (ATileBase* T : Moved)
 		{
-			TileArray[i]->SetActorRotation(FRotator(0,FMath::RandRange(0,3)*90,0));
-			TileArray[i]->SetActorLocation(TileArray[i]->GetActorLocation()+FVector(TileSize.X*3,0,0));
+			if (!IsValid(T)) continue;
+			T->SetActorRotation(FRotator(0, FMath::RandRange(0,3)*90, 0));
+			T->SetActorLocation(T->GetActorLocation() + FVector(TileSize.X*3, 0, 0));
 		}
+
+		// 위치/회전 적용 완료 → 여기서 재생성
+		for (ATileBase* T : Moved)
+			if (IsValid(T)) T->RebuildInstances();
+
 		ShiftTileArray(ETileShiftDirection::Forward);
 	}
-	//후방 이동
+
+	// 후방 이동 (-X)
 	else if (NewCenterIndex == 7)
 	{
-		for (int i : {0, 1, 2})
+		TArray<ATileBase*> Moved = { TileArray[0], TileArray[1], TileArray[2] };
+
+		for (ATileBase* T : Moved)
 		{
-			TileArray[i]->SetActorRotation(FRotator(0,FMath::RandRange(0,3)*90,0));
-			TileArray[i]->SetActorLocation(TileArray[i]->GetActorLocation() - FVector(TileSize.X * 3, 0, 0));
+			if (!IsValid(T)) continue;
+			T->SetActorRotation(FRotator(0, FMath::RandRange(0,3)*90, 0));
+			T->SetActorLocation(T->GetActorLocation() - FVector(TileSize.X*3, 0, 0));
 		}
+
+		for (ATileBase* T : Moved)
+			if (IsValid(T)) T->RebuildInstances();
+
 		ShiftTileArray(ETileShiftDirection::Backward);
 	}
-	// 좌측 이동
+
+	// 좌측 이동 (-Y)
 	else if (NewCenterIndex == 3)
 	{
-		for (int i : {2, 5, 8})
+		TArray<ATileBase*> Moved = { TileArray[2], TileArray[5], TileArray[8] };
+
+		for (ATileBase* T : Moved)
 		{
-			TileArray[i]->SetActorRotation(FRotator(0,FMath::RandRange(0,3)*90,0));
-			TileArray[i]->SetActorLocation(TileArray[i]->GetActorLocation()-FVector(0, TileSize.Y * 3, 0));
-			UE_LOG(LogTemp, Warning, TEXT("LEFT MOVED"));
+			if (!IsValid(T)) continue;
+			T->SetActorRotation(FRotator(0, FMath::RandRange(0,3)*90, 0));
+			T->SetActorLocation(T->GetActorLocation() - FVector(0, TileSize.Y*3, 0));
 		}
+
+		for (ATileBase* T : Moved)
+			if (IsValid(T)) T->RebuildInstances();
+
 		ShiftTileArray(ETileShiftDirection::Left);
 	}
-	//우측 이동
+
+	// 우측 이동 (+Y)
 	else if (NewCenterIndex == 5)
 	{
-		for (int i : {0,3,6})
+		TArray<ATileBase*> Moved = { TileArray[0], TileArray[3], TileArray[6] };
+
+		for (ATileBase* T : Moved)
 		{
-			TileArray[i]->SetActorRotation(FRotator(0,FMath::RandRange(0,3)*90,0));
-			TileArray[i]->SetActorLocation(TileArray[i]->GetActorLocation() + FVector(0, TileSize.Y*3, 0));
+			if (!IsValid(T)) continue;
+			T->SetActorRotation(FRotator(0, FMath::RandRange(0,3)*90, 0));
+			T->SetActorLocation(T->GetActorLocation() + FVector(0, TileSize.Y*3, 0));
 		}
+
+		for (ATileBase* T : Moved)
+			if (IsValid(T)) T->RebuildInstances();
+
 		ShiftTileArray(ETileShiftDirection::Right);
 	}
-
 	if (NavMeshBoundsVolume && TileArray.IsValidIndex(4))
 	{
 		FVector CenterTileLocation = TileArray[4]->GetActorLocation();
@@ -222,4 +293,5 @@ void ATileManager::ShiftTileArray(ETileShiftDirection Direction)
 		break;
 	}
 }
+
 
