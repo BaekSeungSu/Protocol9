@@ -30,6 +30,11 @@ public:
 	void UpdateLevelText(int CharacterLevel);
 	UFUNCTION(BlueprintCallable)
 	void UpdateStaminaBar(int CurrentStamina);
+	UFUNCTION(BlueprintCallable)
+	void UpdateKillCount(int32 KillCount);
+
+	/*UFUNCTION(BlueprintCallable)
+	void UpdateAmmo(int32 Current, int32 Max);*/
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -56,6 +61,19 @@ protected:
 	UImage* Image_Stamina2;
 	UPROPERTY(meta = (BindWidget)) 
 	UImage* Image_Stamina3;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* TXT_Kill;
+	/*UPROPERTY(meta = (BindWidget))
+	UTextBlock* TXT_Ammo;*/
+
+	/*UPROPERTY(meta = (BindWidget))
+	UTextBlock* CurrentAmmoText;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* MaxAmmoText;*/
+
+
 
 
 };
