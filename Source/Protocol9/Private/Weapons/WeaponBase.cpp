@@ -35,7 +35,7 @@ void AWeaponBase::StopFire_Implementation()
 
 void AWeaponBase::Reload_Implementation()
 {
-	if (bIsReloading || CurrentAmmo == CurrentWeaponData->MagazineSize)
+	if (CurrentAmmo == CurrentWeaponData->MagazineSize)
 	{
 		return;
 	}
@@ -43,8 +43,7 @@ void AWeaponBase::Reload_Implementation()
 	{
 		OwningCharacter->GetStateMachine()->SetState(ECharacterState::Reload);
 	}
-
-	bIsReloading = true;
+	
 	UE_LOG(LogTemp, Warning, TEXT("Reload"));
 
 	UAnimMontage* ReloadMontage = GetReloadMontage();
@@ -121,6 +120,11 @@ void AWeaponBase::FireAction()
 		}
 		return;
 	}
+	if (OwningCharacter && OwningCharacter->GetStateMachine())
+	{
+		OwningCharacter->GetStateMachine()->SetState(ECharacterState::Fire);
+	}
+	
 	LastFireTime = GetWorld()->GetTimeSeconds();
 	CurrentAmmo--;
 	ApplyRecoil();
@@ -137,8 +141,22 @@ void AWeaponBase::FireAction()
 
 	if (OwningCharacter && CurrentWeaponData ->FireMontage)
 	{
-		OwningCharacter->GetMesh()->GetAnimInstance()->Montage_Play(CurrentWeaponData->FireMontage);
+		UAnimInstance* AnimInstance = OwningCharacter->GetMesh()->GetAnimInstance();
+		if (AnimInstance)
+		{
+			const float Duration = AnimInstance->Montage_Play(CurrentWeaponData->FireMontage);
+			FOnMontageEnded FireEndedDelegate;
+			FireEndedDelegate.BindLambda([this](UAnimMontage* Montage, bool bInterrupted)
+			{
+				if (OwningCharacter && OwningCharacter->GetStateMachine())
+				{
+					OwningCharacter->GetStateMachine()->SetState(ECharacterState::Idle);
+				}
+			});
+			AnimInstance->Montage_SetEndDelegate(FireEndedDelegate, CurrentWeaponData->FireMontage);
+		}
 	}
+	
 	
 	if (CurrentWeaponData)
 	{
@@ -156,7 +174,7 @@ void AWeaponBase::FireAction()
 
 bool AWeaponBase::CanFire() const
 {
-	if (bIsReloading || CurrentAmmo <=0 || CurrentWeaponData == nullptr)
+	if (CurrentAmmo <=0 || CurrentWeaponData == nullptr)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Can not Fire"));
 		return false;
@@ -313,7 +331,6 @@ void AWeaponBase::OnReloadMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	if (bInterrupted)
 	{
-		bIsReloading = false;
 		GetWorld()->GetTimerManager().ClearTimer(ReloadTimerHandle);
 	}
 
@@ -339,7 +356,6 @@ void AWeaponBase::FinishReload()
 	if (!CurrentWeaponData) return;
 
 	CurrentAmmo = CurrentWeaponData->MagazineSize;
-	bIsReloading = false;
 	UE_LOG(LogTemp, Warning, TEXT("Reload Finish"));
 }
 

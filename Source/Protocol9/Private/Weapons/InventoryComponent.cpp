@@ -3,6 +3,7 @@
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "Weapons/WeaponBase.h"
+#include "Weapons/Data/WeaponData.h"
 
 UInventoryComponent::UInventoryComponent()
 {
@@ -39,11 +40,6 @@ void UInventoryComponent::AddWeapon(TSubclassOf<AWeaponBase> WeaponClass)
 	
 }
 
-AWeaponBase* UInventoryComponent::GetCurrentWeapon() const
-{
-	return CurrentWeapon;
-}
-
 void UInventoryComponent::EquipWeaponAtIndex(int32 SlotIndex)
 {
 	if (!WeaponClasses.IsValidIndex(SlotIndex)
@@ -52,7 +48,48 @@ void UInventoryComponent::EquipWeaponAtIndex(int32 SlotIndex)
 	{
 		return;
 	}
+	
 	SpawnAndEquipWeapon(SlotIndex);
+
+	
+}
+
+bool UInventoryComponent::HasWeaponInSlot(int32 SlotIndex) const
+{
+	if (!WeaponClasses.IsValidIndex(SlotIndex))
+	{
+		return false;
+	}
+
+	return WeaponClasses[SlotIndex] != nullptr;
+}
+
+UAnimMontage* UInventoryComponent::GetEquipMontageForSlot(int32 SlotIndex) const
+{
+	if (!WeaponClasses.IsValidIndex(SlotIndex) || WeaponClasses[SlotIndex] == nullptr)
+	{
+		return nullptr;
+	}
+	
+	AWeaponBase* WeaponCDO = WeaponClasses[SlotIndex]->GetDefaultObject<AWeaponBase>();
+	if (WeaponCDO == nullptr)
+	{
+		return nullptr;
+	}
+	
+	UDataTable* DataTable = WeaponCDO->GetWeaponDataTable(); 
+	FName RowName = WeaponCDO->GetWeaponDataRowName();
+	
+	if (DataTable && !RowName.IsNone())
+	{
+		const FWeaponData* WeaponData = DataTable->FindRow<FWeaponData>(RowName, TEXT(""));
+		if (WeaponData)
+		{
+			return WeaponData->EquipMontage;
+		}
+	}
+
+	return nullptr;
 }
 
 
@@ -83,6 +120,4 @@ void UInventoryComponent::SpawnAndEquipWeapon(int32 SlotIndex)
 			}
 		}
 	}
-
-	
 }

@@ -14,9 +14,12 @@ public:
 	UInventoryComponent();
 	
 	void AddWeapon(TSubclassOf<AWeaponBase> WeaponClass);
-	AWeaponBase* GetCurrentWeapon() const;
-
 	void EquipWeaponAtIndex(int32 SlotIndex);
+	bool HasWeaponInSlot(int32 SlotIndex) const;
+	
+	UAnimMontage* GetEquipMontageForSlot(int32 SlotIndex) const;
+	int32 GetCurrentWeaponIndex() const {return CurrentWeaponIndex;}
+	AWeaponBase* GetCurrentWeapon() const{return CurrentWeapon;};
 	
 protected:
 	virtual void BeginPlay() override;

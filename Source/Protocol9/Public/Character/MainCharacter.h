@@ -92,7 +92,7 @@ protected:
 	UCharacterStateMachine* StateMachine;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	TSubclassOf<AWeaponBase> DefaultWeaponClass;
+	TArray<TSubclassOf<AWeaponBase>> DefaultWeaponClasses;
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUWBP_HUD> HUDWidgetClass;
@@ -191,5 +191,10 @@ public:
 	UFUNCTION()
 	void HandleStaminaChanged(int CurrentStamina);
 
-
+	
+	UFUNCTION(BlueprintCallable, Category = "AnimEvents")
+	void OnNotify_EquipWeapon();
+	void SetPendingWeaponSlot(int32 NewSlot) {PendingWeaponSlot = NewSlot; }
+private:
+	int32 PendingWeaponSlot;
 };
