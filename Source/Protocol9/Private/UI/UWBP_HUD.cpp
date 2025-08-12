@@ -91,3 +91,29 @@ void UUWBP_HUD::UpdateStaminaBar(int CurrentStamina)
 		}
 	}
 }
+void UUWBP_HUD::UpdateKillCount(int32 KillCount)
+{
+	if (TXT_Kill)
+	{
+		TXT_Kill->SetText(FText::FromString(FString::Printf(TEXT("Kill : %d"), KillCount)));
+	}
+}
+
+/*void UUWBP_HUD::UpdateAmmo(int32 Current, int32 Max)
+{
+	if (CurrentAmmoText)
+	{
+		CurrentAmmoText->SetText(FText::AsNumber(Current));
+	}
+	if (MaxAmmoText)
+	{
+		if (Max > 0)
+		{
+			MaxAmmoText->SetText(FText::AsNumber(Max));
+		}
+		else
+		{
+			MaxAmmoText->SetText(FText::FromString(TEXT("∞")));
+		}
+	}
+}*/
