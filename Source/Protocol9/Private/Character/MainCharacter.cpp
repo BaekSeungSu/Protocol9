@@ -54,6 +54,7 @@ AMainCharacter::AMainCharacter()
 void AMainCharacter::InitCharacterInfo()
 {
 	BasetAttack = 20.0f;
+	LevelUpAttack = 1.2f;
 	Attack = BasetAttack;
 	CurrentAttack = Attack;
 	Exp = 0;
@@ -183,6 +184,7 @@ float AMainCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& 
 void AMainCharacter::HideDefalutMesh()
 {
 	GetMesh()->HideBoneByName(FName("weapon_r"), EPhysBodyOp::PBO_None);
+	GetMesh()->HideBoneByName(FName("canon_base"), EPhysBodyOp::PBO_None);
 	GetMesh()->HideBoneByName(FName("neck_01"), EPhysBodyOp::PBO_None);
 	GetMesh()->HideBoneByName(FName("thigh_l"), EPhysBodyOp::PBO_None);
 	GetMesh()->HideBoneByName(FName("thigh_r"), EPhysBodyOp::PBO_None);
@@ -389,6 +391,8 @@ void AMainCharacter::LevelUp()
 		
 		CharacterLevel++;
 
+		Attack += LevelUpAttack;
+
 		Exp -= MaxExp;
 
 		LevelUPEvent.Broadcast(CharacterLevel);
@@ -468,6 +472,15 @@ void AMainCharacter::HandleStaminaChanged(int CurrentStamina)
 		CachedHUD->UpdateStaminaBar(CurrentStamina);
 	}
 }
+/*void AMainCharacter::HandleAmmoChanged(int32 CurrentAmmo, int32 MaxAmmo)
+{
+	if (CachedHUD)
+	{
+		CachedHUD->UpdateAmmo(CurrentAmmo, MaxAmmo);
+	}
+}*/
+
+
 
 void AMainCharacter::OnNotify_EquipWeapon()
 {
@@ -476,4 +489,3 @@ void AMainCharacter::OnNotify_EquipWeapon()
 		InventoryComponent->EquipWeaponAtIndex(PendingWeaponSlot);
 	}
 }
-

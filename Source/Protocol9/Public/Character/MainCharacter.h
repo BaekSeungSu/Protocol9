@@ -7,7 +7,7 @@
 #include "TimerManager.h"
 #include "UI/UWBP_HUD.h"
 #include "UI/PlayerUIComponent.h"
-#include "Character/StaminaComponent.h"
+#include "Weapons/EWeaponType.h"
 #include "MainCharacter.generated.h"
 
 class AMonsterBase;
@@ -47,6 +47,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
 	float BasetAttack;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
+	float LevelUpAttack;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
 	float Attack;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
 	float CurrentAttack;
@@ -56,7 +58,11 @@ protected:
 	int MaxExp;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Exp")
 	int CharacterLevel;
-
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
+	EWeaponType CurrentWeaponType;
+	
+	
 	//죽었을때 사용
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
 	FName DeathCameraSocket = TEXT("head");
@@ -189,11 +195,15 @@ public:
 	UFUNCTION()
 	void HandleStaminaChanged(int CurrentStamina);
 
+	// UI:탄약 업데이트용 함수
+	/*UFUNCTION()
+	void HandleAmmoChanged(int32 CurrentAmmo, int32 MaxAmmo);*/
+
+
 	
 	UFUNCTION(BlueprintCallable, Category = "AnimEvents")
 	void OnNotify_EquipWeapon();
 	void SetPendingWeaponSlot(int32 NewSlot) {PendingWeaponSlot = NewSlot; }
 private:
 	int32 PendingWeaponSlot;
-	
 };

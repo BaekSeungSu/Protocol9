@@ -10,6 +10,8 @@ class AMainCharacter;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCoolTimeSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FLastSkillSignature);
 
+class AMainCharacter;
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROTOCOL9_API UControlComponent : public UActorComponent
 {
@@ -19,7 +21,7 @@ public:
 	
 	UControlComponent();
 
-	//�̺�Ʈ
+	//이벤트
 	UPROPERTY(BlueprintAssignable, Category = "Skill")
 	FOnCoolTimeSignature OnCoolTime;
 	UPROPERTY(BlueprintAssignable, Category = "Skill")
@@ -87,6 +89,7 @@ public:
 	float GetMaxSpeed() const {return MaxSpeed;};
 	UFUNCTION()
 	void AddSpeed(float Multiplier);
+	//������ ���ǵ� ���� ���� �Լ�
 	UFUNCTION()
 	void ResetSpeed();
 	

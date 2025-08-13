@@ -50,8 +50,6 @@ void UInventoryComponent::EquipWeaponAtIndex(int32 SlotIndex)
 	}
 	
 	SpawnAndEquipWeapon(SlotIndex);
-
-	
 }
 
 bool UInventoryComponent::HasWeaponInSlot(int32 SlotIndex) const
