@@ -30,11 +30,23 @@ ABaseProjectile::ABaseProjectile()
 	
 }
 
+void ABaseProjectile::BeginPlay()
+{
+	Super::BeginPlay();
+	if (AActor* InstigActor = GetInstigator())
+	{
+		ProjectileCollision->IgnoreActorWhenMoving(InstigActor, true);
+	}
+	
+}
+
 void ABaseProjectile::FireInDirection(const FVector& ShootDirection)
 {
 	ProjectileEffect->Activate(true);
 	ProjectileMovement->Velocity = ShootDirection *	ProjectileMovement->InitialSpeed;
 }
+
+
 
 void ABaseProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                             FVector NormalImpulse, const FHitResult& Hit)
@@ -46,6 +58,3 @@ void ABaseProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UP
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), HitEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
 	}
 }
-
-
-
