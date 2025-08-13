@@ -322,10 +322,6 @@ void UControlComponent::SwapWeapon2(const FInputActionValue& Value)
 	UE_LOG(LogTemp,Warning,TEXT("Swap Weapon 2 "));
 }
 
-void UControlComponent::Interact(const FInputActionValue& Value)
-{
-	
-}
 
 void UControlComponent::DeBug1(const FInputActionValue& Value)
 {
