@@ -9,7 +9,7 @@ class UUserWidget;
 class AMonsterSpawner;
 class AMonsterBase;
 class UWBP_GameOver;
-
+class UTexture2D;
 UCLASS()
 class PROTOCOL9_API AMainGameMode : public AGameModeBase
 {
@@ -37,6 +37,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="UI")
     TSubclassOf<class UUserWidget> WBP_ResultStats;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="UI")
+    TSubclassOf<UUserWidget> WBP_Help;
+
     // UI 전환
     UFUNCTION(BlueprintCallable, Category="UI") void ShowMainMenu();
     UFUNCTION(BlueprintCallable, Category="UI") void ShowHUD();
@@ -62,6 +65,14 @@ public:
 
     UFUNCTION()
     void ShowPressAnyKey();
+
+    void SetWeaponIconUI(UTexture2D* Icon);
+    void UpdateAmmoUI(int32 Current, int32 Reserve, bool bInfinite);
+
+    void ShowHelp();
+    void HideHelp();
+
+    UFUNCTION() void OnHelpButtonClicked();
 private:
     UPROPERTY() UUserWidget* CurrentWidget = nullptr;
     UPROPERTY() UUWBP_HUD*   HUDWidget     = nullptr;
@@ -76,4 +87,7 @@ private:
     void BindSpawnerForKillCount();
     UFUNCTION() void OnMonsterSpawnedForUI(AMonsterBase* Monster);
     UFUNCTION() void OnMonsterDeadForUI(AMonsterBase* Monster);
+
+    UPROPERTY()
+    UUserWidget* HelpWidget = nullptr;
 };

@@ -11,6 +11,8 @@ class UDataTable;
 class UAnimMontage;
 struct FWeaponData;
 
+class UTexture2D; //UI
+
 UCLASS()
 class PROTOCOL9_API AWeaponBase : public AActor, public IWeaponInterface
 {
@@ -35,6 +37,10 @@ public:
 	int32 GetCurrentAmmo() const {return CurrentAmmo;}
 	UDataTable* GetWeaponDataTable() const {return WeaponDataTable;}
 	FName GetWeaponDataRowName() const {return WeaponDataRowName;}
+
+	// UI : 무기 이미지 블루프린트 연동
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI")
+	UTexture2D* UIIcon = nullptr;
 	
 protected:
 	virtual void BeginPlay() override;

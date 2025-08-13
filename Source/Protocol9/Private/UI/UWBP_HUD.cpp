@@ -1,5 +1,7 @@
 #include "UI/UWBP_HUD.h"
 #include "Components/TextBlock.h"
+#include "Components/Image.h"
+#include "Engine/Texture2D.h"
 
 void UUWBP_HUD::UpdateTimer(float ElapsedSeconds)
 {
@@ -89,4 +91,25 @@ void UUWBP_HUD::UpdateKillCount(int32 KillCount)
 		TXT_Kill->SetText(FText::FromString(
 			FString::Printf(TEXT("Kill : %d"), KillCount)));
 	}
+}
+void UUWBP_HUD::SetWeaponIcon(UTexture2D* Icon)
+{
+	if (!Image_Weapon) return;
+
+	if (Icon)
+	{
+		FSlateBrush Brush;
+		Brush.SetResourceObject(Icon);
+		Image_Weapon->SetBrush(Brush);
+		Image_Weapon->SetVisibility(ESlateVisibility::Visible);
+	}
+	else
+	{
+		Image_Weapon->SetVisibility(ESlateVisibility::Collapsed);
+	}
+}
+void UUWBP_HUD::UpdateAmmoText(int32 Current, int32 Reserve, bool bInfiniteReserve)
+{
+	if (!TXT_Ammo) return;
+	TXT_Ammo->SetText(FText::FromString(FString::Printf(TEXT("%d/∞"), Current)));
 }

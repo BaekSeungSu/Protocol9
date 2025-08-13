@@ -11,7 +11,9 @@
 #include "TimerManager.h"
 #include "GameFramework/PlayerController.h"
 #include "Components/Button.h"
+#include "UI/PlayerUIComponent.h"
 #include "UI/UWBP_GameOver.h"
+#include "UI/UWBP_HelpAccordion.h"
 
 namespace
 {
@@ -96,6 +98,13 @@ void AMainGameMode::ShowMainMenu()
         CurrentWidget->RemoveFromParent();
         CurrentWidget = nullptr;
     }
+    if (AMainCharacter* MC = Cast<AMainCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0)))
+    {
+        if (UPlayerUIComponent* UI = MC->FindComponentByClass<UPlayerUIComponent>())
+        {
+            UI->HideCrosshair();
+        }
+    }
 
     UGameplayStatics::SetGamePaused(this, false);
     GetWorldTimerManager().ClearTimer(GameTimerHandle);
@@ -107,6 +116,13 @@ void AMainGameMode::ShowMainMenu()
     if (!CurrentWidget) return;
 
     CurrentWidget->AddToViewport();
+
+    if (UButton* HelpBtn = Cast<UButton>(CurrentWidget->GetWidgetFromName(TEXT("Btn_Help"))))
+    {
+        HelpBtn->OnClicked.Clear();
+        HelpBtn->OnClicked.AddDynamic(this, &AMainGameMode::OnHelpButtonClicked);
+        HelpBtn->SetClickMethod(EButtonClickMethod::PreciseClick);
+    }
 
     if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
     {
@@ -150,6 +166,10 @@ void AMainGameMode::ShowHUD()
         if (UHPComponent* HP = MC->GetHPComponent())
         {
             HP->OnDeathEvent.AddDynamic(this, &AMainGameMode::HandlePlayerDeath);
+        }
+        if (UPlayerUIComponent* UI = MC->FindComponentByClass<UPlayerUIComponent>())
+        {
+            UI->ShowCrosshair();
         }
     }
 }
@@ -229,6 +249,13 @@ void AMainGameMode::OnMonsterDeadForUI(AMonsterBase* /*Monster*/)
 void AMainGameMode::ShowGameOver(bool bVictory, int32 InKillCount)
 {
     if (CurrentWidget) CurrentWidget->RemoveFromParent();
+    if (AMainCharacter* MC = Cast<AMainCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0)))
+    {
+        if (UPlayerUIComponent* UI = MC->FindComponentByClass<UPlayerUIComponent>())
+        {
+            UI->HideCrosshair();
+        }
+    }
 
     if (!WBP_GameOver) return;
 
@@ -319,6 +346,13 @@ void AMainGameMode::ShowResultStats()
         CurrentWidget->RemoveFromParent();
         CurrentWidget = nullptr;
     }
+    if (AMainCharacter* MC = Cast<AMainCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0)))
+    {
+        if (UPlayerUIComponent* UI = MC->FindComponentByClass<UPlayerUIComponent>())
+        {
+            UI->HideCrosshair();
+        }
+    }
     if (!WBP_ResultStats) return;
 
     if (UUWBP_ResultStats* Stats = CreateWidget<UUWBP_ResultStats>(GetWorld(), WBP_ResultStats))
@@ -406,4 +440,55 @@ void AMainGameMode::OnReturnMenuClicked()
     }
 
     UGameplayStatics::OpenLevel(this, FName(TEXT("MenuLevel")));
+}
+void AMainGameMode::SetWeaponIconUI(UTexture2D* Icon)
+{
+    if (HUDWidget) { HUDWidget->SetWeaponIcon(Icon); }
+}
+void AMainGameMode::UpdateAmmoUI(int32 Current, int32 Reserve, bool bInfinite)
+{
+    if (HUDWidget) { HUDWidget->UpdateAmmoText(Current, Reserve, bInfinite); }
+}
+
+
+void AMainGameMode::ShowHelp()
+{
+    if (!HelpWidget && WBP_Help)                 // <- 하드코딩 경로 대신 에디터에서 지정한 클래스 사용
+    {
+        if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+        {
+            HelpWidget = CreateWidget<UUserWidget>(PC, WBP_Help);
+            if (HelpWidget)
+            {
+                HelpWidget->AddToViewport();
+                FInputModeUIOnly M; M.SetWidgetToFocus(HelpWidget->TakeWidget());
+                M.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+                PC->SetInputMode(M);
+                PC->bShowMouseCursor = true;
+            }
+        }
+    }
+}
+void AMainGameMode::OnHelpButtonClicked()
+{
+    ShowHelp();
+}
+
+void AMainGameMode::HideHelp()
+{
+    if (HelpWidget)
+    {
+        HelpWidget->RemoveFromParent();
+        HelpWidget = nullptr;
+
+        APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+        if (PC && CurrentWidget)
+        {
+            FInputModeUIOnly InputMode;
+            InputMode.SetWidgetToFocus(CurrentWidget->TakeWidget());
+            InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+            PC->SetInputMode(InputMode);
+            PC->bShowMouseCursor = true;
+        }
+    }
 }
