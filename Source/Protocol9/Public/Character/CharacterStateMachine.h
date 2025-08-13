@@ -72,9 +72,16 @@ public:
 		return CurrentState == ECharacterState::Idle && CurrentHPState != EHPState::Dead;
 	}
 
+	bool CanPerformMelee() const{
+		return CurrentState == ECharacterState::Idle;
+		// && CurrentHPState != EHPState::Dead
+		// && CurrentState != ECharacterState::Melee
+		// && CurrentState != ECharacterState::Swapping;
+	}
+	
 	bool CanFire() const { return CanPerformAction();}
 	bool CanReload() const {return CanPerformAction();}
-	bool CanMelee() const {return CanPerformAction();}
+	bool CanMelee() const {return CanPerformMelee();}
 	bool CanSwapping() const {return CanPerformAction();}
 
 	

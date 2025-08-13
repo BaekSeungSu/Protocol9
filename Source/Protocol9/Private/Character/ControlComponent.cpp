@@ -121,6 +121,11 @@ void UControlComponent::StopFire(const FInputActionValue& Value)
 
 void UControlComponent::Melee(const FInputActionValue& Value)
 {
+	GEngine->AddOnScreenDebugMessage(-1,
+			2.0f,
+			FColor::Green,
+			FString::Printf(TEXT("Current Stamina %d"), ));
+	
 	if (!Owner->Controller) return;
 
 	if (!bInputEnabled) return;
@@ -318,6 +323,11 @@ void UControlComponent::SwapWeapon2(const FInputActionValue& Value)
 {
 	BeginSwapWeapon(1);
 	UE_LOG(LogTemp,Warning,TEXT("Swap Weapon 2 "));
+}
+
+void UControlComponent::Interact(const FInputActionValue& Value)
+{
+	
 }
 
 void UControlComponent::DeBug1(const FInputActionValue& Value)

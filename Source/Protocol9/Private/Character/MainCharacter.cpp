@@ -60,6 +60,7 @@ void AMainCharacter::InitCharacterInfo()
 	Exp = 0;
 	MaxExp = 100;
 	CharacterLevel = 1;
+	CurrentWeaponType = EWeaponType::Rifle;
 }
 
 void AMainCharacter::EquipDefaultWeapon()
@@ -309,6 +310,15 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 					ETriggerEvent::Started,
 					ControlComponent,
 					&UControlComponent::SwapWeapon2);
+			}
+
+			if (PlayerController->Interact)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->Interact,
+					ETriggerEvent::Started,
+					ControlComponent,
+					&UControlComponent::Interact);
 			}
 
 			if

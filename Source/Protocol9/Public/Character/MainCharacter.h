@@ -141,10 +141,6 @@ public:
 	//아이템 공격력 증가 리셋 함수
 	UFUNCTION()
 	void ResetAttack();
-
-	//무기관련 애님몽타주는 무기로 옮길예정
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	UAnimMontage* OnHandMontage;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	UAnimMontage* MeleeMontage;
