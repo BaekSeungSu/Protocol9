@@ -121,40 +121,39 @@ void UControlComponent::StopFire(const FInputActionValue& Value)
 
 void UControlComponent::Melee(const FInputActionValue& Value)
 {
-	
-	
 	if (!Owner->Controller) return;
 
 	if (!bInputEnabled) return;
 	
-	if (Owner->GetStateMachine()->CanMelee()) return;
-	
-	UAnimInstance* AnimInstance = Owner->GetMesh()->GetAnimInstance();
+	if (Owner->GetStateMachine()->CanMelee())
 	{
-		if (Owner->GetSoundComponent())
+		UAnimInstance* AnimInstance = Owner->GetMesh()->GetAnimInstance();
 		{
-			Owner->GetSoundComponent()->PlayMeleeSound();
-		}
-		
-		if (AnimInstance && Owner->MeleeMontage)
-		{
-			Owner->GetStateMachine()->SetState(ECharacterState::Melee);
-			
-			float duration = AnimInstance->Montage_Play(Owner->MeleeMontage);
-			
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Melee"));
-
-			FOnMontageEnded MeleeEnded;
-			MeleeEnded.BindLambda([this](UAnimMontage* Montage, bool bInterrupted)
+			if (Owner->GetSoundComponent())
 			{
-				if (Owner && Owner->GetStateMachine())
+				Owner->GetSoundComponent()->PlayMeleeSound();
+			}
+			
+			if (AnimInstance && Owner->MeleeMontage)
+			{
+				Owner->GetStateMachine()->SetState(ECharacterState::Melee);
+				
+				float duration = AnimInstance->Montage_Play(Owner->MeleeMontage);
+				
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Melee"));
+	
+				FOnMontageEnded MeleeEnded;
+				MeleeEnded.BindLambda([this](UAnimMontage* Montage, bool bInterrupted)
 				{
-					Owner->GetStateMachine()->SetState(ECharacterState::Idle);
-				}
-			});
-
-			AnimInstance->Montage_SetEndDelegate(MeleeEnded, Owner->MeleeMontage);
-
+					if (Owner && Owner->GetStateMachine())
+					{
+						Owner->GetStateMachine()->SetState(ECharacterState::Idle);
+					}
+				});
+	
+				AnimInstance->Montage_SetEndDelegate(MeleeEnded, Owner->MeleeMontage);
+	
+			}
 		}
 	}
 	
