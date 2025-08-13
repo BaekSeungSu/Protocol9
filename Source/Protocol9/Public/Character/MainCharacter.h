@@ -96,7 +96,7 @@ protected:
 	UCharacterStateMachine* StateMachine;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-	TArray<TSubclassOf<AWeaponBase>> DefaultWeaponClasses;
+	TSubclassOf<AWeaponBase> DefaultWeaponClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUWBP_HUD> HUDWidgetClass;

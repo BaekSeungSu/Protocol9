@@ -64,16 +64,9 @@ void AMainCharacter::InitCharacterInfo()
 
 void AMainCharacter::EquipDefaultWeapon()
 {
-	if (InventoryComponent && DefaultWeaponClasses.Num()>0)
-	{
-		for (TSubclassOf<AWeaponBase> WeaponClass : DefaultWeaponClasses)
-		{
-			if (WeaponClass)
-			{
-				InventoryComponent->AddWeapon(WeaponClass);
-			}
-		}
-	}
+	if (!InventoryComponent || !DefaultWeaponClass) return;
+
+	InventoryComponent->AddWeaponToSlot(DefaultWeaponClass, 0, true);
 }
 
 void AMainCharacter::BeginPlay()
@@ -328,6 +321,15 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 					ETriggerEvent::Started,
 					ControlComponent,
 					&UControlComponent::DeBug2);
+			}
+
+			if (PlayerController->Interaction)
+			{
+				EnhancedInput->BindAction(
+					PlayerController->Interaction,
+					ETriggerEvent::Started,
+					ControlComponent,
+					&UControlComponent::Interact);
 			}
 		}
 	}
