@@ -35,28 +35,33 @@ void AWeaponBase::StopFire_Implementation()
 
 void AWeaponBase::Reload_Implementation()
 {
-	if (CurrentAmmo == CurrentWeaponData->MagazineSize)
-	{
-		return;
-	}
-	if (OwningCharacter && OwningCharacter->GetStateMachine())
-	{
-		OwningCharacter->GetStateMachine()->SetState(ECharacterState::Reload);
-	}
+	if (!CurrentWeaponData || CurrentAmmo >= CurrentWeaponData->MagazineSize) return;
+	if (!OwningCharacter) return;
+
+	if (GetWorld()->GetTimerManager().IsTimerActive(ReloadTimerHandle)) return;
 	
+	UCharacterStateMachine* StateMachine = OwningCharacter->GetStateMachine();
+	if (!StateMachine) return;
+
+	if (StateMachine->GetCurrentState() != ECharacterState::Idle) return;
+
+	StopFire_Implementation();
+	
+	StateMachine->SetState(ECharacterState::Reload);
 	UE_LOG(LogTemp, Warning, TEXT("Reload"));
 
 	UAnimMontage* ReloadMontage = GetReloadMontage();
 	if (ReloadMontage)
 	{
+		UAnimInstance* AnimInstance = OwningCharacter->GetMesh()->GetAnimInstance();
 		const float ReloadDuration = OwningCharacter->GetMesh()->GetAnimInstance()->Montage_Play(ReloadMontage);
 		if (ReloadDuration > 0.0f)
 		{
 			GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, this, &AWeaponBase::FinishReload, ReloadDuration, false);
-			UE_LOG(LogTemp, Log, TEXT("Reload timer set for %f seconds based on montage length."), ReloadDuration);
-			FOnMontageEnded ReloadMontageEndedDelegate;
-			ReloadMontageEndedDelegate.BindUObject(this, &AWeaponBase::OnReloadMontageEnded);
-			OwningCharacter->GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(ReloadMontageEndedDelegate, ReloadMontage);
+			
+			FOnMontageEnded ReloadEndedDelegate;
+			ReloadEndedDelegate.BindUObject(this, &AWeaponBase::OnReloadMontageEnded);
+			AnimInstance->Montage_SetEndDelegate(ReloadEndedDelegate, ReloadMontage);
 		}
 	}
 }
@@ -291,19 +296,32 @@ void AWeaponBase::FireProjectile()
 {
 	if (!CurrentWeaponData || !CurrentWeaponData->ProjectileClass) return;
 
-	AController* OwnerController = GetOwner()->GetInstigatorController();
-	if (!OwnerController) return;
-
-	FVector MuzzleLocation = WeaponMesh->GetSocketLocation(TEXT("MuzzleSocket"));
+	
+	APlayerController* PlayerController = GetOwner()->GetInstigatorController<APlayerController>();
+	FVector EyeLocation;
+	FRotator EyeRotation;
+	PlayerController->GetPlayerViewPoint(EyeLocation, EyeRotation);
 	FVector FireDirection = CalculateFireDirection();
-	FRotator FireRotation = FireDirection.Rotation();
 
+	FVector TraceEnd = EyeLocation + FireDirection * CurrentWeaponData->Range;
+	FHitResult HitResult;
+	if (GetWorld()->LineTraceSingleByChannel(HitResult, EyeLocation, TraceEnd, ECC_Pawn))
+	{
+		TraceEnd = HitResult.ImpactPoint;
+	}
+
+	
+	
+	FVector MuzzleLocation = WeaponMesh->GetSocketLocation(TEXT("MuzzleSocket"));
+	FVector ProjectileDir = (TraceEnd - MuzzleLocation).GetSafeNormal();
+	FRotator ProjectileRotation = ProjectileDir.Rotation();
+	
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
 	SpawnParams.Instigator = GetInstigator();
 
 	
-	ABaseProjectile* SpawnedProjectile = GetWorld()->SpawnActor<ABaseProjectile>(CurrentWeaponData->ProjectileClass, MuzzleLocation, FireRotation, SpawnParams);
+	ABaseProjectile* SpawnedProjectile = GetWorld()->SpawnActor<ABaseProjectile>(CurrentWeaponData->ProjectileClass, MuzzleLocation, ProjectileRotation, SpawnParams);
 	if (SpawnedProjectile)
 	{
 		SpawnedProjectile->SetDamage(CurrentWeaponData->Damage);
@@ -357,6 +375,16 @@ void AWeaponBase::FinishReload()
 
 	CurrentAmmo = CurrentWeaponData->MagazineSize;
 	UE_LOG(LogTemp, Warning, TEXT("Reload Finish"));
+}
+
+void AWeaponBase::CancelReload()
+{
+	if (OwningCharacter && OwningCharacter->GetStateMachine()->GetCurrentState() == ECharacterState::Reload)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(ReloadTimerHandle);
+		OwningCharacter->GetMesh()->GetAnimInstance()->Montage_Stop(0.1f, GetReloadMontage());
+		OwningCharacter->GetStateMachine()->SetState(ECharacterState::Idle);
+	}
 }
 
 

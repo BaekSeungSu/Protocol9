@@ -30,6 +30,7 @@ public:
 	UAnimMontage* GetReloadMontage() const;
 	
 	void FireAction();
+	void CancelReload();
 	
 	int32 GetCurrentAmmo() const {return CurrentAmmo;}
 	UDataTable* GetWeaponDataTable() const {return WeaponDataTable;}
@@ -70,8 +71,6 @@ protected:
 
 	void OnReloadMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 	void FinishReload();
-
-	
 	
 private:
 };
