@@ -6,6 +6,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "TimerManager.h"
 #include "Enemy/MonsterBase.h"
 #include "Engine/Engine.h"
@@ -20,18 +21,15 @@ AMonsterProjectile::AMonsterProjectile()
     RootComponent = CollisionComponent;
     CollisionComponent->SetSphereRadius(3.0f);
     CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-    CollisionComponent->SetCollisionResponseToAllChannels(ECR_Block);
-    CollisionComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+
+    CollisionComponent->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel2); 
     
-    CollisionComponent->SetCollisionResponseToAllChannels(ECR_Ignore); 
-    CollisionComponent->SetCollisionResponseToChannel(ECC_WorldStatic, ECR_Block);   
-    CollisionComponent->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Block);  
-    CollisionComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);         
-
-    MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
-    MeshComponent->SetupAttachment(RootComponent);
-    MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
+    CollisionComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECR_Ignore); //몬스터 투사체 채널 무시
+    CollisionComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECR_Ignore); //몬스터 투사체 채널 무시
+    
+    ParticleSystemComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent"));
+    ParticleSystemComponent->SetupAttachment(CollisionComponent);
+    
     ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
     ProjectileMovement->bRotationFollowsVelocity = true;
     ProjectileMovement->bShouldBounce = false;
@@ -151,13 +149,13 @@ void AMonsterProjectile::Explode(FVector ExplosionLocation)
         ECollisionChannel::ECC_Visibility
     );
 
-    if (GEngine && GEngine->bEnableOnScreenDebugMessages)
-    {
-        DrawDebugSphere(GetWorld(), ExplosionLocation, ExplosionRadius, 32, 
-                       FColor::Red, false, 3.0f, 0, 2.0f);
-        DrawDebugSphere(GetWorld(), ExplosionLocation, MaxDamageRadius, 16, 
-                       FColor::Orange, false, 3.0f, 0, 2.0f);
-    }
+    // if (GEngine && GEngine->bEnableOnScreenDebugMessages)
+    // {
+    //     DrawDebugSphere(GetWorld(), ExplosionLocation, ExplosionRadius, 32, 
+    //                    FColor::Red, false, 3.0f, 0, 2.0f);
+    //     DrawDebugSphere(GetWorld(), ExplosionLocation, MaxDamageRadius, 16, 
+    //                    FColor::Orange, false, 3.0f, 0, 2.0f);
+    // }
 
     if (LifetimeTimerHandle.IsValid())
     {

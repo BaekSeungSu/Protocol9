@@ -31,6 +31,8 @@ AMonsterBase::AMonsterBase()
 	{
 		GetCapsuleComponent()->SetCapsuleHalfHeight(MonsterHalfHeight);
 		GetCapsuleComponent()->SetCapsuleRadius(MonsterRadius);
+		GetCapsuleComponent()->SetCollisionObjectType(ECC_GameTraceChannel1);
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_GameTraceChannel2, ECR_Ignore);
 	}
 	if (GetMesh())
 	{
@@ -39,15 +41,14 @@ AMonsterBase::AMonsterBase()
 
 	CurrentState = EMonsterState::Idle;
 	TargetPlayer = nullptr;
-	LastAttackTime = 0.0f;
 }
 
 void AMonsterBase::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	StartLocation = GetActorLocation();
-
+	CurrentHP = MaxHP;
 	SetAnimInstance();
 	SetState(EMonsterState::Chasing);
 
@@ -67,13 +68,13 @@ void AMonsterBase::UpdateAI()
 	case EMonsterState::Dead:
 		break;
 	case EMonsterState::Idle:
-
+		break;
 	case EMonsterState::Chasing:
 		ChasePlayer();
 		break;
 
 	case EMonsterState::Attacking:
-		AttackingBehavior();
+		StartContinuousAttack();
 		break;
 	}
 }
@@ -124,7 +125,7 @@ void AMonsterBase::ChasePlayer()
 {
 	if (!TargetPlayer || !AIController) return;
 
-	if (IsInAttackRange())
+	if (IsInAttackRange(0.0f))
 	{
 		SetState(EMonsterState::Attacking);
 		return;
@@ -167,16 +168,6 @@ bool AMonsterBase::SetTargetPlayer(APawn* NewTarget)
 	return false;
 }
 
-void AMonsterBase::AttackPlayer()
-{
-	if (!TargetPlayer) return;
-
-
-	if (bShouldContinueAttacking) return;
-
-	StartContinuousAttack();
-}
-
 void AMonsterBase::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
@@ -186,30 +177,34 @@ void AMonsterBase::PossessedBy(AController* NewController)
 
 void AMonsterBase::StartContinuousAttack()
 {
-	if (!TargetPlayer) return;
+	if (bShouldContinueAttacking)
+	{
+		return;
+	}
+	if (!TargetPlayer)
+	{
+		return;
+	}
 
 	bShouldContinueAttacking = true;
-
-
 	PerformAttack();
-
-
-	GetWorld()->GetTimerManager().SetTimer(
-		AttackTimerHandle,
-		this,
-		&AMonsterBase::PerformAttack,
-		AttackCooldown,
-		true
-	);
+	// GetWorld()->GetTimerManager().SetTimer(
+	// 	AttackTimerHandle,
+	// 	this,
+	// 	&AMonsterBase::PerformAttack,
+	// 	AttackCooldown,
+	// 	true
+	// );
 }
 
 void AMonsterBase::PerformAttack()
 {
-	if (!bShouldContinueAttacking || !TargetPlayer || !IsInAttackRange())
-	{
-		StopContinuousAttack();
-		return;
-	}
+	// if (!bShouldContinueAttacking || !TargetPlayer || !IsInAttackRange(20.0f))
+	// {
+	// 	StopContinuousAttack();
+	// 	return;
+	// }
+	
 	StopMovement();
 	FVector Direction = (TargetPlayer->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 	FRotator LookRotation = FRotationMatrix::MakeFromX(Direction).Rotator();
@@ -219,13 +214,6 @@ void AMonsterBase::PerformAttack()
 void AMonsterBase::StopContinuousAttack()
 {
 	bShouldContinueAttacking = false;
-
-
-	if (AttackTimerHandle.IsValid())
-	{
-		GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
-		AttackTimerHandle.Invalidate();
-	}
 }
 
 void AMonsterBase::StopMovement()
@@ -289,53 +277,53 @@ void AMonsterBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
-bool AMonsterBase::IsInAttackRange() const
+bool AMonsterBase::IsInAttackRange(float ExtraDistance) const
 {
 	if (!TargetPlayer) return false;
 
 	float DistanceToPlayer = FVector::Dist(GetActorLocation(), TargetPlayer->GetActorLocation());
-	return DistanceToPlayer <= AttackRange;
+	return DistanceToPlayer <= AttackRange + ExtraDistance;
 }
 
 void AMonsterBase::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	if (Montage == AttackMontage && CurrentState == EMonsterState::Attacking)
 	{
-		if (TargetPlayer && IsInAttackRange())
+		if (TargetPlayer && IsInAttackRange(20.0f) && bShouldContinueAttacking)
 		{
 			SetState(EMonsterState::Attacking);
+			PerformAttack();
 		}
 		else
 		{
+			bShouldContinueAttacking = false;
 			SetState(EMonsterState::Chasing);
 		}
 	}
 }
 
-void AMonsterBase::AttackingBehavior()
-{
-	if (!TargetPlayer)
-	{
-		SetState(EMonsterState::Chasing);
-		return;
-	}
-
-	if (!IsInAttackRange())
-	{
-		if (bShouldContinueAttacking)
-		{
-			StopContinuousAttack();
-		}
-
-		SetState(EMonsterState::Chasing);
-		return;
-	}
-
-	if (!bShouldContinueAttacking && IsInAttackRange())
-	{
-		StartContinuousAttack();
-	}
-}
+// void AMonsterBase::AttackingBehavior()
+// {
+// 	if (!TargetPlayer)
+// 	{
+// 		SetState(EMonsterState::Chasing);
+// 		return;
+// 	}
+// 	if (!IsInAttackRange(20.0f))
+// 	{
+// 		if (bShouldContinueAttacking)
+// 		{
+// 			StopContinuousAttack();
+// 		}
+// 	
+// 		SetState(EMonsterState::Chasing);
+// 		return;
+// 	}
+// 	if (!bShouldContinueAttacking && IsInAttackRange(20.0f))
+// 	{
+// 		StartContinuousAttack();
+// 	}
+// }
 
 void AMonsterBase::OnDeath()
 {
@@ -363,8 +351,6 @@ void AMonsterBase::Ragdoll()
 	}
 	
 	GetWorld()->GetTimerManager().ClearTimer(AIUpdateTimerHandle);
-	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
-
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCharacterMovement()->DisableMovement();
 	
@@ -380,7 +366,6 @@ void AMonsterBase::DeleteMonster()
 	//스포너에 보스 스폰 델리게이트에 연결해서 보스가 스폰 되는순간 멀티 델리게이트에 구독해놓은 모든 몬스터의 clearmonster가 호출되며 경험치나 아이템 드롭
 	//사망 몽타주 실행 없이 즉시 레벨에서 삭제
 	GetWorld()->GetTimerManager().ClearTimer(AIUpdateTimerHandle);
-	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
 	Destroy();
 }
 

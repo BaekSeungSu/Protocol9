@@ -7,7 +7,7 @@
 class AMainCharacter;
 class ABossMonsterBase;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMonsterSpawned, AMonsterBase*, Monster);
-UCLASS()
+UCLASS(Blueprintable)
 class PROTOCOL9_API AMonsterSpawner : public AActor
 {
 	GENERATED_BODY()
