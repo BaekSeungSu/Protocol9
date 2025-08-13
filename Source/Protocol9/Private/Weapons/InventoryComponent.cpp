@@ -25,17 +25,17 @@ void UInventoryComponent::BeginPlay()
 void UInventoryComponent::AddWeapon(TSubclassOf<AWeaponBase> WeaponClass)
 {
 	if (!WeaponClass) return;
-	
-	int32 EmptySlotIndex = WeaponClasses.Find(nullptr);
+
+	if (WeaponClasses.Num() < MaxWeaponSlots)
+	{
+		WeaponClasses.Init(nullptr, MaxWeaponSlots);
+	}
+
+	const int32 EmptySlotIndex = WeaponClasses.Find(nullptr);
 	if (EmptySlotIndex != INDEX_NONE)
 	{
 		WeaponClasses[EmptySlotIndex] = WeaponClass;
 		EquipWeaponAtIndex(EmptySlotIndex);
-	}
-	else
-	{
-		WeaponClasses[CurrentWeaponIndex] = WeaponClass;
-		EquipWeaponAtIndex(CurrentWeaponIndex);
 	}
 	
 }
@@ -43,7 +43,6 @@ void UInventoryComponent::AddWeapon(TSubclassOf<AWeaponBase> WeaponClass)
 void UInventoryComponent::EquipWeaponAtIndex(int32 SlotIndex)
 {
 	if (!WeaponClasses.IsValidIndex(SlotIndex)
-		|| CurrentWeaponIndex == SlotIndex
 		|| WeaponClasses[SlotIndex] == nullptr)
 	{
 		return;
@@ -51,6 +50,8 @@ void UInventoryComponent::EquipWeaponAtIndex(int32 SlotIndex)
 	
 	SpawnAndEquipWeapon(SlotIndex);
 }
+
+
 
 bool UInventoryComponent::HasWeaponInSlot(int32 SlotIndex) const
 {
@@ -60,6 +61,63 @@ bool UInventoryComponent::HasWeaponInSlot(int32 SlotIndex) const
 	}
 
 	return WeaponClasses[SlotIndex] != nullptr;
+}
+
+bool UInventoryComponent::AddWeaponToSlot(TSubclassOf<AWeaponBase> WeaponClass, int32 SlotIndex, bool bEquipImmediately)
+{
+	if (!WeaponClass) return false;
+	if (WeaponClasses.Num() < MaxWeaponSlots)
+	{
+		WeaponClasses.Init(nullptr, MaxWeaponSlots);
+	}
+
+	if (!WeaponClasses.IsValidIndex(SlotIndex)) return false;
+
+	WeaponClasses[SlotIndex] = WeaponClass;
+	if (bEquipImmediately)
+	{
+		EquipWeaponAtIndex(SlotIndex);
+	}
+	return true;
+}
+
+bool UInventoryComponent::AddOrReplaceWeapon(TSubclassOf<AWeaponBase> WeaponClass)
+{
+	if (!WeaponClass) return false;
+
+	if (WeaponClasses.Num() < MaxWeaponSlots)
+	{
+		WeaponClasses.Init(nullptr, MaxWeaponSlots);
+	}
+	
+	int32 Count = 0;
+	for (int32 i = 0; i < MaxWeaponSlots; ++i)
+		if (WeaponClasses[i] != nullptr) ++Count;
+
+	int32 TargetSlot = INDEX_NONE;
+
+	if (Count == 0)
+	{
+		TargetSlot = 0;
+	}
+	else if (Count == 1)
+	{
+		if (WeaponClasses.IsValidIndex(1) && WeaponClasses[1] == nullptr) TargetSlot = 1;
+		else if (WeaponClasses.IsValidIndex(0) && WeaponClasses[0] == nullptr) TargetSlot = 0;
+	}
+	else
+	{
+		TargetSlot = (CurrentWeaponIndex >= 0 && CurrentWeaponIndex < MaxWeaponSlots) ? CurrentWeaponIndex : 0;
+	}
+
+	if (TargetSlot == INDEX_NONE)
+	{
+		TargetSlot = (CurrentWeaponIndex >= 0 && CurrentWeaponIndex < MaxWeaponSlots) ? CurrentWeaponIndex : 0;
+	}
+
+	WeaponClasses[TargetSlot] = WeaponClass;
+	EquipWeaponAtIndex(TargetSlot);
+	return true;
 }
 
 UAnimMontage* UInventoryComponent::GetEquipMontageForSlot(int32 SlotIndex) const
@@ -98,7 +156,6 @@ void UInventoryComponent::SpawnAndEquipWeapon(int32 SlotIndex)
 		CurrentWeapon->Destroy();
 		CurrentWeapon = nullptr;
 	}
-
 	TSubclassOf<AWeaponBase> WeaponClassToSpawn = WeaponClasses[SlotIndex];
 	if (WeaponClassToSpawn)
 	{
