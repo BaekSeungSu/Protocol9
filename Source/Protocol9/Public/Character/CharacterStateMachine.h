@@ -68,29 +68,23 @@ public:
 	UFUNCTION()
 	void HandleCharacterDeath();
 	
-	bool CanReload() const{return CurrentState == ECharacterState::Reload
-		|| CurrentHPState == EHPState::Dead;}
-
-	bool CanFire() const{return CurrentState == ECharacterState::Reload
-		|| CurrentHPState == EHPState::Dead
-		|| CurrentState == ECharacterState::Melee;}
-
-	bool CanMelee() const{return CurrentHPState == EHPState::Dead
-		|| CurrentState == ECharacterState::Melee;}
-
-	bool CanSwapWeapon() const
-	{
-		const bool bIsActionFree = (CurrentState == ECharacterState::Idle);
-		const bool bIsAlive = (CurrentHPState != EHPState::Dead);
-		return bIsActionFree && bIsAlive;
+	bool CanPerformAction() const{
+		return CurrentState == ECharacterState::Idle && CurrentHPState != EHPState::Dead;
 	}
+
+	bool CanFire() const { return CanPerformAction();}
+	bool CanReload() const {return CanPerformAction();}
+	bool CanMelee() const {return CanPerformAction();}
+	bool CanSwapping() const {return CanPerformAction();}
+
+	
 	
 	virtual void BeginPlay() override;
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	
-	
+	ECharacterState GetCurrentState() const { return CurrentState; }
 	void SetState(ECharacterState NewState);
 	void ResetState();
 	
