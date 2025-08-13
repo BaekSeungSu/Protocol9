@@ -7,6 +7,9 @@
 #include "Components/TextBlock.h"
 #include "UWBP_HUD.generated.h"
 
+class UImage; 
+class UTexture2D;
+
 UCLASS()
 class PROTOCOL9_API UUWBP_HUD : public UUserWidget
 {
@@ -33,8 +36,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UpdateKillCount(int32 KillCount);
 
-	/*UFUNCTION(BlueprintCallable)
-	void UpdateAmmo(int32 Current, int32 Max);*/
+	UFUNCTION(BlueprintCallable)
+	void UpdateAmmoText(int32 Current, int32 Reserve, bool bInfiniteReserve);
+	
+	UFUNCTION(BlueprintCallable)
+    void SetWeaponIcon(UTexture2D* Icon);
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -64,15 +70,11 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* TXT_Kill;
-	/*UPROPERTY(meta = (BindWidget))
-	UTextBlock* TXT_Ammo;*/
-
-	/*UPROPERTY(meta = (BindWidget))
-	UTextBlock* CurrentAmmoText;
-
+	
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* MaxAmmoText;*/
+	UTextBlock* TXT_Ammo;
 
+	UPROPERTY(meta=(BindWidget)) UImage* Image_Weapon = nullptr;
 
 
 

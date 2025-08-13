@@ -42,16 +42,15 @@ void UPlayerUIComponent::InitializeCrosshair()
 {
 	if (CrosshairWidgetClass)
 	{
-		APlayerController* PlayerController = GetOwner()->GetInstigatorController<APlayerController>();
-		if (PlayerController)
+		if (APlayerController* PC = GetOwner()->GetInstigatorController<APlayerController>())
 		{
-			CrosshairWidgetInstance = CreateWidget<UCrosshairWidget>(PlayerController, CrosshairWidgetClass);
-			if (CrosshairWidgetInstance)
+			if (!CrosshairWidgetInstance)
 			{
-				CrosshairWidgetInstance->AddToViewport();
+				CrosshairWidgetInstance = CreateWidget<UCrosshairWidget>(PC, CrosshairWidgetClass);
 			}
 		}
 	}
+	// UI : 바로 표시 UI호출 했던 부분 취소
 }
 
 void UPlayerUIComponent::UpdateCrosshair(float DeltaTime)
@@ -80,4 +79,24 @@ void UPlayerUIComponent::UpdateCrosshair(float DeltaTime)
 
 	CurrentAimSize = FMath::FInterpTo(CurrentAimSize, TargetAimSize, DeltaTime, AimInterpolationSpeed);
 	CrosshairWidgetInstance->UpdateCrosshairSize(CurrentAimSize);
+}
+
+// UI : 크로스헤어 숨김, 표시 기능 구현
+void UPlayerUIComponent::ShowCrosshair()
+{
+	if (!CrosshairWidgetInstance)
+	{
+		InitializeCrosshair();
+	}
+	if (CrosshairWidgetInstance && !CrosshairWidgetInstance->IsInViewport())
+	{
+		CrosshairWidgetInstance->AddToViewport(/*ZOrder=*/50);
+	}
+}
+void UPlayerUIComponent::HideCrosshair()
+{
+	if (CrosshairWidgetInstance && CrosshairWidgetInstance->IsInViewport())
+	{
+		CrosshairWidgetInstance->RemoveFromParent();
+	}
 }

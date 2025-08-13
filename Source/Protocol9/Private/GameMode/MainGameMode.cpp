@@ -9,426 +9,486 @@
 #include "GameInstance/MainGameInstance.h"
 #include "UI/UWBP_ResultStats.h"
 #include "TimerManager.h"
+#include "GameFramework/PlayerController.h"
 #include "Components/Button.h"
+#include "UI/PlayerUIComponent.h"
+#include "UI/UWBP_GameOver.h"
+#include "UI/UWBP_HelpAccordion.h"
+
+namespace
+{
+    inline void FlushAllPressedKeys(APlayerController* PC)
+    {
+        if (PC) { PC->FlushPressedKeys(); }
+    }
+}
 
 void AMainGameMode::BeginPlay()
 {
-	Super::BeginPlay();
-	const FString MapName = GetWorld()->GetMapName();
+    Super::BeginPlay();
 
-	if (MapName.Contains(TEXT("MenuLevel")))
-	{
-		if (UMainGameInstance* GI = GetGameInstance<UMainGameInstance>())
-		{
-			if (GI->bPendingResults)
-			{
-				GI->bPendingResults = false;
+    const FString MapName = GetWorld()->GetMapName();
 
-				// 결과값을 GameMode 멤버로 옮겨서 기존 ShowResultStats() 재사용
-				KillCount   = GI->LastKillCount;
-				ElapsedTime = GI->LastElapsedTime;
-				// bWinCache = GI->bVictory; // 승패도 쓰려면(선택)
-
-				ShowResultStats();   // ← 메뉴에서 바로 결과창 띄움
-				return;
-			}
-		}
-		ShowPressAnyKey(); // 평소처럼
-	}
-	else if (MapName.Contains(TEXT("TestMap")))
-	{
-		ShowHUD();
-	}
+    if (MapName.Contains(TEXT("MenuLevel")))
+    {
+        if (UMainGameInstance* GI = GetGameInstance<UMainGameInstance>())
+        {
+            if (GI->bPendingResults)
+            {
+                GI->bPendingResults = false;
+                KillCount   = GI->LastKillCount;
+                ElapsedTime = GI->LastElapsedTime;
+                ShowResultStats();
+                return;
+            }
+        }
+        ShowPressAnyKey();
+    }
+    else if (MapName.Contains(TEXT("TestMap")))
+    {
+        ShowHUD();
+    }
 }
 
 void AMainGameMode::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	// ★ 남아있는 타이머는 모두 정리 (람다/Delegate 호출로 인한 유효하지 않은 this 접근 방지)
-	GetWorldTimerManager().ClearTimer(GameTimerHandle);
-	GetWorldTimerManager().ClearTimer(PauseTimerHandle);
-
-	Super::EndPlay(EndPlayReason);
+    GetWorldTimerManager().ClearTimer(GameTimerHandle);
+    GetWorldTimerManager().ClearTimer(PauseTimerHandle);
+    Super::EndPlay(EndPlayReason);
 }
-// MainGameMode.cpp
 
-
+// ---------- 메뉴/HUD ----------
 
 void AMainGameMode::ShowPressAnyKey()
 {
-	// 기존 위젯 정리
-	if (CurrentWidget)
-	{
-		CurrentWidget->RemoveFromParent();
-		CurrentWidget = nullptr;
-	}
+    if (CurrentWidget)
+    {
+        CurrentWidget->RemoveFromParent();
+        CurrentWidget = nullptr;
+    }
 
-	// 멈춰있을 수 있으니 Pause 상태로
-	UGameplayStatics::SetGamePaused(this, true);
+    UGameplayStatics::SetGamePaused(this, true);
 
-	if (!WBP_PressAnyKey) return;
+    if (!WBP_PressAnyKey) return;
 
-	// 위젯 생성/표시
-	CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), WBP_PressAnyKey);
-	if (!CurrentWidget) return;
+    CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), WBP_PressAnyKey);
+    if (!CurrentWidget) return;
 
-	CurrentWidget->AddToViewport();
+    CurrentWidget->AddToViewport();
 
-	// UI 전용 입력 + 커서 On
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
-	{
-		PC->bShowMouseCursor = true;
-		PC->bEnableClickEvents = true;
-		PC->bEnableMouseOverEvents = true;
+    if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+    {
+        PC->bShowMouseCursor      = true;
+        PC->bEnableClickEvents    = true;
+        PC->bEnableMouseOverEvents= true;
 
-		FInputModeUIOnly Mode;
-		Mode.SetWidgetToFocus(CurrentWidget->TakeWidget());
-		Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-		PC->SetInputMode(Mode);
-	}
+        FInputModeUIOnly Mode;
+        Mode.SetWidgetToFocus(CurrentWidget->TakeWidget());
+        Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+        PC->SetInputMode(Mode);
+
+        FlushAllPressedKeys(PC);
+    }
 }
 
 void AMainGameMode::ShowMainMenu()
 {
-	// 혹시 남아있는 HUD/다른 위젯 제거
-	if (CurrentWidget)
-	{
-		CurrentWidget->RemoveFromParent();
-		CurrentWidget = nullptr;
-	}
+    if (CurrentWidget)
+    {
+        CurrentWidget->RemoveFromParent();
+        CurrentWidget = nullptr;
+    }
+    if (AMainCharacter* MC = Cast<AMainCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0)))
+    {
+        if (UPlayerUIComponent* UI = MC->FindComponentByClass<UPlayerUIComponent>())
+        {
+            UI->HideCrosshair();
+        }
+    }
 
-	// 혹시 멈춰있을 수 있으니 풀고 시작
-	UGameplayStatics::SetGamePaused(this, false);
-	GetWorldTimerManager().ClearTimer(GameTimerHandle);
-	GetWorldTimerManager().ClearTimer(PauseTimerHandle);
+    UGameplayStatics::SetGamePaused(this, false);
+    GetWorldTimerManager().ClearTimer(GameTimerHandle);
+    GetWorldTimerManager().ClearTimer(PauseTimerHandle);
 
-	if (!WBP_MainMenu) return;
+    if (!WBP_MainMenu) return;
 
-	// 위젯 생성/표시
-	CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), WBP_MainMenu);
-	if (!CurrentWidget) return;
+    CurrentWidget = CreateWidget<UUserWidget>(GetWorld(), WBP_MainMenu);
+    if (!CurrentWidget) return;
 
-	CurrentWidget->AddToViewport();
-	UE_LOG(LogTemp, Warning, TEXT("Main Menu UI shown"));
+    CurrentWidget->AddToViewport();
 
-	// 여기서 UI 전용 입력 모드 적용 + 커서 on
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
-	{
-		PC->bShowMouseCursor = true;
-		PC->bEnableClickEvents = true;
-		PC->bEnableMouseOverEvents = true;
+    if (UButton* HelpBtn = Cast<UButton>(CurrentWidget->GetWidgetFromName(TEXT("Btn_Help"))))
+    {
+        HelpBtn->OnClicked.Clear();
+        HelpBtn->OnClicked.AddDynamic(this, &AMainGameMode::OnHelpButtonClicked);
+        HelpBtn->SetClickMethod(EButtonClickMethod::PreciseClick);
+    }
 
-		FInputModeUIOnly Mode;
-		Mode.SetWidgetToFocus(CurrentWidget->TakeWidget());
-		Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-		PC->SetInputMode(Mode);
-	}
+    if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+    {
+        PC->bShowMouseCursor      = true;
+        PC->bEnableClickEvents    = true;
+        PC->bEnableMouseOverEvents= true;
+
+        FInputModeUIOnly Mode;
+        Mode.SetWidgetToFocus(CurrentWidget->TakeWidget());
+        Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+        PC->SetInputMode(Mode);
+
+        FlushAllPressedKeys(PC);
+    }
 }
 
 void AMainGameMode::ShowHUD()
 {
-	if (CurrentWidget)
-		CurrentWidget->RemoveFromParent();
+    if (CurrentWidget)
+        CurrentWidget->RemoveFromParent();
 
-	if (WBP_HUD)
-	{
-		HUDWidget = CreateWidget<UUWBP_HUD>(GetWorld(), WBP_HUD);
+    if (!WBP_HUD) return;
 
-		if (HUDWidget)
-		{
-			HUDWidget->AddToViewport();
-			CurrentWidget = HUDWidget;
+    HUDWidget = CreateWidget<UUWBP_HUD>(GetWorld(), WBP_HUD);
+    if (!HUDWidget) return;
 
-			ElapsedTime = 0.0f;
-			GetWorldTimerManager().SetTimer(GameTimerHandle, this, &AMainGameMode::UpdateGameTimer, 1.0f, true);
+    HUDWidget->AddToViewport();
+    CurrentWidget = HUDWidget;
 
-			NotifyCharacterHUDReady();
+    ElapsedTime = 0.0f;
+    GetWorldTimerManager().SetTimer(GameTimerHandle, this, &AMainGameMode::UpdateGameTimer, 1.0f, true);
 
-			KillCount = 0;
-			HUDWidget->UpdateKillCount(KillCount);
-			BindSpawnerForKillCount();
+    NotifyCharacterHUDReady();
 
-			// 사망 이벤트 구독
-			if (AMainCharacter* MC = Cast<AMainCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0)))
-			{
-				if (UHPComponent* HP = MC->GetHPComponent())
-				{
-					HP->OnDeathEvent.AddDynamic(this, &AMainGameMode::HandlePlayerDeath);
-				}
-			}
-		}
-	}
+    KillCount = 0;
+    HUDWidget->UpdateKillCount(KillCount);
+    BindSpawnerForKillCount();
+
+    if (AMainCharacter* MC = Cast<AMainCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0)))
+    {
+        if (UHPComponent* HP = MC->GetHPComponent())
+        {
+            HP->OnDeathEvent.AddDynamic(this, &AMainGameMode::HandlePlayerDeath);
+        }
+        if (UPlayerUIComponent* UI = MC->FindComponentByClass<UPlayerUIComponent>())
+        {
+            UI->ShowCrosshair();
+        }
+    }
 }
 
 void AMainGameMode::StartGame()
 {
-	// 입력 모드 초기화 (GameOnly + 마우스 숨김)
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
-	{
-		PC->bShowMouseCursor = false;
-		PC->bEnableClickEvents = false;
-		PC->bEnableMouseOverEvents = false;
+    if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+    {
+        PC->bShowMouseCursor      = false;
+        PC->bEnableClickEvents    = false;
+        PC->bEnableMouseOverEvents= false;
 
-		FInputModeGameOnly Mode;
-		PC->SetInputMode(Mode);
-	}
+        FInputModeGameOnly Mode;
+        PC->SetInputMode(Mode);
+    }
 
-	// MenuLevel → TestMap 전환
-	UGameplayStatics::OpenLevel(this, FName("TestMap"));
+    UGameplayStatics::OpenLevel(this, FName("TestMap"));
 }
+
+// ---------- HUD 보조 ----------
 
 void AMainGameMode::UpdateGameTimer()
 {
-	ElapsedTime += 1.0f;
-
-	if (HUDWidget)
-	{
-		HUDWidget->UpdateTimer(ElapsedTime);
-	}
+    ElapsedTime += 1.0f;
+    if (HUDWidget) { HUDWidget->UpdateTimer(ElapsedTime); }
 }
 
 void AMainGameMode::NotifyCharacterHUDReady()
 {
-	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
-	if (AMainCharacter* MC = Cast<AMainCharacter>(PlayerPawn))
-	{
-		MC->CacheHUD();
-	}
+    if (APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0))
+    {
+        if (AMainCharacter* MC = Cast<AMainCharacter>(PlayerPawn))
+        {
+            MC->CacheHUD();
+        }
+    }
 }
 
 void AMainGameMode::AddKillCount()
 {
-	KillCount++;
-
-	if (HUDWidget) // HUDWidget은 BeginPlay에서 생성된 UWBP_HUD
-	{
-		HUDWidget->UpdateKillCount(KillCount);
-	}
+    ++KillCount;
+    if (HUDWidget) { HUDWidget->UpdateKillCount(KillCount); }
 }
+
 void AMainGameMode::BindSpawnerForKillCount()
 {
-	if (bKillBindingInitialized) return;  // 중복 바인딩 방지(레벨 리로드 대비)
+    if (bKillBindingInitialized) return;
 
-	TArray<AActor*> Spawners;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMonsterSpawner::StaticClass(), Spawners);
+    TArray<AActor*> Spawners;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMonsterSpawner::StaticClass(), Spawners);
+    for (AActor* A : Spawners)
+        if (AMonsterSpawner* S = Cast<AMonsterSpawner>(A))
+            S->OnMonsterSpawned.AddDynamic(this, &AMainGameMode::OnMonsterSpawnedForUI);
 
-	for (AActor* A : Spawners)
-	{
-		if (AMonsterSpawner* S = Cast<AMonsterSpawner>(A))
-		{
-			S->OnMonsterSpawned.AddDynamic(this, &AMainGameMode::OnMonsterSpawnedForUI);
-		}
-	}
-	TArray<AActor*> ExistingMonsters;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMonsterBase::StaticClass(), ExistingMonsters);
+    TArray<AActor*> Existing;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMonsterBase::StaticClass(), Existing);
+    for (AActor* M : Existing)
+        if (AMonsterBase* Monster = Cast<AMonsterBase>(M))
+            Monster->OnMonsterDead.AddDynamic(this, &AMainGameMode::OnMonsterDeadForUI);
 
-	for (AActor* M : ExistingMonsters)
-	{
-		if (AMonsterBase* Monster = Cast<AMonsterBase>(M))
-		{
-			Monster->OnMonsterDead.AddDynamic(this, &AMainGameMode::OnMonsterDeadForUI);
-		}
-	}
-
-	bKillBindingInitialized = true;
+    bKillBindingInitialized = true;
 }
 
 void AMainGameMode::OnMonsterSpawnedForUI(AMonsterBase* Monster)
 {
-	if (!Monster) return;
-	Monster->OnMonsterDead.AddDynamic(this, &AMainGameMode::OnMonsterDeadForUI);
+    if (Monster)
+        Monster->OnMonsterDead.AddDynamic(this, &AMainGameMode::OnMonsterDeadForUI);
 }
 
 void AMainGameMode::OnMonsterDeadForUI(AMonsterBase* /*Monster*/)
 {
-	AddKillCount();
+    AddKillCount();
 }
+
+// ---------- 게임오버/결과 ----------
 
 void AMainGameMode::ShowGameOver(bool bVictory, int32 InKillCount)
 {
-	// 기존 위젯 제거
-	if (CurrentWidget) CurrentWidget->RemoveFromParent();
+    if (CurrentWidget) CurrentWidget->RemoveFromParent();
+    if (AMainCharacter* MC = Cast<AMainCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0)))
+    {
+        if (UPlayerUIComponent* UI = MC->FindComponentByClass<UPlayerUIComponent>())
+        {
+            UI->HideCrosshair();
+        }
+    }
 
-	if (WBP_GameOver)
-	{
-		// UWBP_GameOver로 캐스팅해서 결과 전달
-		if (UWBP_GameOver* Screen = CreateWidget<UWBP_GameOver>(GetWorld(), WBP_GameOver))
-		{
-			Screen->AddToViewport();
-			Screen->Setup(bVictory, InKillCount, FSimpleDelegate::CreateUObject(this, &AMainGameMode::OnRetryClicked));
-			CurrentWidget = Screen;
+    if (!WBP_GameOver) return;
 
-			if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
-			{
-				PC->bShowMouseCursor = true;
-				PC->bEnableClickEvents = true;
-				PC->bEnableMouseOverEvents = true;
+    if (UWBP_GameOver* Screen = CreateWidget<UWBP_GameOver>(GetWorld(), WBP_GameOver))
+    {
+        Screen->AddToViewport();
+        Screen->Setup(bVictory, InKillCount, FSimpleDelegate::CreateUObject(this, &AMainGameMode::OnRetryClicked));
+        CurrentWidget = Screen;
 
-				FInputModeUIOnly Mode;
-				Mode.SetWidgetToFocus(Screen->TakeWidget());
-				Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-				PC->SetInputMode(Mode);
-			}
-		}
-	}
-	GetWorldTimerManager().ClearTimer(PauseTimerHandle);
-	// 약간의 지연 뒤 UI Only + Pause
-	GetWorldTimerManager().SetTimer(PauseTimerHandle,
-		FTimerDelegate::CreateLambda([this]()
-	{
-		if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
-		{
-			UGameplayStatics::SetGamePaused(this, true);
-		}
-	}), 0.0f, false);
+        if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+        {
+            PC->bShowMouseCursor      = true;
+            PC->bEnableClickEvents    = true;
+            PC->bEnableMouseOverEvents= true;
+
+            FInputModeUIOnly Mode;
+            if (UButton* RetryButton = Screen->GetRetryButton())
+                Mode.SetWidgetToFocus(RetryButton->TakeWidget());
+            else
+                Mode.SetWidgetToFocus(Screen->TakeWidget());
+
+            PC->SetInputMode(Mode);
+
+            FlushAllPressedKeys(PC);
+        }
+
+        GetWorldTimerManager().ClearTimer(PauseTimerHandle);
+        GetWorldTimerManager().SetTimer(
+            PauseTimerHandle,
+            FTimerDelegate::CreateLambda([this]()
+            {
+                if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+                {
+                    UGameplayStatics::SetGamePaused(this, true);
+                }
+            }),
+            1.5f, false);
+    }
 }
-#include "GameInstance/MainGameInstance.h"  // 상단 include 필요
 
 void AMainGameMode::OnRetryClicked()
 {
-	GetWorldTimerManager().ClearTimer(PauseTimerHandle);
+    GetWorldTimerManager().ClearTimer(PauseTimerHandle);
 
-	if (UMainGameInstance* GI = GetGameInstance<UMainGameInstance>())
-	{
-		// bVictory는 ShowGameOver 호출 때 멤버로 캐시해 둔다면 함께 전달 가능
-		const bool bWinCached = false;
-		GI->SetFinalStats(KillCount, ElapsedTime, bWinCached);
-	}
+    if (UMainGameInstance* GI = GetGameInstance<UMainGameInstance>())
+    {
+        const bool bWinCached = false;
+        GI->SetFinalStats(KillCount, ElapsedTime, bWinCached);
+    }
 
-	// UI 정리 후 메뉴로 이동(조용한 상태)
-	UGameplayStatics::SetGamePaused(this, false);
-	if (CurrentWidget) { CurrentWidget->RemoveFromParent(); CurrentWidget = nullptr; }
-	UGameplayStatics::OpenLevel(this, FName(TEXT("/Game/Maps/MenuLevel")));
+    UGameplayStatics::SetGamePaused(this, false);
+    if (CurrentWidget) { CurrentWidget->RemoveFromParent(); CurrentWidget = nullptr; }
+    UGameplayStatics::OpenLevel(this, FName(TEXT("MenuLevel")));
 }
-
-
 
 void AMainGameMode::HandlePlayerDeath()
 {
-	GetWorldTimerManager().ClearTimer(GameTimerHandle);
-	ShowGameOver(/*bVictory=*/false, /*InKillCount=*/KillCount);
+    GetWorldTimerManager().ClearTimer(GameTimerHandle);
+    ShowGameOver(false, KillCount);
 }
 
 void AMainGameMode::HandleBossDefeated()
 {
-	GetWorldTimerManager().ClearTimer(GameTimerHandle);
-	ShowGameOver(/*bVictory=*/true, /*InKillCount=*/KillCount);
+    GetWorldTimerManager().ClearTimer(GameTimerHandle);
+    ShowGameOver(true, KillCount);
 }
+
 void AMainGameMode::PostShowGameOver()
 {
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
-	{
-		PC->SetShowMouseCursor(true);
-		FInputModeUIOnly Mode;
-		PC->SetInputMode(Mode);
-	}
-	UGameplayStatics::SetGamePaused(this, true);
+    if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+    {
+        PC->SetShowMouseCursor(true);
+        FInputModeUIOnly Mode;
+        PC->SetInputMode(Mode);
+    }
+    UGameplayStatics::SetGamePaused(this, true);
 }
 
 void AMainGameMode::OnAnyKeyPressed()
 {
-	// PressAnyKey → MainMenu 전환
-	ShowMainMenu(); // 이미 구현되어 있음
+    ShowMainMenu();
 }
 
 void AMainGameMode::ShowResultStats()
 {
-	// 기존 위젯 정리
-	if (CurrentWidget)
-	{
-		CurrentWidget->RemoveFromParent();
-		CurrentWidget = nullptr;
-	}
-	if (!WBP_ResultStats)
-	{
-		UE_LOG(LogTemp, Error, TEXT("WBP_ResultStats is NOT set."));
-		return;
-	}
+    if (CurrentWidget)
+    {
+        CurrentWidget->RemoveFromParent();
+        CurrentWidget = nullptr;
+    }
+    if (AMainCharacter* MC = Cast<AMainCharacter>(UGameplayStatics::GetPlayerCharacter(this, 0)))
+    {
+        if (UPlayerUIComponent* UI = MC->FindComponentByClass<UPlayerUIComponent>())
+        {
+            UI->HideCrosshair();
+        }
+    }
+    if (!WBP_ResultStats) return;
 
-	// 결과 위젯 생성 (BP 부모가 UWBP_ResultStats 여도 OK)
-	UUWBP_ResultStats* Stats = CreateWidget<UUWBP_ResultStats>(GetWorld(), WBP_ResultStats);
-	if (!Stats)
-	{
-		UE_LOG(LogTemp, Error, TEXT("CreateWidget for ResultStats FAILED"));
-		return;
-	}
+    if (UUWBP_ResultStats* Stats = CreateWidget<UUWBP_ResultStats>(GetWorld(), WBP_ResultStats))
+    {
+        Stats->AddToViewport(100);
+        CurrentWidget = Stats;
 
-	Stats->AddToViewport(100);
-	CurrentWidget = Stats;
+        Stats->SetStats(KillCount, ElapsedTime);
 
-	// 텍스트 채우기
-	Stats->SetStats(KillCount, ElapsedTime);
+        if (Stats->Btn_Restart)
+        {
+            Stats->Btn_Restart->OnClicked.Clear();
+            Stats->Btn_Restart->OnClicked.AddDynamic(this, &AMainGameMode::OnRestartClicked);
+            Stats->Btn_Restart->SetClickMethod(EButtonClickMethod::PreciseClick);
+        }
+        if (Stats->Btn_Return)
+        {
+            Stats->Btn_Return->OnClicked.Clear();
+            Stats->Btn_Return->OnClicked.AddDynamic(this, &AMainGameMode::OnReturnMenuClicked);
+            Stats->Btn_Return->SetClickMethod(EButtonClickMethod::PreciseClick);
+        }
 
-	// 버튼 바인딩
-	if (Stats->Btn_Restart)
-	{
-		Stats->Btn_Restart->OnClicked.Clear();
-		Stats->Btn_Restart->OnClicked.AddDynamic(this, &AMainGameMode::OnRestartClicked);
-	}
-	if (Stats->Btn_Return)
-	{
-		Stats->Btn_Return->OnClicked.Clear();
-		Stats->Btn_Return->OnClicked.AddDynamic(this, &AMainGameMode::OnReturnMenuClicked);
-	}
+        if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+        {
+            PC->bShowMouseCursor      = true;
+            PC->bEnableClickEvents    = true;
+            PC->bEnableMouseOverEvents= true;
 
-	// UIOnly + 커서 ON, 게임은 일시정지 유지
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
-	{
-		PC->bShowMouseCursor = true;
-		PC->bEnableClickEvents = true;
-		PC->bEnableMouseOverEvents = true;
+            FInputModeUIOnly Mode;
+            if (Stats->Btn_Return)
+                Mode.SetWidgetToFocus(Stats->Btn_Return->TakeWidget());
+            else
+                Mode.SetWidgetToFocus(Stats->TakeWidget());
+            Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+            PC->SetInputMode(Mode);
 
-		FInputModeUIOnly Mode;
-		Mode.SetWidgetToFocus(Stats->TakeWidget());
-		Mode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-		PC->SetInputMode(Mode);
-	}
-	UGameplayStatics::SetGamePaused(this, true);
+            FlushAllPressedKeys(PC);
+        }
+
+        UGameplayStatics::SetGamePaused(this, true);
+    }
 }
+
 void AMainGameMode::OnRestartClicked()
 {
-	UGameplayStatics::SetGamePaused(this, false);
+    UGameplayStatics::SetGamePaused(this, false);
 
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
-	{
-		PC->bShowMouseCursor = false;
-		PC->bEnableClickEvents = false;
-		PC->bEnableMouseOverEvents = false;
+    if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+    {
+        PC->bShowMouseCursor      = false;
+        PC->bEnableClickEvents    = false;
+        PC->bEnableMouseOverEvents= false;
 
-		FInputModeGameOnly Mode;
-		PC->SetInputMode(Mode);
-	}
+        FInputModeGameOnly Mode;
+        PC->SetInputMode(Mode);
+    }
 
-	if (CurrentWidget)
-	{
-		CurrentWidget->RemoveFromParent();
-		CurrentWidget = nullptr;
-	}
+    if (CurrentWidget)
+    {
+        CurrentWidget->RemoveFromParent();
+        CurrentWidget = nullptr;
+    }
 
-	// 원하는 맵으로 재시작 (지금은 TestMap로 고정)
-	UGameplayStatics::OpenLevel(this, FName(TEXT("TestMap")));
+    UGameplayStatics::OpenLevel(this, FName(TEXT("TestMap")));
 }
 
 void AMainGameMode::OnReturnMenuClicked()
 {
-	UGameplayStatics::SetGamePaused(this, false);
+    UGameplayStatics::SetGamePaused(this, false);
 
-	if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
-	{
-		PC->bShowMouseCursor = false;
-		PC->bEnableClickEvents = false;
-		PC->bEnableMouseOverEvents = false;
+    if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+    {
+        PC->bShowMouseCursor      = false;
+        PC->bEnableClickEvents    = false;
+        PC->bEnableMouseOverEvents= false;
 
-		FInputModeGameOnly Mode;
-		PC->SetInputMode(Mode);
-	}
+        FInputModeGameOnly Mode;
+        PC->SetInputMode(Mode);
+    }
 
-	if (CurrentWidget)
-	{
-		CurrentWidget->RemoveFromParent();
-		CurrentWidget = nullptr;
-	}
+    if (CurrentWidget)
+    {
+        CurrentWidget->RemoveFromParent();
+        CurrentWidget = nullptr;
+    }
 
-	// 메뉴로
-	UGameplayStatics::OpenLevel(this, FName(TEXT("/Game/Maps/MenuLevel")));
+    UGameplayStatics::OpenLevel(this, FName(TEXT("MenuLevel")));
+}
+void AMainGameMode::SetWeaponIconUI(UTexture2D* Icon)
+{
+    if (HUDWidget) { HUDWidget->SetWeaponIcon(Icon); }
+}
+void AMainGameMode::UpdateAmmoUI(int32 Current, int32 Reserve, bool bInfinite)
+{
+    if (HUDWidget) { HUDWidget->UpdateAmmoText(Current, Reserve, bInfinite); }
 }
 
+
+void AMainGameMode::ShowHelp()
+{
+    if (!HelpWidget && WBP_Help)                 // <- 하드코딩 경로 대신 에디터에서 지정한 클래스 사용
+    {
+        if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+        {
+            HelpWidget = CreateWidget<UUserWidget>(PC, WBP_Help);
+            if (HelpWidget)
+            {
+                HelpWidget->AddToViewport();
+                FInputModeUIOnly M; M.SetWidgetToFocus(HelpWidget->TakeWidget());
+                M.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+                PC->SetInputMode(M);
+                PC->bShowMouseCursor = true;
+            }
+        }
+    }
+}
+void AMainGameMode::OnHelpButtonClicked()
+{
+    ShowHelp();
+}
+
+void AMainGameMode::HideHelp()
+{
+    if (HelpWidget)
+    {
+        HelpWidget->RemoveFromParent();
+        HelpWidget = nullptr;
+
+        APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+        if (PC && CurrentWidget)
+        {
+            FInputModeUIOnly InputMode;
+            InputMode.SetWidgetToFocus(CurrentWidget->TakeWidget());
+            InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+            PC->SetInputMode(InputMode);
+            PC->bShowMouseCursor = true;
+        }
+    }
+}

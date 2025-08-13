@@ -10,6 +10,10 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "Character/CharacterStateMachine.h"
+#include "GameMode/MainGameMode.h" //UI
+#include "Weapons/BaseProjectile.h"
+
+
 
 AWeaponBase::AWeaponBase()
 {
@@ -133,6 +137,11 @@ void AWeaponBase::FireAction()
 	
 	LastFireTime = GetWorld()->GetTimeSeconds();
 	CurrentAmmo--;
+	// UI 추가
+	if (AMainGameMode* GM = Cast<AMainGameMode>(UGameplayStatics::GetGameMode(this)))
+	{
+		GM->UpdateAmmoUI(CurrentAmmo, 0, false);
+	}
 	ApplyRecoil();
 	
 	
@@ -367,7 +376,13 @@ void AWeaponBase::LoadWeaponData()
 	CurrentWeaponData = WeaponDataTable->FindRow<FWeaponData>(WeaponDataRowName, TEXT(""));
 	if (!CurrentWeaponData) return; 
 	CurrentAmmo = CurrentWeaponData->MagazineSize;
-	LastFireTime = -100.0f; 
+	LastFireTime = -100.0f;
+	// UI
+	if (AMainGameMode* GM = Cast<AMainGameMode>(UGameplayStatics::GetGameMode(this)))
+	{
+		GM->SetWeaponIconUI(UIIcon);              // 현재 무기 아이콘
+		GM->UpdateAmmoUI(CurrentAmmo, 0, false);  // 탄약 텍스트(예비탄 없으면 0/false)
+	}
 }
 
 void AWeaponBase::FinishReload()
@@ -376,6 +391,11 @@ void AWeaponBase::FinishReload()
 
 	CurrentAmmo = CurrentWeaponData->MagazineSize;
 	UE_LOG(LogTemp, Warning, TEXT("Reload Finish"));
+	// UI 추가
+	if (AMainGameMode* GM = Cast<AMainGameMode>(UGameplayStatics::GetGameMode(this)))
+	{
+		GM->UpdateAmmoUI(CurrentAmmo, 0, false);
+	}
 }
 
 void AWeaponBase::CancelReload()

@@ -25,6 +25,12 @@ public:
 	
 	float GetAimSize() const { return CurrentAimSize; }
 	void SetAimSize(float NewAimSize) { CurrentAimSize = NewAimSize; }
+
+	UFUNCTION(BlueprintCallable, Category="Crosshair")
+	void ShowCrosshair();
+
+	UFUNCTION(BlueprintCallable, Category="Crosshair")
+	void HideCrosshair();
 	
 private:
 	UPROPERTY()
