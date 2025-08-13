@@ -20,6 +20,8 @@ public:
 	void SetDamage(float NewDamage) {Damage = NewDamage;}
 	
 protected:
+	virtual void BeginPlay() override;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USphereComponent* ProjectileCollision;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
