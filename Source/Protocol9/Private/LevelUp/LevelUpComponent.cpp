@@ -31,6 +31,7 @@ void ULevelUpComponent::BeginPlay()
 		SpeedComp = MyCharacter->FindComponentByClass<UControlComponent>();
 		StaminaComp = MyCharacter->FindComponentByClass<UStaminaComponent>();
 
+		// 캐릭터의 레벨업 이벤트에 현재 컴포넌트의 OnCharacterLeveledUp 함수를 바인딩
 		MyCharacter->LevelUPEvent.AddDynamic(this, &ULevelUpComponent::OnCharacterLeveledUp);
 	}
 }
@@ -50,11 +51,12 @@ void ULevelUpComponent::ShowLevelUpUI()
        UE_LOG(LogTemp, Error, TEXT("LevelUpDataTable or LevelUpUserWidgetClass is not set."));
        return;
     }
-
+	// 데이터 테이블에서 모든 레벨업 옵션 가져오기
     TArray<FLevelUpRow*> AllRows;
     static const FString ContextString = TEXT("LevelUp");
     LevelUpDataTable->GetAllRows<FLevelUpRow>(ContextString, AllRows);
 
+	// 유효한 옵션만 리스트에 저장
     TArray<FLevelUpRow> AvailableOptions;
     for (FLevelUpRow* Row : AllRows)
     {
@@ -64,6 +66,7 @@ void ULevelUpComponent::ShowLevelUpUI()
     	}
     }
 
+	// 랜덤하게 최대 3개의 옵션을 뽑기
     TArray<FLevelUpRow> ChosenOptions;
     int32 OptionsToChoose = FMath::Min(3, AvailableOptions.Num());
 	if (AvailableOptions.Num() > 0)
@@ -76,13 +79,15 @@ void ULevelUpComponent::ShowLevelUpUI()
 		}
 	}
 
+	// 플레이어 컨트롤러 가져오기
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	if (PlayerController)
 	{
+		// 레벨업 전용 UI 위젯 생성
 		ULevelUpUserWidget* Widget = CreateWidget<ULevelUpUserWidget>(PlayerController, LevelUpUserWidgetClass);
 		if (Widget)
 		{
-			// BP 이벤트 호출
+			// 위젯에 선택된 옵션 전달 + 자기 자신 참조 전달 (선택 시 호출용)
 			Widget->SetLevelUpOptions(ChosenOptions, this);
 
 			// 화면 표시
