@@ -16,6 +16,8 @@ public:
 	void AddWeapon(TSubclassOf<AWeaponBase> WeaponClass);
 	void EquipWeaponAtIndex(int32 SlotIndex);
 	bool HasWeaponInSlot(int32 SlotIndex) const;
+	bool AddWeaponToSlot(TSubclassOf<AWeaponBase> WeaponClass, int32 SlotIndex, bool bEquipImmediately);
+	bool AddOrReplaceWeapon(TSubclassOf<AWeaponBase> WeaponClass);
 	
 	UAnimMontage* GetEquipMontageForSlot(int32 SlotIndex) const;
 	int32 GetCurrentWeaponIndex() const {return CurrentWeaponIndex;}
