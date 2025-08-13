@@ -7,7 +7,7 @@
 #include "TimerManager.h"
 #include "UI/UWBP_HUD.h"
 #include "UI/PlayerUIComponent.h"
-#include "Character/StaminaComponent.h"
+#include "Weapons/EWeaponType.h"
 #include "MainCharacter.generated.h"
 
 class AMonsterBase;
@@ -58,7 +58,11 @@ protected:
 	int MaxExp;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Exp")
 	int CharacterLevel;
-
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
+	EWeaponType CurrentWeaponType;
+	
+	
 	//죽었을때 사용
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
 	FName DeathCameraSocket = TEXT("head");

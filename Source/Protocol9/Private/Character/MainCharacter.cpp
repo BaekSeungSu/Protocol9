@@ -184,6 +184,7 @@ float AMainCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const& 
 void AMainCharacter::HideDefalutMesh()
 {
 	GetMesh()->HideBoneByName(FName("weapon_r"), EPhysBodyOp::PBO_None);
+	GetMesh()->HideBoneByName(FName("canon_base"), EPhysBodyOp::PBO_None);
 	GetMesh()->HideBoneByName(FName("neck_01"), EPhysBodyOp::PBO_None);
 	GetMesh()->HideBoneByName(FName("thigh_l"), EPhysBodyOp::PBO_None);
 	GetMesh()->HideBoneByName(FName("thigh_r"), EPhysBodyOp::PBO_None);
