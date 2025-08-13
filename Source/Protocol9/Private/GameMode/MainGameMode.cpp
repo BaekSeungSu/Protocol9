@@ -265,7 +265,7 @@ void AMainGameMode::ShowGameOver(bool bVictory, int32 InKillCount)
                     UGameplayStatics::SetGamePaused(this, true);
                 }
             }),
-            0.05f, false);
+            1.5f, false);
     }
 }
 
