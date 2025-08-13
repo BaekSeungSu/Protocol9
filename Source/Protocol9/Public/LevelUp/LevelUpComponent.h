@@ -3,12 +3,15 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "LevelUp/LevelUpRow.h"
+#include "Engine/DataTable.h"
+#include "Blueprint/UserWidget.h"
 #include "LevelUpComponent.generated.h"
 
 class UHPComponent;
 class UControlComponent;
 class AMainCharacter;
 class UStaminaComponent;
+class UUserWidget;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROTOCOL9_API ULevelUpComponent : public UActorComponent
@@ -17,6 +20,12 @@ class PROTOCOL9_API ULevelUpComponent : public UActorComponent
 
 public:	
 	ULevelUpComponent();
+
+	UPROPERTY(BlueprintReadWrite, Category = "LevelUp")
+	TArray<FLevelUpRow> LevelUpOptions;
+
+	UFUNCTION(BlueprintCallable, Category="LevelUp")
+	void ApplyLevelUpChoice(FLevelUpRow ChosenOption);
 
 protected:
 	
@@ -41,18 +50,17 @@ private:
 	TSubclassOf<UUserWidget> LevelUpUserWidgetClass; 
 	// 생성된 위젯 인스턴스를 저장하는 변수
 	UPROPERTY()
-	class UUserWidget* LevelUpUserWidget;
+	UUserWidget* LevelUpUserWidget;
 
+	
+	TMap<FName, int32> SelectedOptions;
 	
 	UFUNCTION()
 	void OnCharacterLeveledUp(int32 CharacterLevel);
 
 	// 레벨업 UI를 띄우는 함수
 	void ShowLevelUpUI();
-
-	// UI에서 선택한 항목의 스탯을 적용하는 함수 (블루프린트에서 호출 가능)
-	UFUNCTION(BlueprintCallable, Category = "LevelUp")
-	void ApplyLevelUpChoice(const FLevelUpRow& ChosenOption);
+	
 	
 	void ApplyAttackStat(float Value);
 	void ApplyHealthStat(float Value);
