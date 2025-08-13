@@ -98,18 +98,13 @@ void UControlComponent::Look(const FInputActionValue& Value)
 void UControlComponent::StartFire(const FInputActionValue& Value)
 {
 	if (!bInputEnabled || !Owner || !Owner->Controller) return;
-	if (Owner->GetStateMachine()->CanFire()) return;
-
 	UCharacterStateMachine* StateMachine = Owner->GetStateMachine();
-	if (!StateMachine) return;
-	
-	if (!StateMachine->CanFire())
+	if (!StateMachine || !StateMachine->CanFire()) return;
+
+	AWeaponBase* CurrentWeapon = Owner->GetInventoryComponent()->GetCurrentWeapon();
+	if (CurrentWeapon && CurrentWeapon->Implements<UWeaponInterface>())
 	{
-		AWeaponBase* CurrentWeapon = Owner->GetInventoryComponent()->GetCurrentWeapon();
-		if (CurrentWeapon && CurrentWeapon->Implements<UWeaponInterface>())
-		{
-			IWeaponInterface::Execute_PrimaryFire(CurrentWeapon);
-		}
+		IWeaponInterface::Execute_PrimaryFire(CurrentWeapon);
 	}
 }
 
@@ -383,9 +378,13 @@ void UControlComponent::BeginSwapWeapon(int32 SlotIndex)
 	UCharacterStateMachine* StateMachine = Owner->GetStateMachine();
 	UInventoryComponent* Inventory = Owner->GetInventoryComponent();
 	if (!StateMachine || !Inventory) return;
-
-	if (!StateMachine->CanSwapWeapon() || Inventory->GetCurrentWeaponIndex() == SlotIndex) return;
-	if (!Inventory->HasWeaponInSlot(SlotIndex)) return;;
+	
+	if (StateMachine->GetCurrentState() != ECharacterState::Idle) {
+		return;
+	}
+	
+	if (Inventory->GetCurrentWeaponIndex() == SlotIndex) return;
+	if (!Inventory->HasWeaponInSlot(SlotIndex)) return;
 	
 	if (AWeaponBase* CurrentWeapon = Inventory->GetCurrentWeapon())
 	{
@@ -397,7 +396,6 @@ void UControlComponent::BeginSwapWeapon(int32 SlotIndex)
 	}
 
 	UAnimMontage* EquipMontage = Inventory->GetEquipMontageForSlot(SlotIndex);
-
 	if (EquipMontage)
 	{
 		StateMachine->SetState(ECharacterState::Swapping);
@@ -412,11 +410,12 @@ void UControlComponent::BeginSwapWeapon(int32 SlotIndex)
 			}
 		});
 		Owner->GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(SwapEndedDelegate, EquipMontage);
+
 		Owner->SetPendingWeaponSlot(SlotIndex);
 	}
 	else
 	{
-		UE_LOG(LogTemp,Warning,TEXT("No Equip Montage"));
+		UE_LOG(LogTemp, Warning, TEXT("No Equip Montage"));
 		FinishSwapWeapon(SlotIndex);
 	}
 }
