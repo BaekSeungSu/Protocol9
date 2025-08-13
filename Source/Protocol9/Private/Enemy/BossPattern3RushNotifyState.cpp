@@ -49,7 +49,7 @@ void UBossPattern3RushNotifyState::NotifyTick(USkeletalMeshComponent* MeshComp, 
     if (!Player) return;
 
     const FVector BossLocation = Boss->GetActorLocation();
-    const FVector TargetLocation = Player->GetActorLocation();
+    TargetLocation = Player->GetActorLocation();
     const FVector Dir = (TargetLocation - BossLocation).GetSafeNormal();
     
     Boss->AddMovementInput(Dir, 1.0f);
