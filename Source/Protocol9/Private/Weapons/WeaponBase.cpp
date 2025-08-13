@@ -408,35 +408,6 @@ void AWeaponBase::CancelReload()
 	}
 }
 
-void AWeaponBase::CancelReload()
-{
-	if (OwningCharacter && OwningCharacter->GetStateMachine()->GetCurrentState() == ECharacterState::Reload)
-	{
-		GetWorld()->GetTimerManager().ClearTimer(ReloadTimerHandle);
-		OwningCharacter->GetMesh()->GetAnimInstance()->Montage_Stop(0.1f, GetReloadMontage());
-		OwningCharacter->GetStateMachine()->SetState(ECharacterState::Idle);
-	}
-}
-
-void AWeaponBase::CancelReload()
-{
-	if (OwningCharacter && OwningCharacter->GetStateMachine()->GetCurrentState() == ECharacterState::Reload)
-	{
-		GetWorld()->GetTimerManager().ClearTimer(ReloadTimerHandle);
-		OwningCharacter->GetMesh()->GetAnimInstance()->Montage_Stop(0.1f, GetReloadMontage());
-		OwningCharacter->GetStateMachine()->SetState(ECharacterState::Idle);
-	}
-}
-
-void AWeaponBase::CancelReload()
-{
-	if (OwningCharacter && OwningCharacter->GetStateMachine()->GetCurrentState() == ECharacterState::Reload)
-	{
-		GetWorld()->GetTimerManager().ClearTimer(ReloadTimerHandle);
-		OwningCharacter->GetMesh()->GetAnimInstance()->Montage_Stop(0.1f, GetReloadMontage());
-		OwningCharacter->GetStateMachine()->SetState(ECharacterState::Idle);
-	}
-}
 
 
 
