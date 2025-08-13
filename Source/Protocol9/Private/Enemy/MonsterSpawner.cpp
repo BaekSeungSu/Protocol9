@@ -109,6 +109,7 @@ void AMonsterSpawner::SpawnBossMonster()
 		SpawnRotation,
 		SpawnParams
 	);
+	OnBossMonsterSpawned.Broadcast(NewBoss); //보스 몬스터 스폰 이벤트 발생
 }
 
 

@@ -5,7 +5,7 @@
 #include "BossAttackPatternDataRow.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "BossMonsterBase.generated.h"
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBossDeath);
 UCLASS(BlueprintType)
 class PROTOCOL9_API ABossMonsterBase : public AMonsterBase
 {
@@ -72,7 +72,7 @@ protected:
 	bool bIsPhaseChanging;
 
 	virtual void OnDeath() override;
-
+	FOnBossDeath OnBossDeath;
 private:
 	bool bHasEnteredPhase2;
 
@@ -101,7 +101,9 @@ private:
 	void OnPhaseChangeCompleted();
 	
 	float CurrentOverlayValue;
-	
+	UFUNCTION()
+	void DelayedDestory();
 	UPROPERTY()
 	float DefenceModifier;
+	FTimerHandle DeathTimer;
 };

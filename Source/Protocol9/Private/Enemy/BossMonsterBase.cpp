@@ -161,7 +161,15 @@ bool ABossMonsterBase::IsAttackRelatedMontage(UAnimMontage* Montage)
 
 void ABossMonsterBase::OnDeath()
 {
-	Super::OnDeath();
+	if (CurrentState == EMonsterState::Dead)
+	{
+		return;
+	}
+	SetState(EMonsterState::Dead);
+
+	OnBossDeath.Broadcast();
+	
+	GetWorldTimerManager().SetTimer(DeathTimer,this,&ABossMonsterBase::DelayedDestory, 5.0f, false);
 }
 
 void ABossMonsterBase::StartPhase2Transition()
@@ -294,6 +302,11 @@ void ABossMonsterBase::OnPhaseChangeCompleted()
 	GetWorldTimerManager().SetTimer(Pattern3TimerHandle, this, &ABossMonsterBase::OnPattern3Ready, Pattern3StartTime, true);
 	
 	SetState(EMonsterState::Chasing);
+}
+
+void ABossMonsterBase::DelayedDestory()
+{
+	Destroy();
 }
 
 void ABossMonsterBase::OnPattern3Ready()
