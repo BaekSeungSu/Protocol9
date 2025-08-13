@@ -31,8 +31,8 @@ AMonsterBase::AMonsterBase()
 	{
 		GetCapsuleComponent()->SetCapsuleHalfHeight(MonsterHalfHeight);
 		GetCapsuleComponent()->SetCapsuleRadius(MonsterRadius);
-		GetCapsuleComponent()->SetCollisionObjectType(ECC_GameTraceChannel1);
-		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_GameTraceChannel2, ECR_Ignore);
+		GetCapsuleComponent()->SetCollisionObjectType(ECC_GameTraceChannel2);
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_GameTraceChannel3, ECR_Ignore);
 	}
 	if (GetMesh())
 	{
