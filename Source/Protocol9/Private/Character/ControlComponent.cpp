@@ -121,10 +121,7 @@ void UControlComponent::StopFire(const FInputActionValue& Value)
 
 void UControlComponent::Melee(const FInputActionValue& Value)
 {
-	GEngine->AddOnScreenDebugMessage(-1,
-			2.0f,
-			FColor::Green,
-			FString::Printf(TEXT("Current Stamina %d"), ));
+	
 	
 	if (!Owner->Controller) return;
 
