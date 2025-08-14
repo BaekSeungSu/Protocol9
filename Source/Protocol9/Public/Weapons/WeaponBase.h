@@ -35,12 +35,15 @@ public:
 	void CancelReload();
 	
 	int32 GetCurrentAmmo() const {return CurrentAmmo;}
+	UFUNCTION(BlueprintPure)
 	UDataTable* GetWeaponDataTable() const {return WeaponDataTable;}
 	FName GetWeaponDataRowName() const {return WeaponDataRowName;}
 
 	// UI : 무기 이미지 블루프린트 연동
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="UI")
 	UTexture2D* UIIcon = nullptr;
+
+	FWeaponData* CurrentWeaponData;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -57,7 +60,7 @@ protected:
 	UPROPERTY()
 	AMainCharacter* OwningCharacter;
 	
-	FWeaponData* CurrentWeaponData;
+	
 	FTimerHandle ReloadTimerHandle;
 	float LastFireTime;
 	bool bIsFullAuto;
