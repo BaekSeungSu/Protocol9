@@ -205,7 +205,6 @@ void ABossMonsterBase::OnDeath()
 	AIController = nullptr;
 	OnBossDeath.Broadcast();
 	GetWorldTimerManager().SetTimer(DeathTimer,this,&ABossMonsterBase::DelayedDestory, 5.0f, false);
-	
 }
 
 void ABossMonsterBase::StartPhase2Transition()

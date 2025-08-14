@@ -101,7 +101,7 @@ protected:
     UFUNCTION()
     virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
     UPROPERTY()
-    TWeakObjectPtr<AMainCharacter> TargetPlayer;
+    TWeakObjectPtr<APawn> TargetPlayer;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Combat", meta = (AllowPrivateAccess = "true"))
     bool bShouldContinueAttacking = false;
     UFUNCTION()
@@ -118,7 +118,8 @@ protected:
     float CurrentHP;
     UFUNCTION()
     virtual void PerformAttack();
-
+  
+    
 private:
     void UpdateAI();
     
@@ -131,10 +132,11 @@ private:
     void StartContinuousAttack();
 
     UFUNCTION()
-    void StartAIUpdateTimer();
+    void StartAIUpdateTimer(const float Jitter);
     UFUNCTION()
     void EndDeath();
-    
+    UPROPERTY()
+    FVector TargetLocationBefore;
     UFUNCTION()
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
     FTimerHandle AIUpdateTimerHandle;

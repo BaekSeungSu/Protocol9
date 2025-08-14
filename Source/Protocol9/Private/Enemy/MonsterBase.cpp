@@ -51,12 +51,11 @@ void AMonsterBase::BeginPlay()
 	
 	StartLocation = GetActorLocation();
 	CurrentHP = MaxHP;
+	TargetLocationBefore = FVector(FLT_MAX);
 	SetAnimInstance();
 	SetState(EMonsterState::Chasing);
-
-	AIUpdateInterval = FMath::RandRange(AIUpdateInterval - AIUpdateInterval * 0.2f,
-	                                    AIUpdateInterval + AIUpdateInterval * 0.2f);
-	StartAIUpdateTimer();
+	
+	StartAIUpdateTimer(FMath::RandRange(0.0f,AIUpdateInterval));
 	FindAndSetTargetPlayer();
 	float RandomLifeTime = FMath::RandRange(5.0f, 10.0f);
 	GetMesh()->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
@@ -230,7 +229,14 @@ void AMonsterBase::StopMovement()
 
 void AMonsterBase::MoveToTarget()
 {
+	if (!AIController) return;
+	
 	FVector TargetLocation = GetTargetMonsterLocation();
+	if (FVector::DistSquared2D(TargetLocation, TargetLocationBefore) < FMath::Square(100.0f))
+	{
+		return;
+	}
+	TargetLocationBefore = TargetLocation;
 	AIController->MoveToLocation(TargetLocation);
 }
 
@@ -257,14 +263,15 @@ FVector AMonsterBase::GetTargetMonsterLocation() const
 	// return GetActorLocation();
 }
 
-void AMonsterBase::StartAIUpdateTimer()
+void AMonsterBase::StartAIUpdateTimer(const float Jitter)
 {
 	GetWorld()->GetTimerManager().SetTimer(
 		AIUpdateTimerHandle,
 		this,
 		&AMonsterBase::UpdateAI,
 		AIUpdateInterval,
-		true
+		true,
+		Jitter
 	);
 }
 
