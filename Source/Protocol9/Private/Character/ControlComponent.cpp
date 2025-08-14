@@ -13,6 +13,7 @@
 #include "Enemy/MonsterBase.h"
 #include "Engine/DamageEvents.h"
 #include "Item/ItemBox.h"
+#include "Weapons/Pickup_Weapon.h"
 
 
 UControlComponent::UControlComponent()
@@ -100,7 +101,7 @@ void UControlComponent::StartFire(const FInputActionValue& Value)
 	if (!bInputEnabled || !Owner || !Owner->Controller) return;
 	UCharacterStateMachine* StateMachine = Owner->GetStateMachine();
 	if (!StateMachine || !StateMachine->CanFire()) return;
-
+	
 	AWeaponBase* CurrentWeapon = Owner->GetInventoryComponent()->GetCurrentWeapon();
 	if (CurrentWeapon && CurrentWeapon->Implements<UWeaponInterface>())
 	{
@@ -125,34 +126,35 @@ void UControlComponent::Melee(const FInputActionValue& Value)
 
 	if (!bInputEnabled) return;
 	
-	if (Owner->GetStateMachine()->CanMelee()) return;
-	
-	UAnimInstance* AnimInstance = Owner->GetMesh()->GetAnimInstance();
+	if (Owner->GetStateMachine()->CanMelee())
 	{
-		if (Owner->GetSoundComponent())
+		UAnimInstance* AnimInstance = Owner->GetMesh()->GetAnimInstance();
 		{
-			Owner->GetSoundComponent()->PlayMeleeSound();
-		}
-		
-		if (AnimInstance && Owner->MeleeMontage)
-		{
-			Owner->GetStateMachine()->SetState(ECharacterState::Melee);
-			
-			float duration = AnimInstance->Montage_Play(Owner->MeleeMontage);
-			
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Melee"));
-
-			FOnMontageEnded MeleeEnded;
-			MeleeEnded.BindLambda([this](UAnimMontage* Montage, bool bInterrupted)
+			if (Owner->GetSoundComponent())
 			{
-				if (Owner && Owner->GetStateMachine())
+				Owner->GetSoundComponent()->PlayMeleeSound();
+			}
+			
+			if (AnimInstance && Owner->MeleeMontage)
+			{
+				Owner->GetStateMachine()->SetState(ECharacterState::Melee);
+				
+				float duration = AnimInstance->Montage_Play(Owner->MeleeMontage);
+				
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Melee"));
+	
+				FOnMontageEnded MeleeEnded;
+				MeleeEnded.BindLambda([this](UAnimMontage* Montage, bool bInterrupted)
 				{
-					Owner->GetStateMachine()->SetState(ECharacterState::Idle);
-				}
-			});
-
-			AnimInstance->Montage_SetEndDelegate(MeleeEnded, Owner->MeleeMontage);
-
+					if (Owner && Owner->GetStateMachine())
+					{
+						Owner->GetStateMachine()->SetState(ECharacterState::Idle);
+					}
+				});
+	
+				AnimInstance->Montage_SetEndDelegate(MeleeEnded, Owner->MeleeMontage);
+	
+			}
 		}
 	}
 	
@@ -320,6 +322,7 @@ void UControlComponent::SwapWeapon2(const FInputActionValue& Value)
 	UE_LOG(LogTemp,Warning,TEXT("Swap Weapon 2 "));
 }
 
+
 void UControlComponent::DeBug1(const FInputActionValue& Value)
 {
 	Owner->AddExp(20);
@@ -344,6 +347,38 @@ void UControlComponent::DeBug2(const FInputActionValue& Value)
 	int HP = Owner->GetHPComponent()->GetCurrentHP();
 
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Current HP %d"), HP));
+}
+
+void UControlComponent::Interact(const FInputActionValue& Value)
+{
+	if (!bInputEnabled||!Owner)return;
+	if (!Value.Get<bool>()) return;
+
+	TArray<AActor*> Overlapping;
+	Owner->GetOverlappingActors(Overlapping, APickup_Weapon::StaticClass());
+
+	APickup_Weapon* Best = nullptr;
+	float BestDistSq = FLT_MAX;
+
+	for (AActor* Actor : Overlapping)
+	{
+		if (APickup_Weapon* Pickup = Cast<APickup_Weapon>(Actor))
+		{
+			const float DistSq = FVector::DistSquared(Pickup->GetActorLocation(), Owner->GetActorLocation());
+			if (DistSq < BestDistSq)
+			{
+				BestDistSq = DistSq;
+				Best = Pickup;
+			}
+		}
+	}
+	if (Best)
+	{
+		if (!Best->TryConsume(Owner))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to Pickup"));
+		}
+	}
 }
 
 //아이템 스피드 증가 함수
@@ -402,11 +437,24 @@ void UControlComponent::BeginSwapWeapon(int32 SlotIndex)
 		const float Duration = Owner->GetMesh()->GetAnimInstance()->Montage_Play(EquipMontage);
 
 		FOnMontageEnded SwapEndedDelegate;
-		SwapEndedDelegate.BindLambda([this, StateMachine](UAnimMontage* Montage, bool bInterrupted)
+		SwapEndedDelegate.BindLambda([this, SlotIndex,StateMachine](UAnimMontage* Montage, bool bInterrupted)
 		{
 			if (StateMachine)
 			{
 				StateMachine->SetState(ECharacterState::Idle);
+			}
+			if (Owner && Owner->GetInventoryComponent())
+			{
+				UInventoryComponent* Inv = Owner->GetInventoryComponent();
+				if (Inv->GetCurrentWeaponIndex() != SlotIndex)
+				{
+					Inv->EquipWeaponAtIndex(SlotIndex);
+				}
+				
+				if (AWeaponBase* Cur = Inv->GetCurrentWeapon())
+				{
+					Cur->SetActorHiddenInGame(false);
+				}
 			}
 		});
 		Owner->GetMesh()->GetAnimInstance()->Montage_SetEndDelegate(SwapEndedDelegate, EquipMontage);

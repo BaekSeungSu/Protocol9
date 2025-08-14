@@ -78,10 +78,11 @@ public:
 	UFUNCTION()
 	void SwapWeapon2(const FInputActionValue& Value);
 	UFUNCTION()
+	void Interact(const FInputActionValue& Value);
+	UFUNCTION()
 	void DeBug1(const FInputActionValue& Value);
 	UFUNCTION()
 	void DeBug2(const FInputActionValue& Value);
-
 
 	UFUNCTION(BlueprintCallable,Category="Speed")
 	void SetMaxSpeed(float NewMaxSpeed);

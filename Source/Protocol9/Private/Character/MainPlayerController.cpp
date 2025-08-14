@@ -14,7 +14,8 @@ AMainPlayerController::AMainPlayerController()
 	DashAction(nullptr),
 	ReloadAction(nullptr),
 	SwapWeapon1(nullptr),
-	SwapWeapon2(nullptr)
+	SwapWeapon2(nullptr),
+	Interaction(nullptr)
 {
 }
 
