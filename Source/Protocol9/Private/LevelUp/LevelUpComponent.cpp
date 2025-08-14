@@ -34,6 +34,23 @@ void ULevelUpComponent::BeginPlay()
 		// 캐릭터의 레벨업 이벤트에 현재 컴포넌트의 OnCharacterLeveledUp 함수를 바인딩
 		MyCharacter->LevelUPEvent.AddDynamic(this, &ULevelUpComponent::OnCharacterLeveledUp);
 	}
+
+	StatLevels.Add(TEXT("Speed Bonus"),   0);
+	StatLevels.Add(TEXT("Damage Bonus"),  0);
+	StatLevels.Add(TEXT("Health Bonus"),  0);
+	StatLevels.Add(TEXT("CoolDownDash"),  0);
+}
+
+int32 ULevelUpComponent::GetStatLevel(FName StatName) const
+{
+	if (const int32* Found = StatLevels.Find(StatName)) return *Found;
+	return 0;
+}
+
+void ULevelUpComponent::IncrementStatLevel(const FName& StatName)
+{
+	int32& Lvl = StatLevels.FindOrAdd(StatName);
+	Lvl = FMath::Clamp(Lvl + 1, 0, 10);
 }
 
 void ULevelUpComponent::OnCharacterLeveledUp(int32 CharacterLevel)
@@ -102,15 +119,15 @@ void ULevelUpComponent::ShowLevelUpUI()
 
 void ULevelUpComponent::ApplyLevelUpChoice(FLevelUpRow ChosenOption)
 {
-    if (ChosenOption.Name==TEXT("Increase Speed"))
+    if (ChosenOption.Name==TEXT("Speed Bonus"))
     {
        ApplySpeedStat(ChosenOption.Value);
     }
-    else if (ChosenOption.Name==TEXT("Increase Damage"))
+    else if (ChosenOption.Name==TEXT("Damage Bonus"))
     {
        ApplyAttackStat(ChosenOption.Value);
     }
-    else if (ChosenOption.Name==TEXT("Increase Health"))
+    else if (ChosenOption.Name==TEXT("Health Bonus"))
     {
        ApplyHealthStat(ChosenOption.Value);
     }
@@ -118,7 +135,7 @@ void ULevelUpComponent::ApplyLevelUpChoice(FLevelUpRow ChosenOption)
     {
        ApplyStaminaStat(ChosenOption.Value);
     }
-    
+	IncrementStatLevel(ChosenOption.Name);
 	if (UWorld* World = GetWorld()) // GetWorld()가 유효한지 확인
 	{
 		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(World, 0);
