@@ -133,3 +133,11 @@ void UUWBP_HUD::NativeConstruct()
 
 
 
+
+
+void UUWBP_HUD::SetMiniMapArrow(float Yaw)
+{
+	if (!minimaparrow) return;
+	const float angle = FRotator::NormalizeAxis(Yaw-90);
+	minimaparrow->SetRenderTransformAngle(angle);
+}

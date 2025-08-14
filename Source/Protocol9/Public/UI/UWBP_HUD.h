@@ -43,6 +43,10 @@ public:
     void SetWeaponIcon(UTexture2D* Icon);
 
 	UFUNCTION(BlueprintCallable)
+	void SetMiniMapArrow(float Yaw);
+	
+
+	UFUNCTION(BlueprintCallable)
 	void UpdateBossHP(float CurrentHP, float MaxHP);
 
 	UFUNCTION(BlueprintCallable)
@@ -82,8 +86,12 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* TXT_Ammo;
 
-	UPROPERTY(meta=(BindWidget)) UImage* Image_Weapon = nullptr;
+	UPROPERTY(meta=(BindWidget))
+	UImage* Image_Weapon = nullptr;
 
+	UPROPERTY(meta=(BindWidget))
+	UImage* minimaparrow= nullptr;
+	
 	UPROPERTY(meta = (BindWidget))
 	UProgressBar* Boss_HP;
 
