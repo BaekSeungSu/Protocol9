@@ -3,6 +3,7 @@
 
 #include "Enemy/RangedMonsterBase.h"
 #include "Enemy/MonsterProjectile.h"
+#include "Character/MainCharacter.h"
 #include "Engine/World.h"
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -14,17 +15,29 @@ ARangedMonsterBase::ARangedMonsterBase()
 
 void ARangedMonsterBase::PerformAttack()
 {
-	if (!bShouldContinueAttacking || !TargetPlayer || !IsInAttackRange())
-	{
-		StopContinuousAttack();
-		return;
-	}
-	StopMovement();
+	Super::PerformAttack();
+	
 	if (AttackMontage && GetMesh() && GetMesh()->GetAnimInstance())
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Montage Played"));
 		GetMesh()->GetAnimInstance()->Montage_Play(AttackMontage);
 	}
-    
+}
+
+void ARangedMonsterBase::ChasePlayer()
+{
+	if (!TargetPlayer.IsValid() || !AIController) return;
+
+	if (IsInAttackRange(0.0f) && HasLineOfSightToPlayer())
+	{
+		SetState(EMonsterState::Attacking);
+		return;
+	}
+	MoveToTarget();
+}
+
+void ARangedMonsterBase::SpawnProjectile()
+{
 	FVector Direction = (TargetPlayer->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 	FRotator LookRotation = FRotationMatrix::MakeFromX(Direction).Rotator();
 	SetActorRotation(LookRotation);
@@ -45,28 +58,11 @@ void ARangedMonsterBase::PerformAttack()
 		}
 
 	}
-    
-	if (AttackMontage && GetMesh() && GetMesh()->GetAnimInstance())
-	{
-		GetMesh()->GetAnimInstance()->Montage_Play(AttackMontage);
-	}
-}
-
-void ARangedMonsterBase::ChasePlayer()
-{
-	if (!TargetPlayer || !AIController) return;
-
-	if (IsInAttackRange() && HasLineOfSightToPlayer())
-	{
-		SetState(EMonsterState::Attacking);
-		return;
-	}
-	MoveToTarget();
 }
 
 bool ARangedMonsterBase::HasLineOfSightToPlayer()
 {
-	if (!TargetPlayer)
+	if (!TargetPlayer.IsValid())
 		return false;
 	FVector PlayerLocation = TargetPlayer->GetActorLocation();
 	FVector MonsterLocation = GetActorLocation();
@@ -79,13 +75,20 @@ bool ARangedMonsterBase::HasLineOfSightToPlayer()
 
 FVector ARangedMonsterBase::GetProjectileSpawnLocation()
 {
-	FVector ForwardVector = GetActorForwardVector();
-	FVector RightVector = GetActorRightVector();
-	FVector UpVector = GetActorUpVector();
-    
-	return GetActorLocation() + 
-		   (ForwardVector * ProjectileSpawnOffset.X) +
-		   (RightVector * ProjectileSpawnOffset.Y) +
-		   (UpVector * ProjectileSpawnOffset.Z);
+	if (GetMesh() && GetMesh()->DoesSocketExist(MuzzleSocketName))
+	{
+		return GetMesh()->GetSocketLocation(MuzzleSocketName);
+	}
+	else
+	{
+		FVector ForwardVector = GetActorForwardVector();
+		FVector RightVector = GetActorRightVector();
+		FVector UpVector = GetActorUpVector();
+        
+		return GetActorLocation() + 
+			  (ForwardVector * ProjectileSpawnOffset.X) +
+			  (RightVector * ProjectileSpawnOffset.Y) +
+			  (UpVector * ProjectileSpawnOffset.Z);
+	}
 }
 
