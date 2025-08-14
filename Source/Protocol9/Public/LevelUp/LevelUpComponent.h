@@ -52,7 +52,7 @@ private:
 
 	// UI에서 선택한 항목의 스탯을 적용하는 함수 (블루프린트에서 호출 가능)
 	UFUNCTION(BlueprintCallable, Category = "LevelUp")
-	void ApplyLevelUpChoice(const FLevelUpRow& ChosenOption);
+	void ApplyLevelUpChoice(FLevelUpRow ChosenOption);
 	
 	void ApplyAttackStat(float Value);
 	void ApplyHealthStat(float Value);
