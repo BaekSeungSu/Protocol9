@@ -21,13 +21,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ranged Combat")
 	FVector ProjectileSpawnOffset = FVector(0.0, 0.0f, -100.0f);
 
+	UFUNCTION()
+	void SpawnProjectile();
 	
 protected:
 	virtual void BeginPlay() override;
 	void InitializeMovement();
 	virtual FVector GetTargetMonsterLocation() const override;
 	virtual void PerformAttack() override;
-	virtual bool IsInAttackRange() const override;
+	
+	virtual bool IsInAttackRange(float ExtraDistance) const override;
 	virtual void MoveToTarget() override;
 private:
 	FVector GetProjectileSpawnLocation() const;
