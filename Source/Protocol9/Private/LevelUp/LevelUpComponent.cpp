@@ -102,19 +102,19 @@ void ULevelUpComponent::ShowLevelUpUI()
 
 void ULevelUpComponent::ApplyLevelUpChoice(FLevelUpRow ChosenOption)
 {
-    if (ChosenOption.Name==TEXT("IncreaseSpeed"))
+    if (ChosenOption.Name==TEXT("Increase Speed"))
     {
        ApplySpeedStat(ChosenOption.Value);
     }
-    else if (ChosenOption.Name==TEXT("IncreaseDamage"))
+    else if (ChosenOption.Name==TEXT("Increase Damage"))
     {
        ApplyAttackStat(ChosenOption.Value);
     }
-    else if (ChosenOption.Name==TEXT("IncreaseHealth"))
+    else if (ChosenOption.Name==TEXT("Increase Health"))
     {
        ApplyHealthStat(ChosenOption.Value);
     }
-    else if (ChosenOption.Name==TEXT("DecreaseDashCD"))
+    else if (ChosenOption.Name==TEXT("Decrease DashCD"))
     {
        ApplyStaminaStat(ChosenOption.Value);
     }
