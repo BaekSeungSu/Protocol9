@@ -73,6 +73,9 @@ protected:
 
 	virtual void OnDeath() override;
 	FOnBossDeath OnBossDeath;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DeathMontage")
+	UAnimMontage* DeathMontage;
 private:
 	bool bHasEnteredPhase2;
 

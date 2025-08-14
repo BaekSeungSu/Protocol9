@@ -3,6 +3,7 @@
 
 #include "Enemy/RangedMonsterBase.h"
 #include "Enemy/MonsterProjectile.h"
+#include "Character/MainCharacter.h"
 #include "Engine/World.h"
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -25,7 +26,7 @@ void ARangedMonsterBase::PerformAttack()
 
 void ARangedMonsterBase::ChasePlayer()
 {
-	if (!TargetPlayer || !AIController) return;
+	if (!TargetPlayer.IsValid() || !AIController) return;
 
 	if (IsInAttackRange(0.0f) && HasLineOfSightToPlayer())
 	{
@@ -61,7 +62,7 @@ void ARangedMonsterBase::SpawnProjectile()
 
 bool ARangedMonsterBase::HasLineOfSightToPlayer()
 {
-	if (!TargetPlayer)
+	if (!TargetPlayer.IsValid())
 		return false;
 	FVector PlayerLocation = TargetPlayer->GetActorLocation();
 	FVector MonsterLocation = GetActorLocation();

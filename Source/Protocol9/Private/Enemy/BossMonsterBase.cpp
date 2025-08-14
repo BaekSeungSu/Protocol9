@@ -123,7 +123,7 @@ void ABossMonsterBase::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterru
 			UE_LOG(LogTemp, Warning, TEXT("AM_BossCrunchPattern03 Ended"));
 			ExtraDistance = BaseExtraDistance;
 		}
-		if (TargetPlayer && IsInAttackRange(20.0f) && bShouldContinueAttacking)
+		if (TargetPlayer.IsValid() && IsInAttackRange(20.0f) && bShouldContinueAttacking)
 		{
 			SetState(EMonsterState::Attacking);
 			PerformAttack();
@@ -167,9 +167,24 @@ void ABossMonsterBase::OnDeath()
 	}
 	SetState(EMonsterState::Dead);
 
-	OnBossDeath.Broadcast();
+	GetWorldTimerManager().ClearTimer(Pattern1TimerHandle);
+	GetWorldTimerManager().ClearTimer(Pattern2TimerHandle);
+	GetWorldTimerManager().ClearTimer(Pattern3TimerHandle);
+	GetWorldTimerManager().ClearTimer(PhaseChangeTimerHandle);
+	GetWorldTimerManager().ClearTimer(OverlayMaterialTimerHandle);
 	
+	UAnimInstance* Instance = GetMesh()->GetAnimInstance();
+	if (Instance && DeathMontage)
+	{
+		float MontageLength = PlayAnimMontage(DeathMontage);
+		GetWorldTimerManager().SetTimer(DeathTimer,this,&ABossMonsterBase::Ragdoll, MontageLength-0.2f, false);
+	}
+	
+	
+	AIController = nullptr;
+	OnBossDeath.Broadcast();
 	GetWorldTimerManager().SetTimer(DeathTimer,this,&ABossMonsterBase::DelayedDestory, 5.0f, false);
+	
 }
 
 void ABossMonsterBase::StartPhase2Transition()

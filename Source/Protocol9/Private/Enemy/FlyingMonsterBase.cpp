@@ -2,6 +2,7 @@
 
 #include "Enemy/FlyingMonsterBase.h"
 #include "Enemy/MonsterProjectile.h"
+#include "Character/MainCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/World.h"
 
@@ -29,7 +30,7 @@ void AFlyingMonsterBase::InitializeMovement()
 }
 FVector AFlyingMonsterBase::GetTargetMonsterLocation() const
 {
-	if (TargetPlayer)
+	if (TargetPlayer.IsValid())
 	{
 		FVector PlayerLocation = TargetPlayer->GetActorLocation();
 		UE_LOG(LogTemp, Log, TEXT("PlayerLocation : %s"), *PlayerLocation.ToString());
@@ -71,7 +72,7 @@ void AFlyingMonsterBase::SpawnProjectile()
 
 bool AFlyingMonsterBase::IsInAttackRange(float ExtraDistanceInside) const
 {
-	if (!TargetPlayer) return false;
+	if (!TargetPlayer.IsValid()) return false;
 	FVector MonsterLocation = GetActorLocation();
 	FVector PlayerLocation = TargetPlayer->GetActorLocation();
 	

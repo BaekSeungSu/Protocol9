@@ -11,6 +11,7 @@
 #include "NavigationSystem.h"
 #include "GameFramework/PlayerController.h"
 #include "Components/CapsuleComponent.h"
+#include "Character/MainCharacter.h"
 #include "Engine/DamageEvents.h"
 AMonsterBase::AMonsterBase()
 {
@@ -124,7 +125,7 @@ float AMonsterBase::GetMonsterHalfHeight() const
 
 void AMonsterBase::ChasePlayer()
 {
-	if (!TargetPlayer || !AIController) return;
+	if (!TargetPlayer.IsValid() || !AIController) return;
 
 	if (IsInAttackRange(ExtraDistance))
 	{
@@ -161,9 +162,10 @@ bool AMonsterBase::FindAndSetTargetPlayer()
 
 bool AMonsterBase::SetTargetPlayer(APawn* NewTarget)
 {
-	if (NewTarget && NewTarget->IsA<APawn>())
+	AMainCharacter* NewTargetCharacter = Cast<AMainCharacter>(NewTarget);
+	if (NewTargetCharacter)
 	{
-		TargetPlayer = NewTarget;
+		TargetPlayer = NewTargetCharacter;
 		return true;
 	}
 	return false;
@@ -182,7 +184,7 @@ void AMonsterBase::StartContinuousAttack()
 	{
 		return;
 	}
-	if (!TargetPlayer)
+	if (!TargetPlayer.IsValid())
 	{
 		return;
 	}
@@ -234,7 +236,7 @@ void AMonsterBase::MoveToTarget()
 
 FVector AMonsterBase::GetTargetMonsterLocation() const
 {
-	if (TargetPlayer)
+	if (TargetPlayer.IsValid())
 	{
 		FVector TargetLocation = TargetPlayer->GetActorLocation();
 
@@ -265,32 +267,47 @@ void AMonsterBase::StartAIUpdateTimer()
 
 void AMonsterBase::EndDeath()
 {
+	AIController = nullptr;
 	Destroy();
 }
 
 void AMonsterBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	if (AIUpdateTimerHandle.IsValid())
+	UWorld* World = GetWorld();
+	if (World)
 	{
-		GetWorld()->GetTimerManager().ClearTimer(AIUpdateTimerHandle);
-		AIUpdateTimerHandle.Invalidate();
+		World->GetTimerManager().ClearAllTimersForObject(this);
+	}
+	
+	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+	{
+		AnimInstance->OnMontageEnded.RemoveDynamic(this, &AMonsterBase::OnAttackMontageEnded);
+	}
+	
+	if (DeadTimerHandle.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(DeadTimerHandle);
+		DeadTimerHandle.Invalidate();
 	}
 	Super::EndPlay(EndPlayReason);
 }
 
 bool AMonsterBase::IsInAttackRange(float ExtraDistanceInside) const
 {
-	if (!TargetPlayer) return false;
-
-	float DistanceToPlayer = FVector::Dist(GetActorLocation(), TargetPlayer->GetActorLocation());
-	return DistanceToPlayer <= AttackRange + ExtraDistanceInside;
+	
+	if (TargetPlayer.IsValid())
+	{
+		float DistanceToPlayer = FVector::Dist(GetActorLocation(), TargetPlayer->GetActorLocation());
+		return DistanceToPlayer <= AttackRange + ExtraDistanceInside;
+	}
+	return false;
 }
 
 void AMonsterBase::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	if (Montage == AttackMontage && CurrentState == EMonsterState::Attacking)
 	{
-		if (TargetPlayer && IsInAttackRange(ExtraDistance) && bShouldContinueAttacking)
+		if (TargetPlayer.IsValid() && IsInAttackRange(ExtraDistance) && bShouldContinueAttacking)
 		{
 			SetState(EMonsterState::Attacking);
 			PerformAttack();
@@ -333,6 +350,7 @@ void AMonsterBase::OnDeath()
 		return;
 	}
 
+	
 	SetState(EMonsterState::Dead);
 
 	Ragdoll();	

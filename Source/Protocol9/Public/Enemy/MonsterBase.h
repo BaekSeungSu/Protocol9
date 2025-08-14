@@ -13,7 +13,7 @@ enum class EMonsterState : uint8
     Attacking   UMETA(DisplayName = "Attacking"),
     Dead        UMETA(DisplayName = "Dead")
 };
-
+class AMainCharacter;
 UCLASS()
 class PROTOCOL9_API AMonsterBase : public ACharacter
 {
@@ -101,7 +101,7 @@ protected:
     UFUNCTION()
     virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
     UPROPERTY()
-    APawn* TargetPlayer;
+    TWeakObjectPtr<AMainCharacter> TargetPlayer;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Combat", meta = (AllowPrivateAccess = "true"))
     bool bShouldContinueAttacking = false;
     UFUNCTION()
