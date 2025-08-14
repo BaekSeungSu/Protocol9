@@ -7,6 +7,8 @@
 
 class AWeaponBase;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCurrentWeaponSignature, EWeaponType, NewWeaponType);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROTOCOL9_API UInventoryComponent : public UActorComponent
 {
@@ -14,6 +16,9 @@ class PROTOCOL9_API UInventoryComponent : public UActorComponent
 
 public:	
 	UInventoryComponent();
+
+	UPROPERTY(BlueprintAssignable, Category = "Weapon")
+	FCurrentWeaponSignature WeaponChanged;
 	
 	void AddWeapon(TSubclassOf<AWeaponBase> WeaponClass);
 	void EquipWeaponAtIndex(int32 SlotIndex);
@@ -25,7 +30,7 @@ public:
 	int32 GetCurrentWeaponIndex() const {return CurrentWeaponIndex;}
 	AWeaponBase* GetCurrentWeapon() const{return CurrentWeapon;}
 	UFUNCTION(BlueprintPure)
-	EWeaponType GetCurrentWeaponType();
+	EWeaponType GetCurrentWeaponType() const;
 	
 protected:
 	virtual void BeginPlay() override;
