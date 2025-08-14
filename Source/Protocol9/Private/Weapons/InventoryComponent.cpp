@@ -176,3 +176,12 @@ void UInventoryComponent::SpawnAndEquipWeapon(int32 SlotIndex)
 		}
 	}
 }
+
+EWeaponType UInventoryComponent::GetCurrentWeaponType()
+{
+	if (CurrentWeapon && CurrentWeapon->CurrentWeaponData)
+	{
+		return CurrentWeapon->CurrentWeaponData->WeaponType;
+	}
+	return EWeaponType::Pistol;
+}
