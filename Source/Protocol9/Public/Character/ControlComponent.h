@@ -84,7 +84,6 @@ public:
 	UFUNCTION()
 	void DeBug2(const FInputActionValue& Value);
 
-
 	UFUNCTION(BlueprintCallable,Category="Speed")
 	void SetMaxSpeed(float NewMaxSpeed);
 	UFUNCTION(BlueprintPure,Category="Speed")

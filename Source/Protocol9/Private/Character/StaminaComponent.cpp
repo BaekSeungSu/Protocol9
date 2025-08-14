@@ -43,7 +43,7 @@ void UStaminaComponent::SetCurrentStaminaCount(int NewCurremStaminaCount)
 {
 	if (NewCurremStaminaCount > MaxStaminaCount)
 	{
-		CurrentStaminaCount = MaxStaminaCount;
+		NewCurremStaminaCount = MaxStaminaCount;
 	}
 	else
 	{
@@ -72,7 +72,7 @@ void UStaminaComponent::UseStamina()
 		StaminaChargeTimer,
 		this,
 		&UStaminaComponent::ChargeStamina,
-		StaminaChargeTime,
+		5.0f,
 		false);
 	}
 }
@@ -93,7 +93,7 @@ void UStaminaComponent::ChargeStamina()
 		StaminaChargeTimer,
 		this,
 		&UStaminaComponent::ChargeStamina,
-		StaminaChargeTime,
+		5.0f,
 		false);
 
 		GetOwner()->GetWorldTimerManager().SetTimer(
