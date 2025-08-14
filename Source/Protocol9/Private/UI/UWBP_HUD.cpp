@@ -128,7 +128,7 @@ void UUWBP_HUD::SetBossHPVisible(bool bVisible)
 void UUWBP_HUD::NativeConstruct()
 {
 	Super::NativeConstruct();
-	SetBossHPVisible(false); // 시작은 항상 숨김
+	SetBossHPVisible(false);
 }
 
 

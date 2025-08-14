@@ -5,8 +5,7 @@
 void UUWBP_ResultStats::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	// 클릭 안정성만 확보
+	
 	if (Btn_Restart) { Btn_Restart->SetClickMethod(EButtonClickMethod::PreciseClick); }
 	if (Btn_Return)  { Btn_Return->SetClickMethod(EButtonClickMethod::PreciseClick); }
 }
