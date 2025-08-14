@@ -119,6 +119,9 @@ protected:
     UFUNCTION()
     virtual void PerformAttack();
 
+    UFUNCTION()
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override; //UI:private에 있어서 protected로 위치만 변경했습니다.
+
 private:
     void UpdateAI();
     
@@ -135,8 +138,7 @@ private:
     UFUNCTION()
     void EndDeath();
     
-    UFUNCTION()
-    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
     FTimerHandle AIUpdateTimerHandle;
     FTimerHandle DeadTimerHandle;
 };

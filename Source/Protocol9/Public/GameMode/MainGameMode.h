@@ -8,6 +8,7 @@ class UUWBP_HUD;
 class UUserWidget;
 class AMonsterSpawner;
 class AMonsterBase;
+class ABossMonsterBase;
 class UWBP_GameOver;
 class UTexture2D;
 UCLASS()
@@ -73,6 +74,10 @@ public:
     void HideHelp();
 
     UFUNCTION() void OnHelpButtonClicked();
+
+    UFUNCTION(BlueprintCallable) void OnBossSpawned(class ABossMonsterBase* Boss);
+    UFUNCTION(BlueprintCallable) void UpdateBossHPUI(float Current, float Max);
+    UFUNCTION(BlueprintCallable) void ShowBossHP(bool bVisible);
 private:
     UPROPERTY() UUserWidget* CurrentWidget = nullptr;
     UPROPERTY() UUWBP_HUD*   HUDWidget     = nullptr;
@@ -90,4 +95,9 @@ private:
 
     UPROPERTY()
     UUserWidget* HelpWidget = nullptr;
+
+    TWeakObjectPtr<ABossMonsterBase> CurrentBoss;
+
+    UFUNCTION()
+    void OnBossDied();
 };

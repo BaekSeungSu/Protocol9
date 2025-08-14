@@ -108,8 +108,28 @@ void UUWBP_HUD::SetWeaponIcon(UTexture2D* Icon)
 		Image_Weapon->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }
-void UUWBP_HUD::UpdateAmmoText(int32 Current, int32 Reserve, bool bInfiniteReserve)
+void UUWBP_HUD::UpdateAmmoText(int32 Current, int32 MaxPerMag, bool /*bInfiniteReserve*/)
 {
 	if (!TXT_Ammo) return;
-	TXT_Ammo->SetText(FText::FromString(FString::Printf(TEXT("%d/∞"), Current)));
+	TXT_Ammo->SetText(FText::FromString(FString::Printf(TEXT("%d/%d"), Current, MaxPerMag)));
 }
+void UUWBP_HUD::UpdateBossHP(float Current, float Max)
+{
+	if (Boss_HP)
+		Boss_HP->SetPercent((Max > 0.f) ? (Current / Max) : 0.f);
+}
+
+void UUWBP_HUD::SetBossHPVisible(bool bVisible)
+{
+	if (Boss_HP)
+		Boss_HP->SetVisibility(bVisible ? ESlateVisibility::HitTestInvisible
+										: ESlateVisibility::Collapsed);
+}
+void UUWBP_HUD::NativeConstruct()
+{
+	Super::NativeConstruct();
+	SetBossHPVisible(false); // 시작은 항상 숨김
+}
+
+
+

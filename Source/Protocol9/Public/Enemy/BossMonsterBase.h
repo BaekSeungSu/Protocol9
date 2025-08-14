@@ -17,9 +17,13 @@ public:
 	void OnPhaseChangeMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 	UPROPERTY()
 	float DamageModifier;
+
+	FOnBossDeath& GetOnBossDeath() { return OnBossDeath; } // UI : getter 작성
 protected:
 	virtual void BeginPlay() override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override; // 보스 종료 시 UI 숨김
+	
 	virtual void PerformAttack() override;
 	virtual void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted) override;
 	bool IsAttackRelatedMontage(UAnimMontage* Montage);
