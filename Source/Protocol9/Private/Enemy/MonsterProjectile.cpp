@@ -70,27 +70,26 @@ void AMonsterProjectile::FireAtTarget(FVector TargetLocation, float ArcHeight)
     }
     
     FVector StartLocation = GetActorLocation();
-    FVector LaunchVelocity;
 
-
-    bool bValidTrajectory = UGameplayStatics::SuggestProjectileVelocity_CustomArc(
-        GetWorld(),
-        LaunchVelocity,
-        StartLocation,
-        TargetLocation,
-        GetWorld()->GetGravityZ(),
-        ArcHeight
-    );
-
-    if (bValidTrajectory)
-    {
-        ProjectileMovement->Velocity = LaunchVelocity;
-    }
-    else
-    {
-        FVector Direction = (TargetLocation - StartLocation).GetSafeNormal();
-        ProjectileMovement->Velocity = Direction * ProjectileMovement->InitialSpeed;
-    }
+    //FVector LaunchVelocity;
+    // bool bValidTrajectory = UGameplayStatics::SuggestProjectileVelocity_CustomArc(
+    //     GetWorld(),
+    //     LaunchVelocity,
+    //     StartLocation,
+    //     TargetLocation,
+    //     GetWorld()->GetGravityZ(),
+    //     ArcHeight
+    // );
+    //
+    // if (bValidTrajectory)
+    // {
+    //     ProjectileMovement->Velocity = LaunchVelocity;
+    // }
+    // else
+    // {
+    FVector Direction = (TargetLocation - StartLocation).GetSafeNormal();
+    ProjectileMovement->Velocity = Direction * ProjectileMovement->InitialSpeed;
+    //}
 }
 
 void AMonsterProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,

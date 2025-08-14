@@ -9,6 +9,7 @@
 #include "Engine/Engine.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
+#include "GameMode/MainGameMode.h"   // GameMode 호출용
 
 ABossMonsterBase::ABossMonsterBase()
 {
@@ -50,6 +51,12 @@ void ABossMonsterBase::OnPhaseChangeMontageEnded(UAnimMontage* Montage, bool bIn
 void ABossMonsterBase::BeginPlay()
 {
 	Super::BeginPlay();
+	// 보스 등장: 보스 HP 바 보이기 + 초기값 UI 반영
+	if (AMainGameMode* GM = Cast<AMainGameMode>(UGameplayStatics::GetGameMode(this)))
+	{
+		GM->OnBossSpawned(this);                 // HUD에 보스 HP바 표시 
+		GM->UpdateBossHPUI(CurrentHP, MaxHP);    // 초기 HP 값 반영      
+	}
 	if (OverlayMaterial)
 	{
 		DynamicOverlayMaterialInstance = UMaterialInstanceDynamic::Create(OverlayMaterial, this);
@@ -71,6 +78,11 @@ float ABossMonsterBase::TakeDamage(float DamageAmount, struct FDamageEvent const
 {
 	
 	float ActualDamage = Super::TakeDamage(DamageAmount*DefenceModifier, DamageEvent, EventInstigator, DamageCauser);
+	// ✅ HP가 변했으니 UI 갱신
+	if (AMainGameMode* GM = Cast<AMainGameMode>(UGameplayStatics::GetGameMode(this)))
+	{
+		GM->UpdateBossHPUI(CurrentHP, MaxHP);    // HUD ProgressBar 업데이트 :contentReference[oaicite:12]{index=12}
+	}
 	if ((CurrentHP / MaxHP) < 0.5f)
 	{
 		
@@ -205,7 +217,6 @@ void ABossMonsterBase::OnDeath()
 	AIController = nullptr;
 	OnBossDeath.Broadcast();
 	GetWorldTimerManager().SetTimer(DeathTimer,this,&ABossMonsterBase::DelayedDestory, 5.0f, false);
-	
 }
 
 void ABossMonsterBase::StartPhase2Transition()
@@ -353,4 +364,20 @@ void ABossMonsterBase::OnPattern3Ready()
 		BaseExtraDistance = ExtraDistance;
 		ExtraDistance = Pattern3ExtraRange;
 	}
+}
+
+// UI : 보스 HP바 숨기기
+void ABossMonsterBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	// 보스 소멸/맵 종료: 보스 HP 바 숨김
+	if (AMainGameMode* GM = Cast<AMainGameMode>(UGameplayStatics::GetGameMode(this)))
+	{
+		GM->UpdateBossHPUI(0.f, 1.f);            
+		if (UUWBP_HUD* HUD = GM->GetHUDWidget()) 
+		{
+			HUD->SetBossHPVisible(false);        // 숨김 
+		}
+	}
+
+	Super::EndPlay(EndPlayReason);
 }

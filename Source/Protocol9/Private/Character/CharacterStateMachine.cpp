@@ -2,6 +2,7 @@
 #include "Character/CharacterStateMachine.h"
 #include "Character/MainCharacter.h"
 #include "Character/HPComponent.h"
+#include "Weapons/InventoryComponent.h"
 
 UCharacterStateMachine::UCharacterStateMachine()
 {
@@ -22,6 +23,11 @@ void UCharacterStateMachine::BeginPlay()
 		if (HPComp)
 		{
 			HPComp->OnDeathEvent.AddDynamic(this,&UCharacterStateMachine::HandleCharacterDeath);
+		}
+		UInventoryComponent* InventoryComp = Owner->GetInventoryComponent();
+		if (InventoryComp)
+		{
+			InventoryComp->WeaponChanged.AddDynamic(this,&UCharacterStateMachine::HandleWeaponChange);
 		}
 	}
 
@@ -47,6 +53,11 @@ void UCharacterStateMachine::HandleCharacterDeath()
 
 		}
 	}
+}
+
+void UCharacterStateMachine::HandleWeaponChange(EWeaponType NewWeaponType)
+{
+	CurrentWeapon = NewWeaponType;
 }
 
 void UCharacterStateMachine::SetState(ECharacterState NewState)

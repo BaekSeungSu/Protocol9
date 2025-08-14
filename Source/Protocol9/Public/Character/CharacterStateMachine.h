@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Weapons/EWeaponType.h"
 #include "CharacterStateMachine.generated.h"
 
 class AMainCharacter;
@@ -38,7 +39,7 @@ class PROTOCOL9_API UCharacterStateMachine : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	UCharacterStateMachine();
 
 	//이벤트
@@ -52,6 +53,10 @@ protected:
 	ECharacterState CurrentState = ECharacterState::Idle;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	EHPState CurrentHPState = EHPState::NormalHealth;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "State")
+	EWeaponType CurrentWeapon = EWeaponType::Default;
+
+	
 
 	float AnimationStartTime = 0.0f;
 	float CurrentAnimationDuration  = 0.0f;
@@ -67,6 +72,8 @@ public:
 	
 	UFUNCTION()
 	void HandleCharacterDeath();
+	UFUNCTION()
+	void HandleWeaponChange(EWeaponType NewWeaponType);
 	
 	bool CanPerformAction() const{
 		return CurrentState == ECharacterState::Idle && CurrentHPState != EHPState::Dead;

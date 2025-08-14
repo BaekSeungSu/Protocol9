@@ -13,6 +13,7 @@
 #include "Components/Button.h"
 #include "UI/PlayerUIComponent.h"
 #include "UI/UWBP_GameOver.h"
+#include "Enemy/BossMonsterBase.h"
 #include "UI/UWBP_HelpAccordion.h"
 
 namespace
@@ -88,6 +89,10 @@ void AMainGameMode::ShowPressAnyKey()
         PC->SetInputMode(Mode);
 
         FlushAllPressedKeys(PC);
+    }
+    if (UMainGameInstance* GI = GetGameInstance<UMainGameInstance>())
+    {
+        GI->PlayMenuBGM();        // 동일 음악
     }
 }
 
@@ -171,6 +176,14 @@ void AMainGameMode::ShowHUD()
         {
             UI->ShowCrosshair();
         }
+        if (HUDWidget)
+        {
+            HUDWidget->SetBossHPVisible(false); // 기본은 숨김
+        }
+    }
+    if (UMainGameInstance* GI = GetGameInstance<UMainGameInstance>())
+    {
+        GI->PlayStageBGM();
     }
 }
 
@@ -294,6 +307,10 @@ void AMainGameMode::ShowGameOver(bool bVictory, int32 InKillCount)
             }),
             1.5f, false);
     }
+    if (UMainGameInstance* GI = GetGameInstance<UMainGameInstance>())
+    {
+        GI->PlayGameOverBGM(bVictory);
+    }
 }
 
 void AMainGameMode::OnRetryClicked()
@@ -394,6 +411,13 @@ void AMainGameMode::ShowResultStats()
 
         UGameplayStatics::SetGamePaused(this, true);
     }
+    if (UMainGameInstance* GI = Cast<UMainGameInstance>(GetGameInstance()))
+    {
+        if (GI->LastPlayedBGM)
+        {
+            GI->PlayBGMInternal(GI->LastPlayedBGM, 0.f); // Fade 없이 즉시 재생
+        }
+    }
 }
 
 void AMainGameMode::OnRestartClicked()
@@ -417,6 +441,10 @@ void AMainGameMode::OnRestartClicked()
     }
 
     UGameplayStatics::OpenLevel(this, FName(TEXT("TestMap")));
+    if (UMainGameInstance* GI = GetGameInstance<UMainGameInstance>())
+    {
+        GI->PlayMenuBGM();
+    }
 }
 
 void AMainGameMode::OnReturnMenuClicked()
@@ -491,4 +519,49 @@ void AMainGameMode::HideHelp()
             PC->bShowMouseCursor = true;
         }
     }
+}
+void AMainGameMode::OnBossSpawned(ABossMonsterBase* Boss)
+{
+    if (!Boss) return;
+
+    // 기존 바인딩 해제
+    if (ABossMonsterBase* Prev = CurrentBoss.Get())
+    {
+        Prev->GetOnBossDeath().RemoveDynamic(this, &AMainGameMode::OnBossDied);
+    }
+
+    // 새로운 보스 등록
+    CurrentBoss = Boss;
+
+    // 보스 사망 이벤트 구독
+    if (ABossMonsterBase* Cur = CurrentBoss.Get())
+    {
+        Cur->GetOnBossDeath().AddDynamic(this, &AMainGameMode::OnBossDied);
+    }
+
+    // HUD 표시
+    if (HUDWidget)
+    {
+        HUDWidget->SetBossHPVisible(true);
+    }
+    if (UMainGameInstance* GI = GetGameInstance<UMainGameInstance>())
+    {
+        GI->PlayBossBGM();
+    }
+}
+
+void AMainGameMode::UpdateBossHPUI(float Current, float Max)
+{
+    if (HUDWidget)
+    {
+        HUDWidget->UpdateBossHP(Current, Max);
+    }
+}
+void AMainGameMode::ShowBossHP(bool bVisible)
+{
+    if (HUDWidget) HUDWidget->SetBossHPVisible(bVisible);
+}
+void AMainGameMode::OnBossDied()
+{
+    HandleBossDefeated(); 
 }
