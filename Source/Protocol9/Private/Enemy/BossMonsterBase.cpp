@@ -2,6 +2,8 @@
 
 
 #include "Enemy/BossMonsterBase.h"
+#include "Character/MainCharacter.h"
+#include "NavigationSystem.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/Engine.h"
@@ -157,6 +159,25 @@ bool ABossMonsterBase::IsAttackRelatedMontage(UAnimMontage* Montage)
 		}
 	}
 	return false;
+}
+
+FVector ABossMonsterBase::GetTargetMonsterLocation() const
+{
+	if (TargetPlayer.IsValid()) // 계단이나 언덕이면 다른 연산이 필요하겠지만 일단 지금은 주석처리
+	{
+		FVector TargetLocation = TargetPlayer->GetActorLocation();
+		UNavigationSystemV1* NavSys = UNavigationSystemV1::GetNavigationSystem(GetWorld());
+		FNavLocation NavLocation;
+		const FVector QueryExtent = FVector(100, 100, 600);
+		if (NavSys && NavSys->ProjectPointToNavigation(TargetLocation, NavLocation, QueryExtent))
+		{
+			return NavLocation.Location;
+		}
+		UE_LOG(LogTemp, Warning, TEXT("NavSys is NULL"));
+		return TargetLocation;
+	}
+	UE_LOG(LogTemp, Warning, TEXT("TargetPlayer is NULL"));
+	return GetActorLocation();
 }
 
 void ABossMonsterBase::OnDeath()

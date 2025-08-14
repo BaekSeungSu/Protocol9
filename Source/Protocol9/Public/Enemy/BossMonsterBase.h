@@ -71,6 +71,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Phase")
 	bool bIsPhaseChanging;
 
+	UFUNCTION()
+	virtual FVector GetTargetMonsterLocation() const override;
 	virtual void OnDeath() override;
 	FOnBossDeath OnBossDeath;
 
