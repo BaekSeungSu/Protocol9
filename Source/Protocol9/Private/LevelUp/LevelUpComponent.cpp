@@ -7,6 +7,7 @@
 #include "Character/StaminaComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "LevelUp/LevelUpRow.h"
+#include "UI/PlayerUIComponent.h"
 
 
 
@@ -30,6 +31,7 @@ void ULevelUpComponent::BeginPlay()
 		HPComp = MyCharacter->FindComponentByClass<UHPComponent>();
 		SpeedComp = MyCharacter->FindComponentByClass<UControlComponent>();
 		StaminaComp = MyCharacter->FindComponentByClass<UStaminaComponent>();
+		PlayerUIComp= MyCharacter->FindComponentByClass<UPlayerUIComponent>(); 
 
 		// 캐릭터의 레벨업 이벤트에 현재 컴포넌트의 OnCharacterLeveledUp 함수를 바인딩
 		MyCharacter->LevelUPEvent.AddDynamic(this, &ULevelUpComponent::OnCharacterLeveledUp);
@@ -68,6 +70,7 @@ void ULevelUpComponent::ShowLevelUpUI()
        UE_LOG(LogTemp, Error, TEXT("LevelUpDataTable or LevelUpUserWidgetClass is not set."));
        return;
     }
+	if (PlayerUIComp) { PlayerUIComp->HideCrosshair(); }        //크로스헤어 숨김 
 	// 데이터 테이블에서 모든 레벨업 옵션 가져오기
     TArray<FLevelUpRow*> AllRows;
     static const FString ContextString = TEXT("LevelUp");
@@ -159,6 +162,7 @@ void ULevelUpComponent::ApplyLevelUpChoice(FLevelUpRow ChosenOption)
 			WorldSettings->SetTimeDilation(1.0f);
 		}
 	}
+	if (PlayerUIComp) { PlayerUIComp->ShowCrosshair(); }  // 크로스헤어 다시 표시
 }
 
 void ULevelUpComponent::ApplyAttackStat(float Value)
