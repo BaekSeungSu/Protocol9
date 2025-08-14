@@ -113,3 +113,10 @@ void UUWBP_HUD::UpdateAmmoText(int32 Current, int32 Reserve, bool bInfiniteReser
 	if (!TXT_Ammo) return;
 	TXT_Ammo->SetText(FText::FromString(FString::Printf(TEXT("%d/∞"), Current)));
 }
+
+void UUWBP_HUD::SetMiniMapArrow(float Yaw)
+{
+	if (!minimaparrow) return;
+	const float angle = FRotator::NormalizeAxis(Yaw-90);
+	minimaparrow->SetRenderTransformAngle(angle);
+}

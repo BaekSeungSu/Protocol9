@@ -42,6 +42,10 @@ public:
 	UFUNCTION(BlueprintCallable)
     void SetWeaponIcon(UTexture2D* Icon);
 
+	UFUNCTION(BlueprintCallable)
+	void SetMiniMapArrow(float Yaw);
+	
+
 protected:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Timer;
@@ -74,8 +78,10 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* TXT_Ammo;
 
-	UPROPERTY(meta=(BindWidget)) UImage* Image_Weapon = nullptr;
+	UPROPERTY(meta=(BindWidget))
+	UImage* Image_Weapon = nullptr;
 
-
-
+	UPROPERTY(meta=(BindWidget))
+	UImage* minimaparrow= nullptr;
+	
 };

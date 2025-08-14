@@ -2,9 +2,12 @@
 
 
 #include "Map/MinimapCapture.h"
+
+#include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "GameFramework/Character.h"
-#include "Kismet/KismetRenderingLibrary.h"
+#include "UI/UWBP_HUD.h"
+
 
 // Sets default values
 AMiniMapCapture::AMiniMapCapture()
@@ -19,7 +22,6 @@ AMiniMapCapture::AMiniMapCapture()
 	CaptureComponent->SetupAttachment(SceneComponent);
 
 	CaptureComponent->ProjectionType = ECameraProjectionMode::Orthographic;
-	CaptureComponent->OrthoWidth = OrthoWidth;
 	CaptureComponent->bCaptureEveryFrame = false;
 	CaptureComponent->bCaptureOnMovement = false;
 
@@ -38,7 +40,8 @@ void AMiniMapCapture::BeginPlay()
 	PlayerCharacter = Cast<ACharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
 	CaptureComponent->TextureTarget = RenderTarget;
 
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle,this, &AMiniMapCapture::CaptureOnce,1.0f, true);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle,this, &AMiniMapCapture::CaptureOnce,0.041f, true);
+	CaptureComponent->OrthoWidth = OrthoWidth;
 }
 // Called every frame
 void AMiniMapCapture::Tick(float DeltaTime)
@@ -53,6 +56,12 @@ void AMiniMapCapture::CaptureOnce()
 	{
 		SetActorLocation(PlayerCharacter->GetActorLocation()+FVector(0,0,Height));
 		CaptureComponent->CaptureScene();
-		UE_LOG(LogTemp,Warning,TEXT("captured!"));
+
+		if (!HUD)
+		{
+			return;
+		}
+		HUD->SetMiniMapArrow(PlayerCharacter->GetActorRotation().Yaw);
 	}
+	
 }

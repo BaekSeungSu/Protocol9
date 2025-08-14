@@ -1,4 +1,6 @@
 #include "GameMode/MainGameMode.h"
+
+#include "EngineUtils.h"
 #include "UI/UWBP_HUD.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
@@ -11,6 +13,7 @@
 #include "TimerManager.h"
 #include "GameFramework/PlayerController.h"
 #include "Components/Button.h"
+#include "Map/MinimapCapture.h"
 #include "UI/PlayerUIComponent.h"
 #include "UI/UWBP_GameOver.h"
 #include "UI/UWBP_HelpAccordion.h"
@@ -148,6 +151,11 @@ void AMainGameMode::ShowHUD()
 
     HUDWidget = CreateWidget<UUWBP_HUD>(GetWorld(), WBP_HUD);
     if (!HUDWidget) return;
+
+    for (TActorIterator<AMiniMapCapture> It(GetWorld()); It; ++It)
+    {
+        It->SetHUD(HUDWidget);
+    }
 
     HUDWidget->AddToViewport();
     CurrentWidget = HUDWidget;
