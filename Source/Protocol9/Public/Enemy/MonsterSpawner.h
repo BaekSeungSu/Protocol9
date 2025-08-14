@@ -7,7 +7,8 @@
 class AMainCharacter;
 class ABossMonsterBase;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMonsterSpawned, AMonsterBase*, Monster);
-UCLASS()
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBossMonsterSpawned, ABossMonsterBase*, BossMonster);
+UCLASS(Blueprintable)
 class PROTOCOL9_API AMonsterSpawner : public AActor
 {
 	GENERATED_BODY()
@@ -22,6 +23,8 @@ public:
 	void SpawnBossMonster();
 	UPROPERTY(BlueprintAssignable)
 	FMonsterSpawned OnMonsterSpawned;
+	UPROPERTY(BlueprintAssignable)
+	FBossMonsterSpawned OnBossMonsterSpawned;
 	UFUNCTION()
 	void SpawnLevelUp(int32 PlayerLevel);
 protected:
