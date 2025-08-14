@@ -43,7 +43,12 @@ public:
     
     UPROPERTY(BlueprintAssignable)
     FOnMonsterDeadLocation OnMonsterDeadLocation;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Movement")
+    float WalkSpeed = 600.0f;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ExtraDistance")
+    float ExtraDistance;
 protected:
    
 
@@ -55,8 +60,6 @@ protected:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Attack")
     class UAnimMontage* AttackMontage;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Movement")
-    float WalkSpeed = 300.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI|Movement")
     float RunSpeed = 600.0f;
@@ -79,7 +82,7 @@ protected:
     bool SetAnimInstance();
 
     virtual void PossessedBy(AController* NewController) override;
-    virtual bool IsInAttackRange(float ExtraDistance) const;
+    virtual bool IsInAttackRange(float ExtraDistanceInside) const;
     
     UFUNCTION()
     virtual void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);

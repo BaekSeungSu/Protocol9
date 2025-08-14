@@ -69,7 +69,7 @@ void AFlyingMonsterBase::SpawnProjectile()
 	}
 }
 
-bool AFlyingMonsterBase::IsInAttackRange(float ExtraDistance) const
+bool AFlyingMonsterBase::IsInAttackRange(float ExtraDistanceInside) const
 {
 	if (!TargetPlayer) return false;
 	FVector MonsterLocation = GetActorLocation();

@@ -22,10 +22,10 @@ AMonsterProjectile::AMonsterProjectile()
     CollisionComponent->SetSphereRadius(3.0f);
     CollisionComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
-    CollisionComponent->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel3); 
+    CollisionComponent->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel4); 
     
+    CollisionComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel4, ECR_Ignore);
     CollisionComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel3, ECR_Ignore);
-    CollisionComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECR_Ignore);
     
     ParticleSystemComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("ParticleSystemComponent"));
     ParticleSystemComponent->SetupAttachment(CollisionComponent);

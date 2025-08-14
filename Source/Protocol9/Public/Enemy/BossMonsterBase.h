@@ -15,6 +15,8 @@ public:
 	
 	UFUNCTION()
 	void OnPhaseChangeMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	UPROPERTY()
+	float DamageModifier;
 protected:
 	virtual void BeginPlay() override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
@@ -35,7 +37,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pattern|Cooldown")
 	float SkillCooldown;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Phase2|Modifier")
 	float Phase2SpeedModifier;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Phase2|Modifier")
@@ -49,6 +50,11 @@ protected:
 	float Pattern2StartTime;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pattern|Cooldown")
 	float Pattern3StartTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pattern|Range")
+	float Pattern3ExtraRange;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pattern|Range")
+	float BaseExtraDistance;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Phase")
 	EBossPhase CurrentPhase;
@@ -98,6 +104,4 @@ private:
 	
 	UPROPERTY()
 	float DefenceModifier;
-	UPROPERTY()
-	float DamageModifier;
 };

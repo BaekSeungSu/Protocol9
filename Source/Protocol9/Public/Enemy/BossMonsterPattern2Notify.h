@@ -13,5 +13,14 @@ UCLASS()
 class PROTOCOL9_API UBossMonsterPattern2Notify : public UAnimNotify
 {
 	GENERATED_BODY()
-	
+public:
+	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
+	UBossMonsterPattern2Notify();
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	FVector BoxTraceHalfSize;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	FVector BoxCenterOffset;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	float Damage;
 };

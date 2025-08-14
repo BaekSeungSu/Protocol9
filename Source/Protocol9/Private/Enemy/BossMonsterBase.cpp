@@ -23,16 +23,16 @@ ABossMonsterBase::ABossMonsterBase()
 	RunSpeed = 800.0f;
 	DefenceModifier = 1.0f;
 	DamageModifier = 1.0f;
-
+	Pattern3ExtraRange = 2000.0f;
 	Phase2DamageModifier = 1.3f;
 	Phase2DefenceModifier = 0.8f; // 받는 Damage에 곱해주기 때문에 1보다 작음.
 	Phase2SpeedModifier = 1.3f;
 	
 	CurrentOverlayValue = 0.0f;
 
-	SkillCooldown = 30.0f;
+	SkillCooldown = 30.0f; // 테스트하려고 바꿈 원래 30.0f
 	Pattern1StartTime = 10.0f;
-	Pattern2StartTime = 20.0f;
+	Pattern2StartTime = 20.0f; //테스트하려고 바꿈 원래 20.0f
 	Pattern3StartTime = 30.0f;
 }
 
@@ -89,9 +89,9 @@ void ABossMonsterBase::PerformAttack()
 	if(bIsPhaseChanging)
 		return;
 
-	if (bCanUsePattern3)
+	if (bCanUsePattern3)//여기 테스트 하려고 2로 바꿈 원래 3
 	{
-		ExecuteAttackPattern(EBossAttackPattern::Pattern3);
+		ExecuteAttackPattern(EBossAttackPattern::Pattern3); //여기 테스트 하려고 2로 바꿈 원래 3
 	}
 	else if (bCanUsePattern2)
 	{
@@ -118,6 +118,11 @@ void ABossMonsterBase::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterru
 {
 	if (IsAttackRelatedMontage(Montage) && CurrentState == EMonsterState::Attacking)
 	{
+		if (Montage->GetName() == "AM_BossCrunchPattern03")
+		{
+			UE_LOG(LogTemp, Warning, TEXT("AM_BossCrunchPattern03 Ended"));
+			ExtraDistance = BaseExtraDistance;
+		}
 		if (TargetPlayer && IsInAttackRange(20.0f) && bShouldContinueAttacking)
 		{
 			SetState(EMonsterState::Attacking);
@@ -145,8 +150,10 @@ bool ABossMonsterBase::IsAttackRelatedMontage(UAnimMontage* Montage)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Row->AnimMontage: %s"), *Row->AnimMontage->GetName());
 			if (Montage == Row->AnimMontage)
+			{
 				UE_LOG(LogTemp, Warning, TEXT("Montage = %s"), *Montage->GetName());
 				return true;
+			}
 		}
 	}
 	return false;
@@ -269,6 +276,8 @@ void ABossMonsterBase::OnPhaseChangeCompleted()
 	bIsPhaseChanging = false;
 	DefenceModifier = 1.0f;
 	RunSpeed  *= Phase2SpeedModifier;
+	WalkSpeed *= Phase2SpeedModifier;
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	DefenceModifier *= Phase2DefenceModifier;
 	DamageModifier *= Phase2DamageModifier;
 
@@ -292,5 +301,7 @@ void ABossMonsterBase::OnPattern3Ready()
 	if (CurrentPhase == EBossPhase::Phase2)
 	{
 		bCanUsePattern3 = true;
+		BaseExtraDistance = ExtraDistance;
+		ExtraDistance = Pattern3ExtraRange;
 	}
 }

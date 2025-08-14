@@ -21,8 +21,5 @@ protected:
 	FVector BoxTraceHalfSize;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
-	float BoxTraceDistance;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	float Damage;
 };

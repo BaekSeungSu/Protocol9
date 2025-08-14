@@ -126,7 +126,10 @@ FVector AMonsterSpawner::GetRandomNavLocation()
 			if (NavSys->GetRandomReachablePointInRadius(Origin, MaxSpawnRadius, NavLocation))
 			{
 				if (FVector::Dist(Origin, NavLocation.Location) >= MinSpawnRadius)
+				{
 					break;
+				}
+					
 			}
 		}
 		return NavLocation.Location;

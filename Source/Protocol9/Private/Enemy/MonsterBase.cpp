@@ -16,7 +16,7 @@ AMonsterBase::AMonsterBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	AIControllerClass = AMonsterBaseAIController::StaticClass();
-
+	
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
@@ -31,8 +31,8 @@ AMonsterBase::AMonsterBase()
 	{
 		GetCapsuleComponent()->SetCapsuleHalfHeight(MonsterHalfHeight);
 		GetCapsuleComponent()->SetCapsuleRadius(MonsterRadius);
-		GetCapsuleComponent()->SetCollisionObjectType(ECC_GameTraceChannel2);
-		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_GameTraceChannel3, ECR_Ignore);
+		GetCapsuleComponent()->SetCollisionObjectType(ECC_GameTraceChannel3);
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_GameTraceChannel4, ECR_Ignore);
 	}
 	if (GetMesh())
 	{
@@ -41,6 +41,7 @@ AMonsterBase::AMonsterBase()
 
 	CurrentState = EMonsterState::Idle;
 	TargetPlayer = nullptr;
+	ExtraDistance = 20.0f;
 }
 
 void AMonsterBase::BeginPlay()
@@ -125,7 +126,7 @@ void AMonsterBase::ChasePlayer()
 {
 	if (!TargetPlayer || !AIController) return;
 
-	if (IsInAttackRange(0.0f))
+	if (IsInAttackRange(ExtraDistance))
 	{
 		SetState(EMonsterState::Attacking);
 		return;
@@ -277,19 +278,19 @@ void AMonsterBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
-bool AMonsterBase::IsInAttackRange(float ExtraDistance) const
+bool AMonsterBase::IsInAttackRange(float ExtraDistanceInside) const
 {
 	if (!TargetPlayer) return false;
 
 	float DistanceToPlayer = FVector::Dist(GetActorLocation(), TargetPlayer->GetActorLocation());
-	return DistanceToPlayer <= AttackRange + ExtraDistance;
+	return DistanceToPlayer <= AttackRange + ExtraDistanceInside;
 }
 
 void AMonsterBase::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	if (Montage == AttackMontage && CurrentState == EMonsterState::Attacking)
 	{
-		if (TargetPlayer && IsInAttackRange(20.0f) && bShouldContinueAttacking)
+		if (TargetPlayer && IsInAttackRange(ExtraDistance) && bShouldContinueAttacking)
 		{
 			SetState(EMonsterState::Attacking);
 			PerformAttack();
