@@ -182,7 +182,7 @@ void ABossMonsterBase::StartPhase2Transition()
 	
 	StopContinuousAttack();
 	GetCharacterMovement()->StopMovementImmediately();
-	if (GetMesh() && DynamicOverlayMaterialInstance)
+	if (GetMesh() && DynamicOverlayMaterialInstance) 
 	{
 		GetMesh()->SetOverlayMaterial(DynamicOverlayMaterialInstance);
 	}
