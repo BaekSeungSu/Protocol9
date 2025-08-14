@@ -46,6 +46,14 @@ public:
 	void SetMiniMapArrow(float Yaw);
 	
 
+	UFUNCTION(BlueprintCallable)
+	void UpdateBossHP(float CurrentHP, float MaxHP);
+
+	UFUNCTION(BlueprintCallable)
+	void SetBossHPVisible(bool bVisible);
+
+	virtual void NativeConstruct() override;
+
 protected:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Timer;
@@ -84,4 +92,9 @@ protected:
 	UPROPERTY(meta=(BindWidget))
 	UImage* minimaparrow= nullptr;
 	
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* Boss_HP;
+
+
+
 };

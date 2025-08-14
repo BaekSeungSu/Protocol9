@@ -130,7 +130,6 @@ FVector AMonsterSpawner::GetRandomNavLocation()
 				{
 					break;
 				}
-					
 			}
 		}
 		return NavLocation.Location;
