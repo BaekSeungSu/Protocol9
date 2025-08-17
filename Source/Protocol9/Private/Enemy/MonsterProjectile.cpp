@@ -178,7 +178,7 @@ void AMonsterProjectile::AddNearbyMonstersToIgnoreList(TArray<AActor*>& IgnoredA
         ExplosionCenter,
         FQuat::Identity,
         ECollisionChannel::ECC_Pawn,
-        FCollisionShape::MakeSphere(ExplosionRadius),
+        FCollisionShape::MakeSphere(ExplosionRadius+20.0f),
         QueryParams
     );
 
