@@ -8,7 +8,7 @@ AIncreaseDamageItem::AIncreaseDamageItem()
 : AffectedPlayer(nullptr)
 {
 	MultiDamage = 1.3f;
-	ItemDuration = 3.0f;
+	ItemDuration = 7.0f;
 	ItemType = "DamageIncreaseItem";
 }
 

@@ -20,7 +20,7 @@ AItemBase::AItemBase()
 	
 	Collision -> OnComponentBeginOverlap.AddDynamic(this,&AItemBase::OnItemOverlap);
 
-	ItemLifeDuration = 5.0f;
+	ItemLifeDuration = 30.0f;
 }
 
 void AItemBase::OnItemOverlap(

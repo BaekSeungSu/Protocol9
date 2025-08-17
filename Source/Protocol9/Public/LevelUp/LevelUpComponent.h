@@ -9,6 +9,7 @@ class UHPComponent;
 class UControlComponent;
 class AMainCharacter;
 class UStaminaComponent;
+class UPlayerUIComponent;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROTOCOL9_API ULevelUpComponent : public UActorComponent
@@ -65,5 +66,7 @@ private:
 	void ApplyHealthStat(float Value);
 	void ApplyStaminaStat(float Value);
 	void ApplySpeedStat(float Value);
-		
+	
+	UPROPERTY()
+	UPlayerUIComponent* PlayerUIComp = nullptr; 
 };
