@@ -2,6 +2,7 @@
 #include "Character/CharacterStateMachine.h"
 #include "Character/MainCharacter.h"
 
+
 UHPComponent::UHPComponent()
 	:MaxHP(100.0f),
 	CurrentHP(MaxHP),
