@@ -38,7 +38,8 @@ public:
 		  EquipMontage(nullptr),
 		  AttachLocationOffset(FVector::ZeroVector),
 		  AttachRotationOffset(FRotator::ZeroRotator),
-		  AttachScale(1.0f)
+		  AttachScale(1.0f),
+		  ProjectileSpeed(0.0f)
 	{
 	}
 	
@@ -93,6 +94,8 @@ public:
 	FRotator AttachRotationOffset;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Offset")
 	FVector AttachScale;
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Projectile")
+	float ProjectileSpeed;
 };
 
