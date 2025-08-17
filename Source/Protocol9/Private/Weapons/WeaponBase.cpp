@@ -376,6 +376,7 @@ void AWeaponBase::LoadWeaponData()
 	CurrentWeaponData = WeaponDataTable->FindRow<FWeaponData>(WeaponDataRowName, TEXT(""));
 	if (!CurrentWeaponData) return; 
 	CurrentAmmo = CurrentWeaponData->MagazineSize;
+	CurrentType = CurrentWeaponData->WeaponType;
 	LastFireTime = -100.0f;
 	// UI
 	if (AMainGameMode* GM = Cast<AMainGameMode>(UGameplayStatics::GetGameMode(this)))
