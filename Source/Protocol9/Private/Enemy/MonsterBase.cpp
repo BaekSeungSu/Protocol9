@@ -5,10 +5,10 @@
 #include "Enemy/MonsterBaseAIController.h"
 #include "Enemy/MonsterBaseAnimInstance.h"
 #include "Engine/World.h"
+#include "NavigationSystem.h"
 #include "TimerManager.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
-#include "NavigationSystem.h"
 #include "GameFramework/PlayerController.h"
 #include "Components/CapsuleComponent.h"
 #include "Character/MainCharacter.h"
@@ -57,7 +57,6 @@ void AMonsterBase::BeginPlay()
 	
 	StartAIUpdateTimer(FMath::RandRange(0.0f,AIUpdateInterval));
 	FindAndSetTargetPlayer();
-	float RandomLifeTime = FMath::RandRange(5.0f, 10.0f);
 	GetMesh()->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
 	//GetWorld()->GetTimerManager().SetTimer(DeadTimerHandle, this, &AMonsterBase::OnDeath, RandomLifeTime, false);
 }
@@ -231,36 +230,37 @@ void AMonsterBase::MoveToTarget()
 {
 	if (!AIController) return;
 	
-	FVector TargetLocation = GetTargetMonsterLocation();
+	FVector TargetLocation = TargetPlayer->GetActorLocation();
 	if (FVector::DistSquared2D(TargetLocation, TargetLocationBefore) < FMath::Square(100.0f))
 	{
 		return;
 	}
+	TargetLocation = GetTargetMonsterLocation();
 	TargetLocationBefore = TargetLocation;
 	AIController->MoveToLocation(TargetLocation);
 }
 
 FVector AMonsterBase::GetTargetMonsterLocation() const
 {
-	FVector TargetLocation = TargetPlayer->GetActorLocation();
-	TargetLocation.Z = GetActorLocation().Z;
-	return TargetLocation;
-	// if (TargetPlayer.IsValid())  // 계단이나 언덕이면 다른 연산이 필요하겠지만 일단 지금은 주석처리
-	// {
-	// 	FVector TargetLocation = TargetPlayer->GetActorLocation();
-	//
-	// 	UNavigationSystemV1* NavSys = UNavigationSystemV1::GetNavigationSystem(GetWorld());
-	// 	FNavLocation NavLocation;
-	// 	const FVector QueryExtent = FVector(100, 100, 600);
-	// 	if (NavSys && NavSys->ProjectPointToNavigation(TargetLocation, NavLocation, QueryExtent))
-	// 	{
-	// 		return NavLocation.Location;
-	// 	}
-	// 	UE_LOG(LogTemp, Warning, TEXT("NavSys is NULL"));
-	// 	return TargetLocation;
-	// }
-	// UE_LOG(LogTemp, Warning, TEXT("TargetPlayer is NULL"));
-	// return GetActorLocation();
+	// FVector TargetLocation = TargetPlayer->GetActorLocation();
+	// TargetLocation.Z = GetActorLocation().Z;
+	// return TargetLocation;
+	if (TargetPlayer.IsValid())  // 계단이나 언덕이면 다른 연산이 필요하겠지만 일단 지금은 주석처리
+	{
+		FVector TargetLocation = TargetPlayer->GetActorLocation();
+	
+		UNavigationSystemV1* NavSys = UNavigationSystemV1::GetNavigationSystem(GetWorld());
+		FNavLocation NavLocation;
+		const FVector QueryExtent = FVector(100, 100, 600);
+		if (NavSys && NavSys->ProjectPointToNavigation(TargetLocation, NavLocation, QueryExtent))
+		{
+			return NavLocation.Location;
+		}
+		UE_LOG(LogTemp, Warning, TEXT("NavSys is NULL"));
+		return TargetLocation;
+	}
+	UE_LOG(LogTemp, Warning, TEXT("TargetPlayer is NULL"));
+	return GetActorLocation();
 }
 
 void AMonsterBase::StartAIUpdateTimer(const float Jitter)
