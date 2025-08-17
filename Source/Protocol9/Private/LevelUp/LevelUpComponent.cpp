@@ -42,24 +42,43 @@ void ULevelUpComponent::BeginPlay()
 	StatLevels.Add(TEXT("Damage Bonus"),  0);
 	StatLevels.Add(TEXT("Health Bonus"),  0);
 	StatLevels.Add(TEXT("CDDash"),  0);
+
+	// bIsLevelUpOpen: 현재 레벨업 UI가 떠 있는지
+	// PendingLevelUps: UI가 열린 동안 추가로 들어온 레벨업 개수
+	bIsLevelUpOpen = false;
+	PendingLevelUps = 0;
 }
 
 int32 ULevelUpComponent::GetStatLevel(FName StatName) const
 {
+	// 현재 스탯 강화 레벨 조회. 키가 없으면 0 리턴
 	if (const int32* Found = StatLevels.Find(StatName)) return *Found;
 	return 0;
 }
 
 void ULevelUpComponent::IncrementStatLevel(const FName& StatName)
 {
+	// 해당 스탯 레벨 +1 (상한 10)
 	int32& Lvl = StatLevels.FindOrAdd(StatName);
 	Lvl = FMath::Clamp(Lvl + 1, 0, 10);
 }
 
 void ULevelUpComponent::OnCharacterLeveledUp(int32 CharacterLevel)
 {
-	//게임 시간 정지
-	GetWorld()->GetWorldSettings()->SetTimeDilation(0.0f);
+	//이미 UI가 떠있으면 대기카운트만 증가 
+	if (bIsLevelUpOpen)
+	{
+		++PendingLevelUps;
+		return;
+	}
+	//최초 한번만 일시정지
+	if (UWorld* World = GetWorld())
+	{
+		if (AWorldSettings* WS = World->GetWorldSettings())
+		{
+			WS->SetTimeDilation(0.0f);
+		}
+	}
 	//레벨업 UI 함수 호출
 	ShowLevelUpUI();
 }
@@ -104,19 +123,25 @@ void ULevelUpComponent::ShowLevelUpUI()
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	if (PlayerController)
 	{
-		// 레벨업 전용 UI 위젯 생성
+		//남아있던 위젯 정리
+		if (IsValid(LevelUpUserWidget))
+		{
+			LevelUpUserWidget->RemoveFromRoot();
+			LevelUpUserWidget = nullptr;
+		}
+		// 실제 레벨업 위젯 생성
 		ULevelUpUserWidget* Widget = CreateWidget<ULevelUpUserWidget>(PlayerController, LevelUpUserWidgetClass);
 		if (Widget)
 		{
-			// 위젯에 선택된 옵션 전달 + 자기 자신 참조 전달 (선택 시 호출용)
-			Widget->SetLevelUpOptions(ChosenOptions, this);
-
-			// 화면 표시
+			Widget ->SetLevelUpOptions(ChosenOptions,this);
 			Widget->AddToViewport();
+
 			PlayerController->SetInputMode(FInputModeUIOnly());
 			PlayerController->bShowMouseCursor = true;
 
-			LevelUpUserWidget = Widget; // 저장
+			// 멤버에 보관(재사용/제거/검사용)
+			LevelUpUserWidget = Widget;
+			bIsLevelUpOpen = true;
 		}
 	}
 }
@@ -140,6 +165,15 @@ void ULevelUpComponent::ApplyLevelUpChoice(FLevelUpRow ChosenOption)
        ApplyStaminaStat(ChosenOption.Value);
     }
 	IncrementStatLevel(ChosenOption.Name);
+
+	//Ui가 떠 있는 동안 추가 레벨업이 있는 경우
+	if (PendingLevelUps>0)
+	{
+		// UI는 닫지 말고 같은 위젯에 “새 옵션만” 다시 채워서 한 번 더 고르게 함
+		--PendingLevelUps;
+		BuildAndSendOptions();   //새로운 옵션을 뽑아 위젯에 세팅하는 함수 
+		return;
+	}
 	if (UWorld* World = GetWorld()) // GetWorld()가 유효한지 확인
 	{
 		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(World, 0);
@@ -161,10 +195,37 @@ void ULevelUpComponent::ApplyLevelUpChoice(FLevelUpRow ChosenOption)
 		if (AWorldSettings* WorldSettings = World->GetWorldSettings())
 		{
 			WorldSettings->SetTimeDilation(1.0f);
+			UE_LOG(LogTemp, Display, TEXT("LevelUp Level Up Event END!!"));
 		}
 	}
 	if (PlayerUIComp) { PlayerUIComp->ShowCrosshair(); }  // 크로스헤어 다시 표시
+	bIsLevelUpOpen = false;
 }
+
+void ULevelUpComponent::BuildAndSendOptions()
+{
+	if (!LevelUpDataTable || !IsValid(LevelUpUserWidget)) return;
+
+	TArray<FLevelUpRow*> AllRows;
+	static const FString ContextString = TEXT("LevelUp");
+	LevelUpDataTable->GetAllRows<FLevelUpRow>(ContextString, AllRows);
+
+	TArray<FLevelUpRow> AvailableOptions;
+	for (FLevelUpRow* Row : AllRows) if (Row) AvailableOptions.Add(*Row);
+
+	TArray<FLevelUpRow> ChosenOptions;
+	const int32 OptionsToChoose = FMath::Min(3, AvailableOptions.Num());
+	for (int32 i = 0; i < OptionsToChoose; ++i)
+	{
+		const int32 RandomIndex = FMath::RandRange(0, AvailableOptions.Num() - 1);
+		ChosenOptions.Add(AvailableOptions[RandomIndex]);
+		AvailableOptions.RemoveAt(RandomIndex);
+	}
+
+	LevelUpUserWidget->SetLevelUpOptions(ChosenOptions, this);
+}
+
+
 
 void ULevelUpComponent::ApplyAttackStat(float Value)
 {

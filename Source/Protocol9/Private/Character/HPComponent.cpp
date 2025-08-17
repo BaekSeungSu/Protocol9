@@ -86,15 +86,27 @@ void UHPComponent::AddHealth(float HealAmount)
 //아이템 무적 효과 적용 함수
 void UHPComponent::LockHealth()
 {
-	bIsInvisible =true;
-	UE_LOG(LogTemp,Warning,TEXT("Invinsible Time!"));
+	const int32 Prev = InvincibleRefCount;
+	++InvincibleRefCount;
+
+	if (Prev == 0)
+	{
+		bIsInvisible =true;
+		UE_LOG(LogTemp,Warning,TEXT("Invinsible Time!"));
+	}
 }
 
 //아이템 무적 효과 제거 함수
 void UHPComponent::UnlockHealth()
 {
-	bIsInvisible = false;
-	UE_LOG(LogTemp,Warning,TEXT("Invinsible Time End!"));
+	const int32 Prev = InvincibleRefCount;
+	InvincibleRefCount = FMath::Max(InvincibleRefCount - 1, 0);
+
+	if (Prev > 0 && InvincibleRefCount == 0)
+	{
+		bIsInvisible = false;
+		UE_LOG(LogTemp,Warning,TEXT("Invinsible Time End!"));
+	}
 }
 
 

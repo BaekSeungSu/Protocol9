@@ -394,17 +394,26 @@ void UControlComponent::AddSpeed(float Multiplier)
 {
 	if (Owner)
 	{
-		Owner->GetCharacterMovement()->MaxWalkSpeed *= Multiplier;
+		if (SpeedBoostRefCount == 0)
+		{
+			Owner->GetCharacterMovement()->MaxWalkSpeed *= Multiplier;
+		}
 	}
+	++SpeedBoostRefCount;
 	UE_LOG(LogTemp,Warning,TEXT("Increase Speed : %f"),Owner->GetCharacterMovement()->MaxWalkSpeed);
 }
 
 //아이템 스피드 증가 제거 함수 
 void UControlComponent::ResetSpeed()
 {
+
+	SpeedBoostRefCount = FMath::Max(SpeedBoostRefCount - 1, 0);
 	if (Owner)
 	{
-		Owner->GetCharacterMovement()->MaxWalkSpeed = MaxSpeed; 
+		if (SpeedBoostRefCount == 0)
+		{
+			Owner->GetCharacterMovement()->MaxWalkSpeed = MaxSpeed;
+		}
 	}
 	UE_LOG(LogTemp,Warning,TEXT("Speed Reset : %f"),Owner->GetCharacterMovement()->MaxWalkSpeed);
 }
