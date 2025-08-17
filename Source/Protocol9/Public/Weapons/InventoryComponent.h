@@ -1,9 +1,13 @@
 #pragma once
 #include "CoreMinimal.h"
+#include "WeaponBase.h"
 #include "Components/ActorComponent.h"
+#include "Data/WeaponData.h"
 #include "InventoryComponent.generated.h"
 
 class AWeaponBase;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCurrentWeaponSignature, EWeaponType, NewWeaponType);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROTOCOL9_API UInventoryComponent : public UActorComponent
@@ -12,6 +16,9 @@ class PROTOCOL9_API UInventoryComponent : public UActorComponent
 
 public:	
 	UInventoryComponent();
+
+	UPROPERTY(BlueprintAssignable, Category = "Weapon")
+	FCurrentWeaponSignature WeaponChanged;
 	
 	void AddWeapon(TSubclassOf<AWeaponBase> WeaponClass);
 	void EquipWeaponAtIndex(int32 SlotIndex);
@@ -21,7 +28,9 @@ public:
 	
 	UAnimMontage* GetEquipMontageForSlot(int32 SlotIndex) const;
 	int32 GetCurrentWeaponIndex() const {return CurrentWeaponIndex;}
-	AWeaponBase* GetCurrentWeapon() const{return CurrentWeapon;};
+	AWeaponBase* GetCurrentWeapon() const{return CurrentWeapon;}
+	UFUNCTION(BlueprintPure)
+	EWeaponType GetCurrentWeaponType() const;
 	
 protected:
 	virtual void BeginPlay() override;

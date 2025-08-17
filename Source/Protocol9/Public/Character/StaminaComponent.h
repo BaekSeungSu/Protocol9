@@ -19,7 +19,6 @@ public:
 	UStaminaComponent();
 
 	//이벤트
-	// UI 효과 제어 때문에 protected -> public으로 전환했습니다.
 	UPROPERTY(BlueprintAssignable, Category = "Stamina")
 	FCurrentStaminaChangedSignature StaminaChanged;
 	UPROPERTY(BlueprintAssignable, Category = "Stamina")

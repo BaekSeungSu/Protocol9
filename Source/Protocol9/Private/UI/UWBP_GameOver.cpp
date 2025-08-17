@@ -26,7 +26,7 @@ void UWBP_GameOver::SetTitle(bool bVictory)
 	if (TXT_Title)
 	{
 		const FText TitleText = bVictory
-			? FText::FromString(TEXT("VICTORY"))
+			? FText::FromString(TEXT("  VICTORY"))
 			: FText::FromString(TEXT("GAME OVER"));
 		TXT_Title->SetText(TitleText);
 	}

@@ -60,7 +60,6 @@ void AMainCharacter::InitCharacterInfo()
 	Exp = 0;
 	MaxExp = 100;
 	CharacterLevel = 1;
-	CurrentWeaponType = EWeaponType::Rifle;
 }
 
 void AMainCharacter::EquipDefaultWeapon()
@@ -424,7 +423,7 @@ void AMainCharacter::HandleInvincibilityEffect()
 		GetWorld()->GetTimerManager().SetTimer(InvincibilityResetHandle, [this]()
 		{
 			CachedHUD->ShowInvincibilityEffect(false);
-		}, 3.f, false);
+		}, 5.f, false);
 	}
 }
 

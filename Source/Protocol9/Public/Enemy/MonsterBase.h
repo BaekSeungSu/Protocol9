@@ -26,6 +26,7 @@ protected:
     virtual void BeginPlay() override;
 
 public:
+	
     UFUNCTION(BlueprintCallable)
     float GetMonsterHalfHeight() const;
     
@@ -118,6 +119,10 @@ protected:
     float CurrentHP;
     UFUNCTION()
     virtual void PerformAttack();
+
+    UFUNCTION()
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override; //UI:private에 있어서 protected로 위치만 변경했습니다.
+
   
     
 private:
@@ -137,8 +142,9 @@ private:
     void EndDeath();
     UPROPERTY()
     FVector TargetLocationBefore;
-    UFUNCTION()
-    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+    
+    
+
     FTimerHandle AIUpdateTimerHandle;
     FTimerHandle DeadTimerHandle;
 };

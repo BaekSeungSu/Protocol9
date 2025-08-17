@@ -9,6 +9,7 @@ class UHPComponent;
 class UControlComponent;
 class AMainCharacter;
 class UStaminaComponent;
+class UPlayerUIComponent;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROTOCOL9_API ULevelUpComponent : public UActorComponent
@@ -17,6 +18,12 @@ class PROTOCOL9_API ULevelUpComponent : public UActorComponent
 
 public:	
 	ULevelUpComponent();
+
+	UPROPERTY(BlueprintReadOnly, Category="LevelUp")
+	TMap<FName, int32> StatLevels;
+
+	UFUNCTION(BlueprintCallable, Category="LevelUp")
+	int32 GetStatLevel(FName StatName) const;
 
 protected:
 	
@@ -43,6 +50,7 @@ private:
 	UPROPERTY()
 	class UUserWidget* LevelUpUserWidget;
 
+	void IncrementStatLevel(const FName& StatName);
 	
 	UFUNCTION()
 	void OnCharacterLeveledUp(int32 CharacterLevel);
@@ -52,11 +60,13 @@ private:
 
 	// UI에서 선택한 항목의 스탯을 적용하는 함수 (블루프린트에서 호출 가능)
 	UFUNCTION(BlueprintCallable, Category = "LevelUp")
-	void ApplyLevelUpChoice(const FLevelUpRow& ChosenOption);
+	void ApplyLevelUpChoice(FLevelUpRow ChosenOption);
 	
 	void ApplyAttackStat(float Value);
 	void ApplyHealthStat(float Value);
 	void ApplyStaminaStat(float Value);
 	void ApplySpeedStat(float Value);
-		
+	
+	UPROPERTY()
+	UPlayerUIComponent* PlayerUIComp = nullptr; 
 };
