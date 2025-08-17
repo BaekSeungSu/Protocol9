@@ -164,7 +164,6 @@ void UInventoryComponent::SpawnAndEquipWeapon(int32 SlotIndex)
 		{
 			const FTransform SpawnTransform = OwningCharacter->GetMesh()->GetSocketTransform(TEXT("WeaponSocket"));
 			CurrentWeapon = GetWorld()->SpawnActorDeferred<AWeaponBase>(WeaponClassToSpawn, SpawnTransform, OwningCharacter);
-			WeaponChanged.Broadcast(GetCurrentWeaponType());
 
 			if (CurrentWeapon)
 			{
@@ -181,9 +180,9 @@ void UInventoryComponent::SpawnAndEquipWeapon(int32 SlotIndex)
 
 EWeaponType UInventoryComponent::GetCurrentWeaponType() const
 {
-	if (CurrentWeapon && CurrentWeapon->CurrentWeaponData)
+	if (AWeaponBase* Weapon = GetCurrentWeapon())
 	{
-		return CurrentWeapon->CurrentWeaponData->WeaponType;
+		return Weapon->CurrentType;
 	}
-	return EWeaponType::Pistol;
+	return EWeaponType::Default;
 }

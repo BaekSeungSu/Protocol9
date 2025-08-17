@@ -59,10 +59,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Exp")
 	int CharacterLevel;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Weapon")
-	EWeaponType CurrentWeaponType;
-	
-	
 	//죽었을때 사용
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
 	FName DeathCameraSocket = TEXT("head");

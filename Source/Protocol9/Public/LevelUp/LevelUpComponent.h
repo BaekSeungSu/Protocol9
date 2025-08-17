@@ -18,6 +18,12 @@ class PROTOCOL9_API ULevelUpComponent : public UActorComponent
 public:	
 	ULevelUpComponent();
 
+	UPROPERTY(BlueprintReadOnly, Category="LevelUp")
+	TMap<FName, int32> StatLevels;
+
+	UFUNCTION(BlueprintCallable, Category="LevelUp")
+	int32 GetStatLevel(FName StatName) const;
+
 protected:
 	
 	virtual void BeginPlay() override;
@@ -43,6 +49,7 @@ private:
 	UPROPERTY()
 	class UUserWidget* LevelUpUserWidget;
 
+	void IncrementStatLevel(const FName& StatName);
 	
 	UFUNCTION()
 	void OnCharacterLeveledUp(int32 CharacterLevel);

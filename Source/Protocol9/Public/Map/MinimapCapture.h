@@ -25,7 +25,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void CaptureOnce();
-
+	UFUNCTION(BlueprintCallable)
+	void SetHUD(class UUWBP_HUD* InHUD) { HUD = InHUD; }
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USceneComponent* SceneComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -34,6 +36,8 @@ public:
 	UTextureRenderTarget2D* RenderTarget;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ACharacter* PlayerCharacter;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UUWBP_HUD* HUD;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 OrthoWidth = 10000.0f;
@@ -41,6 +45,6 @@ public:
 	int32 Rotation = -90.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 Height = 3000.0f;
-
+	
 	FTimerHandle TimerHandle;
 };
