@@ -55,7 +55,7 @@ void AMainCharacter::InitCharacterInfo()
 {
 	BasetAttack = 20.0f;
 	LevelUpAttack = 1.2f;
-	Attack = BasetAttack;
+	Attack = BasetAttack; 
 	CurrentAttack = Attack;
 	Exp = 0;
 	MaxExp = 100;

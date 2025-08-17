@@ -328,7 +328,7 @@ void AWeaponBase::FireProjectile()
 	
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
-	SpawnParams.Instigator = GetInstigator();
+	SpawnParams.Instigator = Cast<APawn>(GetOwner());
 
 	
 	ABaseProjectile* SpawnedProjectile = GetWorld()->SpawnActor<ABaseProjectile>(CurrentWeaponData->ProjectileClass, MuzzleLocation, ProjectileRotation, SpawnParams);

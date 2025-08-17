@@ -354,6 +354,14 @@ void UControlComponent::Interact(const FInputActionValue& Value)
 	if (!bInputEnabled||!Owner)return;
 	if (!Value.Get<bool>()) return;
 
+	if (UCharacterStateMachine* StateMachine = Owner->GetStateMachine())
+	{
+		if (!StateMachine->CanSwapping())
+		{
+			return;
+		}
+	}
+
 	TArray<AActor*> Overlapping;
 	Owner->GetOverlappingActors(Overlapping, APickup_Weapon::StaticClass());
 

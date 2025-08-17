@@ -1,4 +1,6 @@
 #include "Weapons/Pickup_Weapon.h"
+
+#include "Character/CharacterStateMachine.h"
 #include "Weapons/WeaponBase.h"
 #include "Character/MainCharacter.h"
 #include "Components/SphereComponent.h"
@@ -60,6 +62,14 @@ bool APickup_Weapon::TryConsume(AMainCharacter* Interactor)
 	if (bConsumed || !Interactor || !WeaponClass) return false;
 	if (OverlappingCharacter && OverlappingCharacter != Interactor) return false;
 
+	if (UCharacterStateMachine* StateMachine = Interactor->GetStateMachine())
+	{
+		if (!StateMachine->CanSwapping())
+		{
+			return false;
+		}
+	}
+	
 	if (UInventoryComponent* Inventory = Interactor->GetInventoryComponent())
 	{
 		const bool bAdded = Inventory->AddOrReplaceWeapon(WeaponClass);
