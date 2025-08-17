@@ -11,12 +11,13 @@
 #include "NavigationSystem.h"
 #include "GameFramework/PlayerController.h"
 #include "Components/CapsuleComponent.h"
+#include "Character/MainCharacter.h"
 #include "Engine/DamageEvents.h"
 AMonsterBase::AMonsterBase()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	AIControllerClass = AMonsterBaseAIController::StaticClass();
-
+	
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 540.0f, 0.0f);
@@ -31,6 +32,8 @@ AMonsterBase::AMonsterBase()
 	{
 		GetCapsuleComponent()->SetCapsuleHalfHeight(MonsterHalfHeight);
 		GetCapsuleComponent()->SetCapsuleRadius(MonsterRadius);
+		GetCapsuleComponent()->SetCollisionObjectType(ECC_GameTraceChannel3);
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_GameTraceChannel4, ECR_Ignore);
 	}
 	if (GetMesh())
 	{
@@ -39,21 +42,20 @@ AMonsterBase::AMonsterBase()
 
 	CurrentState = EMonsterState::Idle;
 	TargetPlayer = nullptr;
-	LastAttackTime = 0.0f;
+	ExtraDistance = 20.0f;
 }
 
 void AMonsterBase::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	StartLocation = GetActorLocation();
-
+	CurrentHP = MaxHP;
+	TargetLocationBefore = FVector(FLT_MAX);
 	SetAnimInstance();
 	SetState(EMonsterState::Chasing);
-
-	AIUpdateInterval = FMath::RandRange(AIUpdateInterval - AIUpdateInterval * 0.2f,
-	                                    AIUpdateInterval + AIUpdateInterval * 0.2f);
-	StartAIUpdateTimer();
+	
+	StartAIUpdateTimer(FMath::RandRange(0.0f,AIUpdateInterval));
 	FindAndSetTargetPlayer();
 	float RandomLifeTime = FMath::RandRange(5.0f, 10.0f);
 	GetMesh()->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Block);
@@ -67,13 +69,13 @@ void AMonsterBase::UpdateAI()
 	case EMonsterState::Dead:
 		break;
 	case EMonsterState::Idle:
-
+		break;
 	case EMonsterState::Chasing:
 		ChasePlayer();
 		break;
 
 	case EMonsterState::Attacking:
-		AttackingBehavior();
+		StartContinuousAttack();
 		break;
 	}
 }
@@ -122,9 +124,9 @@ float AMonsterBase::GetMonsterHalfHeight() const
 
 void AMonsterBase::ChasePlayer()
 {
-	if (!TargetPlayer || !AIController) return;
+	if (!TargetPlayer.IsValid() || !AIController) return;
 
-	if (IsInAttackRange())
+	if (IsInAttackRange(ExtraDistance))
 	{
 		SetState(EMonsterState::Attacking);
 		return;
@@ -159,22 +161,13 @@ bool AMonsterBase::FindAndSetTargetPlayer()
 
 bool AMonsterBase::SetTargetPlayer(APawn* NewTarget)
 {
-	if (NewTarget && NewTarget->IsA<APawn>())
+	AMainCharacter* NewTargetCharacter = Cast<AMainCharacter>(NewTarget);
+	if (NewTargetCharacter)
 	{
-		TargetPlayer = NewTarget;
+		TargetPlayer = NewTargetCharacter;
 		return true;
 	}
 	return false;
-}
-
-void AMonsterBase::AttackPlayer()
-{
-	if (!TargetPlayer) return;
-
-
-	if (bShouldContinueAttacking) return;
-
-	StartContinuousAttack();
 }
 
 void AMonsterBase::PossessedBy(AController* NewController)
@@ -186,30 +179,34 @@ void AMonsterBase::PossessedBy(AController* NewController)
 
 void AMonsterBase::StartContinuousAttack()
 {
-	if (!TargetPlayer) return;
+	if (bShouldContinueAttacking)
+	{
+		return;
+	}
+	if (!TargetPlayer.IsValid())
+	{
+		return;
+	}
 
 	bShouldContinueAttacking = true;
-
-
 	PerformAttack();
-
-
-	GetWorld()->GetTimerManager().SetTimer(
-		AttackTimerHandle,
-		this,
-		&AMonsterBase::PerformAttack,
-		AttackCooldown,
-		true
-	);
+	// GetWorld()->GetTimerManager().SetTimer(
+	// 	AttackTimerHandle,
+	// 	this,
+	// 	&AMonsterBase::PerformAttack,
+	// 	AttackCooldown,
+	// 	true
+	// );
 }
 
 void AMonsterBase::PerformAttack()
 {
-	if (!bShouldContinueAttacking || !TargetPlayer || !IsInAttackRange())
-	{
-		StopContinuousAttack();
-		return;
-	}
+	// if (!bShouldContinueAttacking || !TargetPlayer || !IsInAttackRange(20.0f))
+	// {
+	// 	StopContinuousAttack();
+	// 	return;
+	// }
+	
 	StopMovement();
 	FVector Direction = (TargetPlayer->GetActorLocation() - GetActorLocation()).GetSafeNormal();
 	FRotator LookRotation = FRotationMatrix::MakeFromX(Direction).Rotator();
@@ -219,13 +216,6 @@ void AMonsterBase::PerformAttack()
 void AMonsterBase::StopContinuousAttack()
 {
 	bShouldContinueAttacking = false;
-
-
-	if (AttackTimerHandle.IsValid())
-	{
-		GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
-		AttackTimerHandle.Invalidate();
-	}
 }
 
 void AMonsterBase::StopMovement()
@@ -239,103 +229,129 @@ void AMonsterBase::StopMovement()
 
 void AMonsterBase::MoveToTarget()
 {
+	if (!AIController) return;
+	
 	FVector TargetLocation = GetTargetMonsterLocation();
+	if (FVector::DistSquared2D(TargetLocation, TargetLocationBefore) < FMath::Square(100.0f))
+	{
+		return;
+	}
+	TargetLocationBefore = TargetLocation;
 	AIController->MoveToLocation(TargetLocation);
 }
 
 FVector AMonsterBase::GetTargetMonsterLocation() const
 {
-	if (TargetPlayer)
-	{
-		FVector TargetLocation = TargetPlayer->GetActorLocation();
-
-		UNavigationSystemV1* NavSys = UNavigationSystemV1::GetNavigationSystem(GetWorld());
-		FNavLocation NavLocation;
-		const FVector QueryExtent = FVector(100, 100, 600);
-		if (NavSys && NavSys->ProjectPointToNavigation(TargetLocation, NavLocation, QueryExtent))
-		{
-			return NavLocation.Location;
-		}
-		UE_LOG(LogTemp, Warning, TEXT("NavSys is NULL"));
-		return TargetLocation;
-	}
-	UE_LOG(LogTemp, Warning, TEXT("TargetPlayer is NULL"));
-	return GetActorLocation();
+	FVector TargetLocation = TargetPlayer->GetActorLocation();
+	TargetLocation.Z = GetActorLocation().Z;
+	return TargetLocation;
+	// if (TargetPlayer.IsValid())  // 계단이나 언덕이면 다른 연산이 필요하겠지만 일단 지금은 주석처리
+	// {
+	// 	FVector TargetLocation = TargetPlayer->GetActorLocation();
+	//
+	// 	UNavigationSystemV1* NavSys = UNavigationSystemV1::GetNavigationSystem(GetWorld());
+	// 	FNavLocation NavLocation;
+	// 	const FVector QueryExtent = FVector(100, 100, 600);
+	// 	if (NavSys && NavSys->ProjectPointToNavigation(TargetLocation, NavLocation, QueryExtent))
+	// 	{
+	// 		return NavLocation.Location;
+	// 	}
+	// 	UE_LOG(LogTemp, Warning, TEXT("NavSys is NULL"));
+	// 	return TargetLocation;
+	// }
+	// UE_LOG(LogTemp, Warning, TEXT("TargetPlayer is NULL"));
+	// return GetActorLocation();
 }
 
-void AMonsterBase::StartAIUpdateTimer()
+void AMonsterBase::StartAIUpdateTimer(const float Jitter)
 {
 	GetWorld()->GetTimerManager().SetTimer(
 		AIUpdateTimerHandle,
 		this,
 		&AMonsterBase::UpdateAI,
 		AIUpdateInterval,
-		true
+		true,
+		Jitter
 	);
 }
 
 void AMonsterBase::EndDeath()
 {
+	AIController = nullptr;
 	Destroy();
 }
 
 void AMonsterBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	if (AIUpdateTimerHandle.IsValid())
+	UWorld* World = GetWorld();
+	if (World)
 	{
-		GetWorld()->GetTimerManager().ClearTimer(AIUpdateTimerHandle);
-		AIUpdateTimerHandle.Invalidate();
+		World->GetTimerManager().ClearAllTimersForObject(this);
+	}
+	
+	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+	{
+		AnimInstance->OnMontageEnded.RemoveDynamic(this, &AMonsterBase::OnAttackMontageEnded);
+	}
+	
+	if (DeadTimerHandle.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(DeadTimerHandle);
+		DeadTimerHandle.Invalidate();
 	}
 	Super::EndPlay(EndPlayReason);
 }
 
-bool AMonsterBase::IsInAttackRange() const
+bool AMonsterBase::IsInAttackRange(float ExtraDistanceInside) const
 {
-	if (!TargetPlayer) return false;
-
-	float DistanceToPlayer = FVector::Dist(GetActorLocation(), TargetPlayer->GetActorLocation());
-	return DistanceToPlayer <= AttackRange;
+	
+	if (TargetPlayer.IsValid())
+	{
+		float DistanceToPlayer = FVector::Dist(GetActorLocation(), TargetPlayer->GetActorLocation());
+		return DistanceToPlayer <= AttackRange + ExtraDistanceInside;
+	}
+	return false;
 }
 
 void AMonsterBase::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	if (Montage == AttackMontage && CurrentState == EMonsterState::Attacking)
 	{
-		if (TargetPlayer && IsInAttackRange())
+		if (TargetPlayer.IsValid() && IsInAttackRange(ExtraDistance) && bShouldContinueAttacking)
 		{
 			SetState(EMonsterState::Attacking);
+			PerformAttack();
 		}
 		else
 		{
+			bShouldContinueAttacking = false;
 			SetState(EMonsterState::Chasing);
 		}
 	}
 }
 
-void AMonsterBase::AttackingBehavior()
-{
-	if (!TargetPlayer)
-	{
-		SetState(EMonsterState::Chasing);
-		return;
-	}
-
-	if (!IsInAttackRange())
-	{
-		if (bShouldContinueAttacking)
-		{
-			StopContinuousAttack();
-		}
-
-		SetState(EMonsterState::Chasing);
-		return;
-	}
-
-	if (!bShouldContinueAttacking && IsInAttackRange())
-	{
-		StartContinuousAttack();
-	}
-}
+// void AMonsterBase::AttackingBehavior()
+// {
+// 	if (!TargetPlayer)
+// 	{
+// 		SetState(EMonsterState::Chasing);
+// 		return;
+// 	}
+// 	if (!IsInAttackRange(20.0f))
+// 	{
+// 		if (bShouldContinueAttacking)
+// 		{
+// 			StopContinuousAttack();
+// 		}
+// 	
+// 		SetState(EMonsterState::Chasing);
+// 		return;
+// 	}
+// 	if (!bShouldContinueAttacking && IsInAttackRange(20.0f))
+// 	{
+// 		StartContinuousAttack();
+// 	}
+// }
 
 void AMonsterBase::OnDeath()
 {
@@ -344,6 +360,7 @@ void AMonsterBase::OnDeath()
 		return;
 	}
 
+	
 	SetState(EMonsterState::Dead);
 
 	Ragdoll();	
@@ -352,7 +369,7 @@ void AMonsterBase::OnDeath()
 
 	OnMonsterDead.Broadcast(this);
 	OnMonsterDeadLocation.Broadcast(FindGroundLocation());
-	GetWorldTimerManager().SetTimer(DeadTimerHandle,this,&AMonsterBase::EndDeath, 5.0f, false);
+	GetWorldTimerManager().SetTimer(DeadTimerHandle,this,&AMonsterBase::EndDeath, 1.0f, false);
 }
 
 void AMonsterBase::Ragdoll()
@@ -363,8 +380,6 @@ void AMonsterBase::Ragdoll()
 	}
 	
 	GetWorld()->GetTimerManager().ClearTimer(AIUpdateTimerHandle);
-	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
-
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCharacterMovement()->DisableMovement();
 	
@@ -380,7 +395,6 @@ void AMonsterBase::DeleteMonster()
 	//스포너에 보스 스폰 델리게이트에 연결해서 보스가 스폰 되는순간 멀티 델리게이트에 구독해놓은 모든 몬스터의 clearmonster가 호출되며 경험치나 아이템 드롭
 	//사망 몽타주 실행 없이 즉시 레벨에서 삭제
 	GetWorld()->GetTimerManager().ClearTimer(AIUpdateTimerHandle);
-	GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
 	Destroy();
 }
 

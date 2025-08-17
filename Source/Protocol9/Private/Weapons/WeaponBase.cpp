@@ -140,7 +140,7 @@ void AWeaponBase::FireAction()
 	// UI 추가
 	if (AMainGameMode* GM = Cast<AMainGameMode>(UGameplayStatics::GetGameMode(this)))
 	{
-		GM->UpdateAmmoUI(CurrentAmmo, 0, false);
+		GM->UpdateAmmoUI(CurrentAmmo, CurrentWeaponData->MagazineSize, false); // UI : 현재 탄약수/총 종류별 최대 탄약 수로 변경 
 	}
 	ApplyRecoil();
 	
@@ -376,12 +376,13 @@ void AWeaponBase::LoadWeaponData()
 	CurrentWeaponData = WeaponDataTable->FindRow<FWeaponData>(WeaponDataRowName, TEXT(""));
 	if (!CurrentWeaponData) return; 
 	CurrentAmmo = CurrentWeaponData->MagazineSize;
+	CurrentType = CurrentWeaponData->WeaponType;
 	LastFireTime = -100.0f;
 	// UI
 	if (AMainGameMode* GM = Cast<AMainGameMode>(UGameplayStatics::GetGameMode(this)))
 	{
 		GM->SetWeaponIconUI(UIIcon);              // 현재 무기 아이콘
-		GM->UpdateAmmoUI(CurrentAmmo, 0, false);  // 탄약 텍스트(예비탄 없으면 0/false)
+		GM->UpdateAmmoUI(CurrentAmmo, CurrentWeaponData->MagazineSize, false);  // UI : 현재 탄약수/총 종류별 최대 탄약 수로 변경
 	}
 }
 
@@ -394,7 +395,7 @@ void AWeaponBase::FinishReload()
 	// UI 추가
 	if (AMainGameMode* GM = Cast<AMainGameMode>(UGameplayStatics::GetGameMode(this)))
 	{
-		GM->UpdateAmmoUI(CurrentAmmo, 0, false);
+		GM->UpdateAmmoUI(CurrentAmmo, CurrentWeaponData->MagazineSize, false); // UI : 현재 탄약수/총 종류별 최대 탄약 수로 변경
 	}
 }
 

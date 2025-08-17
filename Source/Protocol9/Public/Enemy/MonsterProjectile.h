@@ -21,9 +21,9 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     class USphereComponent* CollisionComponent;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-    class UStaticMeshComponent* MeshComponent;
-
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+    class UParticleSystemComponent* ParticleSystemComponent;
+    
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
     class UProjectileMovementComponent* ProjectileMovement;
 

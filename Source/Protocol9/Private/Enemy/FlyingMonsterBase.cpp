@@ -2,6 +2,7 @@
 
 #include "Enemy/FlyingMonsterBase.h"
 #include "Enemy/MonsterProjectile.h"
+#include "Character/MainCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/World.h"
 
@@ -29,7 +30,7 @@ void AFlyingMonsterBase::InitializeMovement()
 }
 FVector AFlyingMonsterBase::GetTargetMonsterLocation() const
 {
-	if (TargetPlayer)
+	if (TargetPlayer.IsValid())
 	{
 		FVector PlayerLocation = TargetPlayer->GetActorLocation();
 		UE_LOG(LogTemp, Log, TEXT("PlayerLocation : %s"), *PlayerLocation.ToString());
@@ -42,20 +43,20 @@ FVector AFlyingMonsterBase::GetTargetMonsterLocation() const
 
 void AFlyingMonsterBase::PerformAttack()
 {
-	if (!bShouldContinueAttacking || !TargetPlayer || !IsInAttackRange())
-	{
-		StopContinuousAttack();
-		return;
-	}
-	StopMovement();
+	Super::PerformAttack();
+	
 	if (AttackMontage && GetMesh() && GetMesh()->GetAnimInstance())
 	{
 		GetMesh()->GetAnimInstance()->Montage_Play(AttackMontage);
 	}
+}
+
+void AFlyingMonsterBase::SpawnProjectile()
+{
 	if (ProjectileClass)
 	{
 		FVector SpawnLocation = GetProjectileSpawnLocation();
-        FVector TargetLocation = TargetPlayer->GetActorLocation();
+		FVector TargetLocation = TargetPlayer->GetActorLocation();
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.Owner = this;
 		SpawnParams.Instigator = GetInstigator();
@@ -67,16 +68,11 @@ void AFlyingMonsterBase::PerformAttack()
 			SpawnParams);
 		Projectile->FireAtTarget(TargetLocation, 0.0f);
 	}
-    
-	if (AttackMontage && GetMesh() && GetMesh()->GetAnimInstance())
-	{
-		GetMesh()->GetAnimInstance()->Montage_Play(AttackMontage);
-	}
 }
 
-bool AFlyingMonsterBase::IsInAttackRange() const
+bool AFlyingMonsterBase::IsInAttackRange(float ExtraDistanceInside) const
 {
-	if (!TargetPlayer) return false;
+	if (!TargetPlayer.IsValid()) return false;
 	FVector MonsterLocation = GetActorLocation();
 	FVector PlayerLocation = TargetPlayer->GetActorLocation();
 	
@@ -85,7 +81,7 @@ bool AFlyingMonsterBase::IsInAttackRange() const
 	float DistanceSquared = DeltaX * DeltaX + DeltaY * DeltaY;
 	float AttackRangeSquared = AttackRange * AttackRange;
     
-	return DistanceSquared <= AttackRangeSquared;
+	return DistanceSquared <= AttackRangeSquared + ExtraDistance;
 }
 
 void AFlyingMonsterBase::MoveToTarget()

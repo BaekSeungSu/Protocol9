@@ -22,8 +22,7 @@ void UUWBP_HelpAccordion::NativeOnInitialized()
 void UUWBP_HelpAccordion::NativeConstruct()
 {
     Super::NativeConstruct();
-
-    // 처음엔 Controls만 펼치기
+    
     bInternalToggle = true;
     if (EA_Controls)    EA_Controls->SetIsExpanded(true);
     if (EA_Items)       EA_Items->SetIsExpanded(false);
@@ -31,8 +30,7 @@ void UUWBP_HelpAccordion::NativeConstruct()
     bInternalToggle = false;
 
     ScrollTo(EA_Controls);
-
-    // ESC 입력 받을 수 있게
+    
     SetIsFocusable(true);
 }
 

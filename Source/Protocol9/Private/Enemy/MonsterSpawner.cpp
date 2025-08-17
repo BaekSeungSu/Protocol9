@@ -109,6 +109,7 @@ void AMonsterSpawner::SpawnBossMonster()
 		SpawnRotation,
 		SpawnParams
 	);
+	OnBossMonsterSpawned.Broadcast(NewBoss); //보스 몬스터 스폰 이벤트 발생
 }
 
 
@@ -126,7 +127,9 @@ FVector AMonsterSpawner::GetRandomNavLocation()
 			if (NavSys->GetRandomReachablePointInRadius(Origin, MaxSpawnRadius, NavLocation))
 			{
 				if (FVector::Dist(Origin, NavLocation.Location) >= MinSpawnRadius)
+				{
 					break;
+				}
 			}
 		}
 		return NavLocation.Location;

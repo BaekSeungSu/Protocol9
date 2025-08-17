@@ -172,7 +172,17 @@ void UInventoryComponent::SpawnAndEquipWeapon(int32 SlotIndex)
 				UGameplayStatics::FinishSpawningActor(CurrentWeapon, SpawnTransform);
 				CurrentWeapon->AttachToOwnerSocket();
 				CurrentWeaponIndex = SlotIndex;
+				WeaponChanged.Broadcast(GetCurrentWeaponType());
 			}
 		}
 	}
+}
+
+EWeaponType UInventoryComponent::GetCurrentWeaponType() const
+{
+	if (AWeaponBase* Weapon = GetCurrentWeapon())
+	{
+		return Weapon->CurrentType;
+	}
+	return EWeaponType::Default;
 }
