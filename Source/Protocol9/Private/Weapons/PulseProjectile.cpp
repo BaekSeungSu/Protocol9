@@ -15,30 +15,40 @@ APulseProjectile::APulseProjectile()
 void APulseProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                              FVector NormalImpulse, const FHitResult& Hit)
 {
-	Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1,
-			2.0f,
-			FColor::Red,
-			FString::Printf(TEXT("Hit!")));
-	}
-	if (OtherActor && OtherActor != this && OtherActor != GetOwner())
-	{
-		TArray<AActor*> IgnoreActors;
-		AActor* MyOwner = GetOwner();
-		if (MyOwner)
-		{
-			IgnoreActors.Add(MyOwner);
-		}
-		IgnoreActors.Add(this);
-		UGameplayStatics::ApplyRadialDamage(GetWorld(), Damage, GetVelocity().GetSafeNormal(), DamageRadius, UDamageType::StaticClass(), IgnoreActors, this, GetInstigatorController(), false, ECC_Visibility);
-	}
-
 	if (HitSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), HitSound, GetActorLocation());
 	}
 	DrawDebugSphere(GetWorld(), GetActorLocation(), DamageRadius, 10, FColor::Red, false, 1.0f);	
-	Destroy();
+	
+	Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
+}
+
+void APulseProjectile::ApplyDamageOnHit(const FHitResult& HitResult)
+{
+	const FVector Origin = HitResult.ImpactPoint;
+
+	TArray<AActor*> IgnoreActors;
+	if (AActor* MyOwner = GetOwner())
+	{
+		IgnoreActors.Add(MyOwner);
+	}
+	if (APawn* Instig = GetInstigator())
+	{
+		IgnoreActors.Add(Instig);
+	}
+	IgnoreActors.Add(this);
+	UGameplayStatics::ApplyRadialDamage(
+		GetWorld(),
+		Damage,
+		Origin,
+		DamageRadius,
+		UDamageType::StaticClass(),
+		IgnoreActors,
+		this,
+		GetInstigatorController(),
+		false,
+		ECC_Visibility
+		);
+	
 }
