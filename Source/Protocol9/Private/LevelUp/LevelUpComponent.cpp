@@ -37,10 +37,11 @@ void ULevelUpComponent::BeginPlay()
 		MyCharacter->LevelUPEvent.AddDynamic(this, &ULevelUpComponent::OnCharacterLeveledUp);
 	}
 
+	//스탯 레벨 초기화 
 	StatLevels.Add(TEXT("Speed Bonus"),   0);
 	StatLevels.Add(TEXT("Damage Bonus"),  0);
 	StatLevels.Add(TEXT("Health Bonus"),  0);
-	StatLevels.Add(TEXT("CoolDownDash"),  0);
+	StatLevels.Add(TEXT("CDDash"),  0);
 }
 
 int32 ULevelUpComponent::GetStatLevel(FName StatName) const
@@ -134,7 +135,7 @@ void ULevelUpComponent::ApplyLevelUpChoice(FLevelUpRow ChosenOption)
     {
        ApplyHealthStat(ChosenOption.Value);
     }
-    else if (ChosenOption.Name==TEXT("Decrease DashCD"))
+    else if (ChosenOption.Name==TEXT("CDDash"))
     {
        ApplyStaminaStat(ChosenOption.Value);
     }
