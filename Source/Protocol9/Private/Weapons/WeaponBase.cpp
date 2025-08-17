@@ -12,6 +12,7 @@
 #include "Character/CharacterStateMachine.h"
 #include "GameMode/MainGameMode.h" //UI
 #include "Weapons/BaseProjectile.h"
+#include "Weapons/ProjectilePool.h"
 
 
 
@@ -24,6 +25,9 @@ AWeaponBase::AWeaponBase()
 	WeaponMesh->SetSimulatePhysics(false);
 	SetRootComponent(WeaponMesh);
 
+	ProjectilePoolChild = CreateDefaultSubobject<UChildActorComponent>(TEXT("ProjectilePoolChild"));
+	ProjectilePoolChild->SetupAttachment(RootComponent);
+	
 	CurrentWeaponData = nullptr;
 	bIsFullAuto = false;
 }
@@ -98,7 +102,10 @@ UAnimMontage* AWeaponBase::GetReloadMontage() const
 void AWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	if (ProjectilePoolChild)
+	{
+		ProjectilePool = Cast<AProjectilePool>(ProjectilePoolChild->GetChildActor());
+	}
 }
 
 
@@ -325,19 +332,20 @@ void AWeaponBase::FireProjectile()
 	FVector MuzzleLocation = WeaponMesh->GetSocketLocation(TEXT("MuzzleSocket"));
 	FVector ProjectileDir = (TraceEnd - MuzzleLocation).GetSafeNormal();
 	FRotator ProjectileRotation = ProjectileDir.Rotation();
+	FVector InitialVelocity = ProjectileDir * CurrentWeaponData->ProjectileSpeed;
 	
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this;
-	SpawnParams.Instigator = GetInstigator();
-
-	
-	ABaseProjectile* SpawnedProjectile = GetWorld()->SpawnActor<ABaseProjectile>(CurrentWeaponData->ProjectileClass, MuzzleLocation, ProjectileRotation, SpawnParams);
+	APawn* InstPawn = Cast<APawn>(OwningCharacter);
+	ABaseProjectile* SpawnedProjectile = ProjectilePool->Acquire(
+		MuzzleLocation,
+		ProjectileRotation,
+		InitialVelocity,
+		OwningCharacter,
+		InstPawn
+	);
 	if (SpawnedProjectile)
 	{
 		SpawnedProjectile->SetDamage(CurrentWeaponData->Damage);
-		SpawnedProjectile->FireInDirection(FireDirection);
 	}
-	
 }
 
 void AWeaponBase::ProcessHit(const FHitResult& HitResult, const FVector& ShotDirection)

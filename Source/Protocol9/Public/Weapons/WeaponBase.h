@@ -12,6 +12,7 @@ class UAnimMontage;
 struct FWeaponData;
 
 class UTexture2D; //UI
+class AProjectilePool;
 
 UCLASS()
 class PROTOCOL9_API AWeaponBase : public AActor, public IWeaponInterface
@@ -44,7 +45,11 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
-	
+
+	UPROPERTY(VisibleAnywhere, Category = "Projectile")
+	UChildActorComponent* ProjectilePoolChild;
+	UPROPERTY(Transient)
+	AProjectilePool* ProjectilePool;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* WeaponMesh;
 	UPROPERTY(EditDefaultsOnly, Category="Data")
