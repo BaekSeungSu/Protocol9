@@ -41,6 +41,7 @@ void AMonsterSpawner::BeginPlay()
 	if (CurrentSpawnLevel == 0)
 		return;
 	SpawnMonstersForLevel(CurrentSpawnLevel);
+	Player->LevelUPEvent.RemoveDynamic(this, &AMonsterSpawner::SpawnLevelUp);
 	Player->LevelUPEvent.AddDynamic(this, &AMonsterSpawner::SpawnLevelUp);
 }
 
@@ -95,6 +96,7 @@ void AMonsterSpawner::ReSpawnMonster(AMonsterBase* Monster)
 
 void AMonsterSpawner::SpawnBossMonster()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Spawn Boss"));
 	DeleteAllMonsters();
 	if (!BossMonsterClass)
 		return;
@@ -144,6 +146,7 @@ FVector AMonsterSpawner::GetRandomNavLocation()
 	if (!NavSys) return PlayerLocation;
 	
 	TArray<FVector> SearchDirections;
+	SearchDirections.Add(FVector::ZeroVector);  
 	SearchDirections.Add(Player->GetActorForwardVector()); 
 	SearchDirections.Add(-Player->GetActorForwardVector()); 
 	SearchDirections.Add(Player->GetActorRightVector());   
