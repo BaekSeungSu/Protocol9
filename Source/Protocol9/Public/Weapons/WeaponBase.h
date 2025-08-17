@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Weapons/WeaponInterface.h"
+#include "Weapons/EWeaponType.h"
 #include "WeaponBase.generated.h"
 
 class AMainCharacter;
@@ -44,6 +45,9 @@ public:
 	UTexture2D* UIIcon = nullptr;
 
 	FWeaponData* CurrentWeaponData;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Type")
+	EWeaponType CurrentType;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -56,6 +60,7 @@ protected:
 	FName WeaponDataRowName;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Ammo")
 	int32 CurrentAmmo;
+	
 	
 	UPROPERTY()
 	AMainCharacter* OwningCharacter;
