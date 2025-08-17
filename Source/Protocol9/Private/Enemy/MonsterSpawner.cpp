@@ -113,30 +113,64 @@ void AMonsterSpawner::SpawnBossMonster()
 }
 
 
+// FVector AMonsterSpawner::GetRandomNavLocation()
+// {
+// 	if (!Player)
+// 		return FVector::ZeroVector;
+// 	FVector Origin = Player->GetActorLocation();
+// 	UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(GetWorld());
+// 	FNavLocation NavLocation;
+// 	if (NavSys)
+// 	{
+// 		for (int i=0 ; i< MaxSpawnAttemps ; i++) // 플레이어 바로 앞에서 몬스터가 스폰되면 불쾌해서 만약 최소 거리보다 가까운 위치에 스폰될 것 같으면 최대 10번까지는 다시 새로운 위치를 찾게 했습니다.
+// 		{
+// 			if (NavSys->GetRandomReachablePointInRadius(Origin, MaxSpawnRadius, NavLocation))
+// 			{
+// 				if (FVector::Dist(Origin, NavLocation.Location) >= MinSpawnRadius)
+// 				{
+// 					return NavLocation.Location;
+// 				}
+// 			}
+// 		}
+// 	}
+// 	return Origin + (Player->GetActorForwardVector() * MinSpawnRadius);
+// }
 FVector AMonsterSpawner::GetRandomNavLocation()
 {
-	if (!Player)
-		return FVector::ZeroVector;
-	FVector Origin = Player->GetActorLocation();
+	if (!Player) return FVector::ZeroVector;
+
+	FVector PlayerLocation = Player->GetActorLocation();
 	UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(GetWorld());
-	FNavLocation NavLocation;
-	if (NavSys)
+	if (!NavSys) return PlayerLocation;
+	
+	TArray<FVector> SearchDirections;
+	SearchDirections.Add(Player->GetActorForwardVector()); 
+	SearchDirections.Add(-Player->GetActorForwardVector()); 
+	SearchDirections.Add(Player->GetActorRightVector());   
+	SearchDirections.Add(-Player->GetActorRightVector());  
+
+	const float SearchDistance = 4000.0f; 
+	const float SearchRadius = 3000.0f;
+	
+	for (const FVector& Direction : SearchDirections)
 	{
-		for (int i=0 ; i< MaxSpawnAttemps ; i++) // 플레이어 바로 앞에서 몬스터가 스폰되면 불쾌해서 만약 최소 거리보다 가까운 위치에 스폰될 것 같으면 최대 10번까지는 다시 새로운 위치를 찾게 했습니다.
+		FVector SearchOrigin = PlayerLocation + (Direction * SearchDistance);
+        
+		FNavLocation CandidateLocation;
+		for (int i = 0; i < MaxSpawnAttemps; i++)
 		{
-			if (NavSys->GetRandomReachablePointInRadius(Origin, MaxSpawnRadius, NavLocation))
+			if (NavSys->GetRandomReachablePointInRadius(SearchOrigin, SearchRadius, CandidateLocation))
 			{
-				if (FVector::Dist(Origin, NavLocation.Location) >= MinSpawnRadius)
+				float DistanceToPlayer = FVector::Dist(PlayerLocation, CandidateLocation.Location);
+				if (DistanceToPlayer >= MinSpawnRadius && DistanceToPlayer <= MaxSpawnRadius)
 				{
-					break;
+					return CandidateLocation.Location;
 				}
 			}
 		}
-		return NavLocation.Location;
 	}
-	return Origin + (Player->GetActorForwardVector() * MinSpawnRadius);
+	return PlayerLocation + (Player->GetActorForwardVector() * MinSpawnRadius);
 }
-
 void AMonsterSpawner::SpawnMonster(TSubclassOf<AMonsterBase> MonsterClass)
 {
 	if (!MonsterClass)

@@ -251,7 +251,7 @@ FVector AMonsterBase::GetTargetMonsterLocation() const
 	
 		UNavigationSystemV1* NavSys = UNavigationSystemV1::GetNavigationSystem(GetWorld());
 		FNavLocation NavLocation;
-		const FVector QueryExtent = FVector(100, 100, 600);
+		const FVector QueryExtent = FVector(400, 400, 600);
 		if (NavSys && NavSys->ProjectPointToNavigation(TargetLocation, NavLocation, QueryExtent))
 		{
 			return NavLocation.Location;
