@@ -3,6 +3,8 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Kismet/GameplayStatics.h"
+#include "Weapons/ProjectilePool.h"
 
 ABaseProjectile::ABaseProjectile()
 {
@@ -26,35 +28,145 @@ ABaseProjectile::ABaseProjectile()
 	ProjectileMovement->bShouldBounce = false;
 	
 	Damage = 12.0f;
-	InitialLifeSpan = 3.0f;
+	InitialLifeSpan = 0.0f;
 	
 }
 
 void ABaseProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-	if (AActor* InstigActor = GetInstigator())
-	{
-		ProjectileCollision->IgnoreActorWhenMoving(InstigActor, true);
-	}
-	
 }
 
 void ABaseProjectile::FireInDirection(const FVector& ShootDirection)
 {
-	ProjectileEffect->Activate(true);
-	ProjectileMovement->Velocity = ShootDirection *	ProjectileMovement->InitialSpeed;
+	if (ProjectileEffect)
+	{
+		ProjectileEffect->Activate(true);
+	}
+	if (ProjectileMovement)
+	{
+		ProjectileMovement->Velocity = ShootDirection *	ProjectileMovement->InitialSpeed;
+	}
 }
 
+void ABaseProjectile::ActivateProjectile(const FVector& SpawnLocation, const FRotator& SpawnRotation, const FVector& Velocity, AActor* InOwner, APawn* InInstigator)
+{
+	SetActorLocationAndRotation(SpawnLocation, SpawnRotation, false, nullptr, ETeleportType::TeleportPhysics);
+	SetActorHiddenInGame(false);
+	SetActorEnableCollision(true);
+	SetActorTickEnabled(true);
+
+	if (InOwner) SetOwner(InOwner);
+	if (InInstigator) SetInstigator(InInstigator);
+
+	if (APawn* Instig = GetInstigator())
+	{
+		ProjectileCollision->IgnoreActorWhenMoving(Instig, true);
+	}
+
+	if (AActor* OwnerActor = GetOwner())
+	{
+		ProjectileCollision->IgnoreActorWhenMoving(OwnerActor, true);
+	}
+	
+	if (ProjectileMovement)
+	{
+		ProjectileMovement->StopMovementImmediately();
+		ProjectileMovement->Velocity = Velocity;
+		ProjectileMovement->SetUpdatedComponent(ProjectileCollision);
+		ProjectileMovement->Activate(true);
+		ProjectileMovement->UpdateComponentVelocity();
+	}
+
+	if (ProjectileEffect)
+	{
+		ProjectileEffect->Activate(true);
+	}
+
+	GetWorldTimerManager().ClearTimer(LifeTimerHandle);
+	GetWorldTimerManager().SetTimer(LifeTimerHandle, [this]()
+	{
+		if (OwningPool)
+		{
+			OwningPool->Release(this);
+		}
+		else
+		{
+			Destroy();
+		}
+	}, LifeTime, false);
+	OnActivated();
+}
+
+void ABaseProjectile::DeactivateProjectile()
+{
+	GetWorldTimerManager().ClearTimer(LifeTimerHandle);
+	
+	if (ProjectileMovement)
+	{
+		ProjectileMovement->StopMovementImmediately();
+		ProjectileMovement->Deactivate();
+	}
+	if (ProjectileEffect)
+	{
+		ProjectileEffect->DeactivateImmediate();
+		ProjectileEffect->SetHiddenInGame(true);
+	}
+
+	SetActorEnableCollision(false);
+	SetActorHiddenInGame(true);
+	SetActorTickEnabled(false);
+
+	OnDeactivated();
+}
+
+void ABaseProjectile::ResetProjectile()
+{
+	// 다음 사용을 위한 내부 상태 초기화
+	if (ProjectileMovement)
+	{
+		ProjectileMovement->Velocity = FVector::ZeroVector;
+	}
+
+	OnReset();
+}
 
 
 void ABaseProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
                             FVector NormalImpulse, const FHitResult& Hit)
 {
-	ProjectileMovement->StopMovementImmediately();
-	ProjectileEffect->Deactivate();
+	if (ProjectileMovement)
+	{
+		ProjectileMovement->StopMovementImmediately();
+	}
+	if (ProjectileEffect)
+	{
+		ProjectileEffect->Deactivate();
+	}
+
+	ApplyDamageOnHit(Hit);
+	
 	if (HitEffect)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), HitEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
 	}
+
+	if (OwningPool)
+	{
+		OwningPool->Release(this);
+	}
+	else
+	{
+		Destroy();
+	}
+}
+
+void ABaseProjectile::ApplyDamageOnHit(const FHitResult& HitResult)
+{
+	AActor* HitActor = HitResult.GetActor();
+	if (!HitActor || HitActor == GetOwner()) return;
+
+	AController* IntigatorController = GetInstigator() ? GetInstigator()->GetController() : nullptr;
+
+	UGameplayStatics::ApplyPointDamage(HitActor, Damage, GetVelocity().GetSafeNormal(), HitResult, IntigatorController, this, UDamageType::StaticClass());
 }

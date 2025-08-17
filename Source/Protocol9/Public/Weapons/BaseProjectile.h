@@ -8,6 +8,7 @@ class UNiagaraSystem;
 class USphereComponent;
 class UProjectileMovementComponent;
 class UNiagaraComponent;
+class AProjectilePool;
 
 UCLASS(Abstract)
 class PROTOCOL9_API ABaseProjectile : public AActor
@@ -17,7 +18,12 @@ class PROTOCOL9_API ABaseProjectile : public AActor
 public:	
 	ABaseProjectile();
 	void FireInDirection(const FVector& ShootDirection);
+	void ActivateProjectile(const FVector& SpawnLocation, const FRotator& SpawnRotation, const FVector& Velocity, AActor* InOwner = nullptr, APawn* InInstigator = nullptr);
+	void DeactivateProjectile();
+	void ResetProjectile();
+
 	void SetDamage(float NewDamage) {Damage = NewDamage;}
+	void SetOwningPool(AProjectilePool* InPool) { OwningPool = InPool;}
 	
 protected:
 	virtual void BeginPlay() override;
@@ -32,10 +38,21 @@ protected:
 	UNiagaraSystem* HitEffect;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Property")
 	float Damage;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Property")
+	float LifeTime = 3.0f;
+	
+	FTimerHandle LifeTimerHandle;
 	
 	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
+	virtual void ApplyDamageOnHit(const FHitResult& HitResult);
+	
+	virtual  void OnActivated() {}
+	virtual void OnDeactivated() {}
+	virtual void OnReset() {}
+	
 private:
-
+	UPROPERTY()
+	AProjectilePool* OwningPool = nullptr;
 };
