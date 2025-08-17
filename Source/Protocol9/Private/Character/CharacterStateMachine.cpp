@@ -58,6 +58,8 @@ void UCharacterStateMachine::HandleCharacterDeath()
 void UCharacterStateMachine::HandleWeaponChange(EWeaponType NewWeaponType)
 {
 	CurrentWeapon = NewWeaponType;
+	FString EnumAsString = UEnum::GetDisplayValueAsText(CurrentWeapon).ToString();
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("CurrentWeapon: %s"), *EnumAsString));
 }
 
 void UCharacterStateMachine::SetState(ECharacterState NewState)
