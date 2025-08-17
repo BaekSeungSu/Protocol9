@@ -7,6 +7,7 @@
 #include "Character/StaminaComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "LevelUp/LevelUpRow.h"
+#include "UI/PlayerUIComponent.h"
 
 
 
@@ -30,15 +31,17 @@ void ULevelUpComponent::BeginPlay()
 		HPComp = MyCharacter->FindComponentByClass<UHPComponent>();
 		SpeedComp = MyCharacter->FindComponentByClass<UControlComponent>();
 		StaminaComp = MyCharacter->FindComponentByClass<UStaminaComponent>();
+		PlayerUIComp= MyCharacter->FindComponentByClass<UPlayerUIComponent>(); 
 
 		// 캐릭터의 레벨업 이벤트에 현재 컴포넌트의 OnCharacterLeveledUp 함수를 바인딩
 		MyCharacter->LevelUPEvent.AddDynamic(this, &ULevelUpComponent::OnCharacterLeveledUp);
 	}
 
+	//스탯 레벨 초기화 
 	StatLevels.Add(TEXT("Speed Bonus"),   0);
 	StatLevels.Add(TEXT("Damage Bonus"),  0);
 	StatLevels.Add(TEXT("Health Bonus"),  0);
-	StatLevels.Add(TEXT("CoolDownDash"),  0);
+	StatLevels.Add(TEXT("CDDash"),  0);
 }
 
 int32 ULevelUpComponent::GetStatLevel(FName StatName) const
@@ -68,6 +71,7 @@ void ULevelUpComponent::ShowLevelUpUI()
        UE_LOG(LogTemp, Error, TEXT("LevelUpDataTable or LevelUpUserWidgetClass is not set."));
        return;
     }
+	if (PlayerUIComp) { PlayerUIComp->HideCrosshair(); }        //크로스헤어 숨김 
 	// 데이터 테이블에서 모든 레벨업 옵션 가져오기
     TArray<FLevelUpRow*> AllRows;
     static const FString ContextString = TEXT("LevelUp");
@@ -131,7 +135,7 @@ void ULevelUpComponent::ApplyLevelUpChoice(FLevelUpRow ChosenOption)
     {
        ApplyHealthStat(ChosenOption.Value);
     }
-    else if (ChosenOption.Name==TEXT("Decrease DashCD"))
+    else if (ChosenOption.Name==TEXT("CDDash"))
     {
        ApplyStaminaStat(ChosenOption.Value);
     }
@@ -159,6 +163,7 @@ void ULevelUpComponent::ApplyLevelUpChoice(FLevelUpRow ChosenOption)
 			WorldSettings->SetTimeDilation(1.0f);
 		}
 	}
+	if (PlayerUIComp) { PlayerUIComp->ShowCrosshair(); }  // 크로스헤어 다시 표시
 }
 
 void ULevelUpComponent::ApplyAttackStat(float Value)

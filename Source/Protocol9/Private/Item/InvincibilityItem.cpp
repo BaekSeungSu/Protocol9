@@ -7,7 +7,7 @@
 AInvincibilityItem::AInvincibilityItem()
 	: AffectedPlayer(nullptr)
 {
-	ItemDuration = 3.0f;
+	ItemDuration = 5.0f;
 	ItemType = "InvincibilityItem";
 }
 

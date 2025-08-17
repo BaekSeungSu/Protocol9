@@ -8,7 +8,7 @@ ASpeedItem::ASpeedItem()
 : AffectedPlayer(nullptr)
 {
 	MultiSpeed = 1.5f;
-	ItemDuration = 3.0f;
+	ItemDuration = 7.0f;
 	ItemType = "SpeedItem";
 }
 

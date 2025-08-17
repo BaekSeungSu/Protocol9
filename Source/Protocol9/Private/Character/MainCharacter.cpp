@@ -423,7 +423,7 @@ void AMainCharacter::HandleInvincibilityEffect()
 		GetWorld()->GetTimerManager().SetTimer(InvincibilityResetHandle, [this]()
 		{
 			CachedHUD->ShowInvincibilityEffect(false);
-		}, 3.f, false);
+		}, 5.f, false);
 	}
 }
 
