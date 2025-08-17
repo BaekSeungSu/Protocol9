@@ -194,8 +194,6 @@ public:
 	// UI:탄약 업데이트용 함수
 	/*UFUNCTION()
 	void HandleAmmoChanged(int32 CurrentAmmo, int32 MaxAmmo);*/
-
-
 	
 	UFUNCTION(BlueprintCallable, Category = "AnimEvents")
 	void OnNotify_EquipWeapon();

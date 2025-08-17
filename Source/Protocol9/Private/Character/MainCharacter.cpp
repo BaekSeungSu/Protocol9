@@ -60,7 +60,7 @@ void AMainCharacter::InitCharacterInfo()
 	Exp = 0;
 	MaxExp = 100;
 	CharacterLevel = 1;
-	CurrentWeaponType = EWeaponType::Rifle;
+	CurrentWeaponType = EWeaponType::Pistol;
 }
 
 void AMainCharacter::EquipDefaultWeapon()
