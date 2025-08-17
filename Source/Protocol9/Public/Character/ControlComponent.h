@@ -88,11 +88,12 @@ public:
 	void SetMaxSpeed(float NewMaxSpeed);
 	UFUNCTION(BlueprintPure,Category="Speed")
 	float GetMaxSpeed() const {return MaxSpeed;};
+
 	UFUNCTION()
 	void AddSpeed(float Multiplier);
-	//������ ���ǵ� ���� ���� �Լ�
 	UFUNCTION()
 	void ResetSpeed();
+	int32 SpeedBoostRefCount = 0;    
 	
 	void DoNothing (){};
 

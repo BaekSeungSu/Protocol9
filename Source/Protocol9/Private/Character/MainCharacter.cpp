@@ -115,13 +115,21 @@ void AMainCharacter::CacheHUD()
 //아이템 공격력 증가 함수
 void AMainCharacter::AddAttack(float Multiplied)
 {
-	CurrentAttack *= Multiplied;
+	if (AttactBoostRefCount == 0)
+	{
+		CurrentAttack *= Multiplied;
+	}
+	++AttactBoostRefCount;
 	UE_LOG(LogTemp, Warning,TEXT("Increased	My Attack : %f"),CurrentAttack);
 }
 //아이템 공격력 증가 리셋 함수
 void AMainCharacter::ResetAttack()
 {
-	CurrentAttack = Attack;
+	AttactBoostRefCount = FMath::Max(AttactBoostRefCount - 1, 0);
+	if (AttactBoostRefCount == 0)
+	{
+		CurrentAttack = Attack;
+	}
 	UE_LOG(LogTemp, Warning,TEXT("Return My Attack : %f"),CurrentAttack);
 }
 
@@ -399,7 +407,7 @@ void AMainCharacter::LevelUp()
 {
 	if (Exp >= MaxExp)
 	{
-		
+		UE_LOG(LogTemp, Display, TEXT("Current Level :  %d"), CharacterLevel);
 		CharacterLevel++;
 
 		Attack += LevelUpAttack;
@@ -437,7 +445,7 @@ void AMainCharacter::HandleSpeedBoostEffect()
 		GetWorld()->GetTimerManager().SetTimer(SpeedBoostResetHandle, [this]()
 		{
 			CachedHUD->ShowSpeedBoostEffect(false);
-		}, 3.f, false);
+		}, 7.f, false);
 	}
 }
 
@@ -451,7 +459,7 @@ void AMainCharacter::HandleAttackBoostEffect()
 		GetWorld()->GetTimerManager().SetTimer(AttackBoostResetHandle, [this]()
 		{
 			CachedHUD->ShowAttackBoostEffect(false);
-		}, 5.f, false);
+		}, 7.f, false);
 	}
 }
 void AMainCharacter::HandleHPChanged(float CurrentHP)

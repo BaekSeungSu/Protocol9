@@ -137,6 +137,8 @@ public:
 	//아이템 공격력 증가 리셋 함수
 	UFUNCTION()
 	void ResetAttack();
+
+	int32 AttactBoostRefCount = 0;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	UAnimMontage* MeleeMontage;
