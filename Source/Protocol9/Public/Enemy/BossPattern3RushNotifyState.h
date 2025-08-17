@@ -19,7 +19,7 @@ public:
 
 public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Rush")
-    float SpeedMultiplier = 3.0f;
+    float SpeedMultiplier = 4.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Rush")
     float ArriveThreshold = 150.f;

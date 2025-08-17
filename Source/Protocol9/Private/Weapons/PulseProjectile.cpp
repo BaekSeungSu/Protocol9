@@ -23,16 +23,22 @@ void APulseProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 			FColor::Red,
 			FString::Printf(TEXT("Hit!")));
 	}
+
+	const FVector ExplosionOrigin = Hit.ImpactPoint;
+	
 	if (OtherActor && OtherActor != this && OtherActor != GetOwner())
 	{
 		TArray<AActor*> IgnoreActors;
-		AActor* MyOwner = GetOwner();
-		if (MyOwner)
+		if (AActor* MyOwner = GetOwner())
 		{
 			IgnoreActors.Add(MyOwner);
 		}
+		if (APawn* Inst = GetInstigator())
+		{
+			IgnoreActors.Add(Inst);
+		}
 		IgnoreActors.Add(this);
-		UGameplayStatics::ApplyRadialDamage(GetWorld(), Damage, GetVelocity().GetSafeNormal(), DamageRadius, UDamageType::StaticClass(), IgnoreActors, this, GetInstigatorController(), false, ECC_Visibility);
+		UGameplayStatics::ApplyRadialDamage(GetWorld(), Damage, ExplosionOrigin, DamageRadius, UDamageType::StaticClass(), IgnoreActors, this, GetInstigatorController(), false, ECC_Visibility);
 	}
 
 	if (HitSound)
