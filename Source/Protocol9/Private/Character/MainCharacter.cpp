@@ -58,8 +58,9 @@ void AMainCharacter::InitCharacterInfo()
 	Attack = BasetAttack; 
 	CurrentAttack = Attack;
 	Exp = 0;
-	MaxExp = 100;
+	MaxExp = 1000;
 	CharacterLevel = 1;
+	LevelIncreasedEXP = 250;
 }
 
 void AMainCharacter::EquipDefaultWeapon()
@@ -413,6 +414,8 @@ void AMainCharacter::LevelUp()
 		//Attack += LevelUpAttack;
 
 		Exp -= MaxExp;
+
+		MaxExp += LevelIncreasedEXP;
 
 		LevelUPEvent.Broadcast(CharacterLevel);
 		ExpChanged.Broadcast(Exp);//UI 경험치바 초기화 

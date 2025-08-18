@@ -30,9 +30,9 @@ protected:
 
 	AMainCharacter* Owner;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "HP")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HP")
 	float MaxHP;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "HP")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HP")
 	float CurrentHP;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "HP")
 	bool bIsDead;

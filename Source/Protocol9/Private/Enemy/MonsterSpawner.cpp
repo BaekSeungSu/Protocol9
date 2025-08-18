@@ -40,7 +40,7 @@ void AMonsterSpawner::BeginPlay()
 	CurrentSpawnLevel = Player->GetCharacterLevel();
 	if (CurrentSpawnLevel == 0)
 		return;
-	SpawnMonstersForLevel(CurrentSpawnLevel);
+	GetWorldTimerManager().SetTimer(FirstSpawnTimerHandle,this,&AMonsterSpawner::FirstSpawn, 0.1f, false);
 	Player->LevelUPEvent.RemoveDynamic(this, &AMonsterSpawner::SpawnLevelUp);
 	Player->LevelUPEvent.AddDynamic(this, &AMonsterSpawner::SpawnLevelUp);
 }
@@ -208,6 +208,12 @@ void AMonsterSpawner::DeleteAllMonsters()
 	{
 		Monster->DeleteMonster();
 	}
+}
+
+void AMonsterSpawner::FirstSpawn()
+{
+	SpawnMonstersForLevel(1);
+	GetWorldTimerManager().ClearTimer(FirstSpawnTimerHandle);
 }
 
 
