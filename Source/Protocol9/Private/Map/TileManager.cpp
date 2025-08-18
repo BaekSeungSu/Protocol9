@@ -63,13 +63,11 @@ int32 ATileManager::GetPlayerTileCoord() const
 {
 	if (!Character)
 	{
-		UE_LOG(LogTemp,Warning,TEXT("NO CHARACTER"));
 		return -1;
 	}
 
 	if (!TileArray.IsValidIndex(4) || !TileArray[4])
 	{
-		UE_LOG(LogTemp,Warning,TEXT("TILE4 INVALID"));
 		return -1;
 	}
 
@@ -85,12 +83,10 @@ int32 ATileManager::GetPlayerTileCoord() const
 
 	if (TileX < -1 || TileX > 1 || TileY < -1 || TileY > 1)
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("Character out of tile range! Coord: %d, %d"), TileX, TileY);
 		return -1;
 	}
 	
 	int32 Index = (1 - TileX) * 3 + (TileY + 1); // 0~8로 변환
-	//UE_LOG(LogTemp, Warning, TEXT("Character is on tile index: %d"), Index);
 
 	return Index;
 }

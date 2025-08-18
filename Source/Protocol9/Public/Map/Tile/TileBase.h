@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Weapons/Pickup_Weapon.h"
 #include "TileBase.generated.h"
 
 USTRUCT(BlueprintType)
@@ -91,6 +92,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Spawn")
 	void RebuildInstances();
 
+	void HandlePickUpConsumed(APickup_Weapon* Self);
 	
 #if WITH_EDITOR
 	void PrintIndex();

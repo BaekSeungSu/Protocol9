@@ -3,6 +3,7 @@
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/RotatingMovementComponent.h"
+#include "Weapons/Pickup_Weapon.h"
 
 // Sets default values
 ATileBase::ATileBase()
@@ -66,8 +67,7 @@ void ATileBase::GenerateInstances()
 				FMath::FRandRange(Center.Y - Extents.Y, Center.Y + Extents.Y),
 				0
 			);
-
-			// === 컴포넌트 단위 겹침 검사 ===
+			
 			TArray<AActor*> IgnoreActors;
 			IgnoreActors.Add(this);
 
@@ -255,6 +255,11 @@ void ATileBase::SpawnWeapons()
 				Rot->SetUpdatedComponent(NewWeaponActor->GetRootComponent());
 				Rot->RegisterComponent();
 			}
+
+			if (APickup_Weapon* PW = Cast<APickup_Weapon>(NewWeaponActor))
+			{
+				PW->OnConsumed.AddUObject(this, &ATileBase::HandlePickUpConsumed);
+			}
 			SpawnedWeapons.Add(NewWeaponActor);
 			++Spawned;
 		}
@@ -264,6 +269,32 @@ void ATileBase::SpawnWeapons()
 void ATileBase::RebuildInstances()
 {
 	GenerateInstances();
+}
+
+void ATileBase::HandlePickUpConsumed(APickup_Weapon* Self)
+{
+	if (!HasAuthority() || !IsValid(Self))
+		return;
+
+	UClass* SameClass = Self->GetClass();
+
+	TArray<AActor*> SnapShot = SpawnedWeapons;
+
+	for (AActor* Actor : SnapShot)
+	{
+		APickup_Weapon* PW = Cast<APickup_Weapon>(Actor);
+		if (!IsValid(PW) || PW == Self) continue;
+
+		if (PW->GetOwner() != this)
+			continue;
+
+		if (PW->GetClass() == SameClass)
+		{
+			PW->Destroy();
+		}
+	}
+
+	SpawnedWeapons.RemoveAll([](AActor* Actor){ return !IsValid(Actor); });
 }
 
 #if WITH_EDITOR

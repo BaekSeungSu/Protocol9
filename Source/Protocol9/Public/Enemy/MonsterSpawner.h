@@ -59,6 +59,7 @@ protected:
 private:
 	TMap<TSubclassOf<AMonsterBase>, int32> SpawnedCount;
 	FTimerHandle FirstSpawnTimerHandle;
+	bool bIsBossSpawning =false;
 	UFUNCTION()
 	void FirstSpawn();
 };

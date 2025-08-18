@@ -45,17 +45,17 @@ void UBossPattern2SweepNotifyState::NotifyTick(USkeletalMeshComponent* MeshComp,
         Overlapped
     );
     
-    DrawDebugBox(
-        Boss->GetWorld(),
-        BoxCenter,
-        BoxHalfSize,
-        Boss->GetActorRotation().Quaternion(),
-        bHit ? FColor::Red : FColor::Green,
-        false,
-        0.1f,
-        0,
-        2.0f
-    );
+    // DrawDebugBox(
+    //     Boss->GetWorld(),
+    //     BoxCenter,
+    //     BoxHalfSize,
+    //     Boss->GetActorRotation().Quaternion(),
+    //     bHit ? FColor::Red : FColor::Green,
+    //     false,
+    //     0.1f,
+    //     0,
+    //     2.0f
+    // );
     
     if (bHit)
     {

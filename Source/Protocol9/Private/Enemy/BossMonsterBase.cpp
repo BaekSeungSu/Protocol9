@@ -78,19 +78,19 @@ float ABossMonsterBase::TakeDamage(float DamageAmount, struct FDamageEvent const
 {
 	
 	float ActualDamage = Super::TakeDamage(DamageAmount*DefenceModifier, DamageEvent, EventInstigator, DamageCauser);
-	// ✅ HP가 변했으니 UI 갱신
+	
 	if (AMainGameMode* GM = Cast<AMainGameMode>(UGameplayStatics::GetGameMode(this)))
 	{
-		GM->UpdateBossHPUI(CurrentHP, MaxHP);    // HUD ProgressBar 업데이트 :contentReference[oaicite:12]{index=12}
+		GM->UpdateBossHPUI(CurrentHP, MaxHP);
 	}
 	if ((CurrentHP / MaxHP) < 0.5f)
 	{
 		
-		UE_LOG(LogTemp, Warning, TEXT("HP가 50 이하로 떨어졌습니다. Current HP: %f, Max HP: %f"), CurrentHP, MaxHP);
+		//UE_LOG(LogTemp, Warning, TEXT("HP가 50 이하로 떨어졌습니다. Current HP: %f, Max HP: %f"), CurrentHP, MaxHP);
 	}
 	if (!bHasEnteredPhase2 && !bIsPhaseChanging && (CurrentHP / MaxHP) < 0.5f)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("HP가 50 이하로 떨어졌습니다. Phase2로 전환합니다."));
+		//UE_LOG(LogTemp, Warning, TEXT("HP가 50 이하로 떨어졌습니다. Phase2로 전환합니다."));
 		StartPhase2Transition();
 	}
 	
@@ -134,7 +134,7 @@ void ABossMonsterBase::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterru
 	{
 		if (Montage->GetName() == "AM_BossCrunchPattern03")
 		{
-			UE_LOG(LogTemp, Warning, TEXT("AM_BossCrunchPattern03 Ended"));
+			//UE_LOG(LogTemp, Warning, TEXT("AM_BossCrunchPattern03 Ended"));
 			ExtraDistance = BaseExtraDistance;
 		}
 		if (TargetPlayer.IsValid() && IsInAttackRange(20.0f) && bShouldContinueAttacking)
@@ -162,10 +162,10 @@ bool ABossMonsterBase::IsAttackRelatedMontage(UAnimMontage* Montage)
 
 		for (const auto& Row : AllRows)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Row->AnimMontage: %s"), *Row->AnimMontage->GetName());
+			//UE_LOG(LogTemp, Warning, TEXT("Row->AnimMontage: %s"), *Row->AnimMontage->GetName());
 			if (Montage == Row->AnimMontage)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Montage = %s"), *Montage->GetName());
+				//UE_LOG(LogTemp, Warning, TEXT("Montage = %s"), *Montage->GetName());
 				return true;
 			}
 		}
@@ -185,10 +185,10 @@ FVector ABossMonsterBase::GetTargetMonsterLocation() const
 		{
 			return NavLocation.Location;
 		}
-		UE_LOG(LogTemp, Warning, TEXT("NavSys is NULL"));
+		//UE_LOG(LogTemp, Warning, TEXT("NavSys is NULL"));
 		return TargetLocation;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("TargetPlayer is NULL"));
+	//UE_LOG(LogTemp, Warning, TEXT("TargetPlayer is NULL"));
 	return GetActorLocation();
 }
 
@@ -250,7 +250,7 @@ void ABossMonsterBase::StartOverlayEffect()
 void ABossMonsterBase::UpdateOverlayEffect()
 {
 	CurrentOverlayValue += 10.0f;
-	UE_LOG(LogTemp, Warning, TEXT("CurrentOverlayValue: %f"), CurrentOverlayValue);
+	//UE_LOG(LogTemp, Warning, TEXT("CurrentOverlayValue: %f"), CurrentOverlayValue);
 	if (CurrentOverlayValue >= 300.0f)
 	{
 		CurrentOverlayValue = 300.0f;

@@ -461,10 +461,6 @@ void AMainGameMode::OnRestartClicked()
     }
 
     UGameplayStatics::OpenLevel(this, FName(TEXT("TestMap")));
-    if (UMainGameInstance* GI = GetGameInstance<UMainGameInstance>())
-    {
-        GI->PlayMenuBGM();
-    }
 }
 
 void AMainGameMode::OnReturnMenuClicked()

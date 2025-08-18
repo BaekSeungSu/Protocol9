@@ -3,24 +3,38 @@
 void UMainGameInstance::Init()
 {
 	Super::Init();
+
 	EnsureMusicComp();
+	
+	FCoreUObjectDelegates::PreLoadMap.AddUObject(this, &UMainGameInstance::OnPreLoadMap);
+	FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &UMainGameInstance::OnPostLoadMap);
+	FWorldDelegates::OnWorldCleanup.AddUObject(this, &UMainGameInstance::OnWorldCleanup);
+	
+	if (UWorld* World = GetWorld())
+	{
+		RegisterAudioToWorld(World);
+	}
 }
 
 void UMainGameInstance::Shutdown()
 {
-	// 안전 종료
 	if (MusicComp)
 	{
 		if (MusicComp->IsPlaying())
 			MusicComp->Stop();
 
-		if (MusicComp->IsRegistered())
-			MusicComp->UnregisterComponent();
+		if (UWorld* CompWorld = MusicComp->GetWorld())
+		{
+			UnregisterAudioFromWorld(CompWorld);
+		}
 
 		MusicComp->DestroyComponent();
 		MusicComp = nullptr;
 	}
-	CurrentCue = nullptr;
+	
+	FCoreUObjectDelegates::PreLoadMap.RemoveAll(this);
+	FCoreUObjectDelegates::PostLoadMapWithWorld.RemoveAll(this);
+	FWorldDelegates::OnWorldCleanup.RemoveAll(this);
 
 	Super::Shutdown();
 }
@@ -28,19 +42,18 @@ void UMainGameInstance::Shutdown()
 bool UMainGameInstance::EnsureMusicComp()
 {
 	UWorld* World = GetWorld();
-	if (!World || World->bIsTearingDown)          // 월드가 없거나 종료 중이면 작업 금지
+	if (!World || World->bIsTearingDown)         
 		return false;
 
 	if (!IsValid(MusicComp))
 	{
-		MusicComp = NewObject<UAudioComponent>(this);  // Outer = GameInstance
+		MusicComp = NewObject<UAudioComponent>(this); 
 		MusicComp->bAutoActivate        = false;
 		MusicComp->bIsUISound           = true;
 		MusicComp->bAllowSpatialization = false;
 		MusicComp->bAutoDestroy         = false;
 	}
-
-	// 현재 등록된 월드와 다르면 재등록
+	
 	if (!MusicComp->IsRegistered() || MusicComp->GetWorld() != World)
 	{
 		if (MusicComp->IsRegistered())
@@ -48,14 +61,49 @@ bool UMainGameInstance::EnsureMusicComp()
 
 		MusicComp->RegisterComponentWithWorld(World);
 	}
-
-	// 방어: 이미 PendingKill 등 비정상 상태면 실패처리
+	
 	if (!IsValid(MusicComp) || !MusicComp->IsRegistered())
 		return false;
 
 	return true;
 }
+void UMainGameInstance::RegisterAudioToWorld(UWorld* World)
+{
+	if (MusicComp && World && !MusicComp->IsRegistered())
+	{
+		MusicComp->RegisterComponentWithWorld(World);
+	}
+}
 
+void UMainGameInstance::UnregisterAudioFromWorld(UWorld* World)
+{
+	if (MusicComp && MusicComp->IsRegistered() && MusicComp->GetWorld() == World)
+	{
+		MusicComp->Stop();
+		MusicComp->UnregisterComponent();
+	}
+}
+
+void UMainGameInstance::OnPreLoadMap(const FString& /*MapName*/)
+{
+	if (UWorld* World = GetWorld())
+	{
+		// 맵 교체 직전에 등록 해제
+		UnregisterAudioFromWorld(World);
+	}
+}
+
+void UMainGameInstance::OnPostLoadMap(UWorld* LoadedWorld)
+{
+	// 새 월드에 재등록
+	RegisterAudioToWorld(LoadedWorld);
+}
+
+void UMainGameInstance::OnWorldCleanup(UWorld* World, bool /*bSessionEnded*/, bool /*bCleanupResources*/)
+{
+	// 청소 대상 월드에 붙어 있으면 반드시 해제
+	UnregisterAudioFromWorld(World);
+}
 bool UMainGameInstance::PlayBGMInternal(USoundBase* Cue, float FadeInTime, float Volume)
 {
 	if (!EnsureMusicComp())                                  // 월드/컴포넌트 준비 안 됐으면 실패
