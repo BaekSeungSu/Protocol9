@@ -16,13 +16,7 @@ void ARifleProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 	FVector NormalImpulse, const FHitResult& Hit)
 {
 	Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1,
-			2.0f,
-			FColor::Red,
-			FString::Printf(TEXT("Hit!")));
-	}
+	
 	if (OtherActor && OtherActor != this && OtherActor != GetOwner())
 	{
 		UGameplayStatics::ApplyPointDamage(OtherActor, Damage, GetVelocity().GetSafeNormal(), Hit, GetInstigatorController(), this, UDamageType::StaticClass());
