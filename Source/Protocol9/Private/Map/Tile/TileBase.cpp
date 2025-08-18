@@ -2,6 +2,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Components/SceneComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "GameFramework/RotatingMovementComponent.h"
 
 // Sets default values
 ATileBase::ATileBase()
@@ -19,6 +20,7 @@ void ATileBase::BeginPlay()
 {
 	Super::BeginPlay();
 	GenerateInstances();
+	SpawnWeapons();
 }
 
 void ATileBase::ClearPreviousInstances()
@@ -176,6 +178,89 @@ void ATileBase::GenerateInstances()
 		}
 	}
 }
+
+void ATileBase::SpawnWeapons()
+{
+	UWorld* World = GetWorld();
+	if (!World || WeaponSpecs.IsEmpty())
+		return;
+
+	const FBox TileBounds = StaticMeshComponent->Bounds.GetBox();
+	const FVector TileCenter = TileBounds.GetCenter();
+	const FVector TileExtent = TileBounds.GetExtent();
+
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypeQuery=
+		{
+			UEngineTypes::ConvertToObjectType(ECC_WorldStatic),
+			UEngineTypes::ConvertToObjectType(ECC_WorldDynamic),
+		};
+
+	TArray<AActor*> IgnoreActors;
+	IgnoreActors.Add(this);
+
+	for (const FWeaponSpec& Spec : WeaponSpecs)
+	{
+		if (!Spec.Class)
+			continue;
+
+		int32 Spawned = 0;
+
+		while (Spawned < Spec.Count)
+		{
+			FVector SpawnLocation =
+				{
+					FMath::RandRange(TileCenter.X-TileExtent.X, TileCenter.X+TileExtent.X),
+					FMath::RandRange(TileCenter.Y-TileExtent.Y, TileCenter.Y+TileExtent.Y)
+					,Spec.ZOffset
+				};
+			
+			TArray<AActor*> OverlappedActors;
+
+			UKismetSystemLibrary::SphereOverlapActors(
+				World,
+				SpawnLocation,
+				Spec.ClearRadius,
+				ObjectTypeQuery,
+				nullptr,
+				IgnoreActors,
+				OverlappedActors
+				);
+
+			if (OverlappedActors.Num() > 0)
+				continue;
+
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this;
+			SpawnParams.SpawnCollisionHandlingOverride =
+				ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+			AActor* NewWeaponActor= World->SpawnActor<AActor>(
+				Spec.Class,
+				SpawnLocation,
+				FRotator::ZeroRotator,
+				SpawnParams);
+
+			NewWeaponActor->SetActorScale3D(Spec.Scale);
+			if (!IsValid(NewWeaponActor))
+				continue;
+
+			NewWeaponActor->AttachToActor(this, FAttachmentTransformRules::KeepWorldTransform);
+
+			//빙글뱅글 돌리기
+			if (IsValid(NewWeaponActor))
+			{
+				auto* Rot = NewObject<URotatingMovementComponent>(NewWeaponActor, TEXT("Rotator"));
+				Rot->RotationRate = FRotator(0.f, 120.f, 0.f);
+				Rot->bRotationInLocalSpace = true;
+				Rot->SetUpdatedComponent(NewWeaponActor->GetRootComponent());
+				Rot->RegisterComponent();
+			}
+			SpawnedWeapons.Add(NewWeaponActor);
+			++Spawned;
+		}
+	}
+}
+
 void ATileBase::RebuildInstances()
 {
 	GenerateInstances();

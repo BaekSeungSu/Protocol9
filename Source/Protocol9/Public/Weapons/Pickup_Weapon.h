@@ -4,6 +4,7 @@
 #include "GameFramework/Actor.h"
 #include "Pickup_Weapon.generated.h"
 
+class UParticleSystemComponent;
 class AMainCharacter;
 class AWeaponBase;
 class UStaticMeshComponent;
@@ -27,6 +28,8 @@ protected:
 	UStaticMeshComponent* WeaponMesh;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
 	USphereComponent* SphereCollision;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Components")
+	UParticleSystemComponent* PickupEffect;
 	UPROPERTY()
 	AMainCharacter* OverlappingCharacter;
 	

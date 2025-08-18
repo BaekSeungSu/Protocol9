@@ -11,9 +11,30 @@ struct FSpawnSpec
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<AActor> Class;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(ClampMin="0"))
 	int32 Count = 0;
+};
+
+USTRUCT(BlueprintType)
+struct FWeaponSpec
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<AActor> Class = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 Count = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector Scale = {1.0f, 1.0f,1.0f};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float ZOffset = 0.0f ;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float ClearRadius = 300.f; // 빈자리 검사 반경, 무기 크기 만큼은 비우기, 넉넉하게 300쯤
 };
 
 UCLASS()
@@ -31,7 +52,7 @@ private:
 	// 내부 함수
 	void ClearPreviousInstances();
 	void GenerateInstances();
-
+	void SpawnWeapons();    
 public:
 	// 컴포넌트
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -48,6 +69,14 @@ public:
 	UPROPERTY()
 	TArray<AActor*> SpawnedClass;
 
+	// 무기 스폰 리스트
+	UPROPERTY(VisibleAnywhere)
+	TArray<AActor*> SpawnedWeapons;
+
+	// 생성된 무기 추적
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Spawn|Weapon")
+	TArray<FWeaponSpec> WeaponSpecs;
+
 	// 중첩 방지 반경
 	UPROPERTY(EditAnywhere, Category = "Instance")
 	float SpawnRadius = 50.f;
@@ -61,6 +90,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category="Spawn")
 	void RebuildInstances();
+
 	
 #if WITH_EDITOR
 	void PrintIndex();
