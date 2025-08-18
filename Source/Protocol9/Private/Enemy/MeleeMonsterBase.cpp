@@ -62,7 +62,7 @@ void AMeleeMonsterBase::AttackCheck()
 	
 	TArray<AActor*> OverlappedActors;
 
-	UE_LOG(LogTemp, Warning, TEXT("BoxOverlapActors"));
+	//UE_LOG(LogTemp, Warning, TEXT("BoxOverlapActors"));
 	bool bHit = UKismetSystemLibrary::BoxOverlapActors(
 		GetWorld(),                
 		BoxCenter,          
@@ -73,20 +73,20 @@ void AMeleeMonsterBase::AttackCheck()
 		OverlappedActors    
 	);
 	const FColor Color = bHit ? FColor::Red : FColor::Green;
-	DrawDebugBox(
-		GetWorld(),                
-		BoxCenter,                      
-		AttackBoxHalfSize,                   
-		GetActorRotation().Quaternion(), 
-		Color,
-		false,                     
-		1.0f,                     
-		0,                               
-		2.0f                         
-	);
+	// DrawDebugBox(
+	// 	GetWorld(),                
+	// 	BoxCenter,                      
+	// 	AttackBoxHalfSize,                   
+	// 	GetActorRotation().Quaternion(), 
+	// 	Color,
+	// 	false,                     
+	// 	1.0f,                     
+	// 	0,                               
+	// 	2.0f                         
+	// );
 	if (bHit)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Overlap Hit: %d"), OverlappedActors.Num());
+		//UE_LOG(LogTemp, Warning, TEXT("Overlap Hit: %d"), OverlappedActors.Num());
 
 		TSet<AActor*> DamagedActors;
 		for (AActor* HitActor : OverlappedActors)
@@ -101,8 +101,7 @@ void AMeleeMonsterBase::AttackCheck()
 					this,
 					UDamageType::StaticClass()
 				);
-				UE_LOG(LogTemp, Warning, TEXT("%s에게 %f의 데미지를 입혔습니다!"),
-					   *PlayerCharacter->GetName(), AttackDamage);
+				//UE_LOG(LogTemp, Warning, TEXT("%s에게 %f의 데미지를 입혔습니다!"),*PlayerCharacter->GetName(), AttackDamage);
 				DamagedActors.Add(PlayerCharacter);
 			}
 		}

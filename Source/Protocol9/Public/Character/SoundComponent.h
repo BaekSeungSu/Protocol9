@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Sound/SoundCue.h"
 #include "SoundComponent.generated.h"
 
 class AMainCharacter;

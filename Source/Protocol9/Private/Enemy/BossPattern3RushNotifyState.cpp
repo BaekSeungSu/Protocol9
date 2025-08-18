@@ -65,14 +65,14 @@ void UBossPattern3RushNotifyState::NotifyTick(USkeletalMeshComponent* MeshComp, 
         Boss, BoxCenter, HitBoxHalfSize, ObjTypes, nullptr, Ignore, Overlaps
     );
     
-    DrawDebugBox(
-        Boss->GetWorld(),
-        BoxCenter,
-        HitBoxHalfSize,
-        Boss->GetActorRotation().Quaternion(),
-        bHit ? FColor::Red : FColor::Green,
-        false, 0.05f, 0, 2.0f
-    );
+    // DrawDebugBox(
+    //     Boss->GetWorld(),
+    //     BoxCenter,
+    //     HitBoxHalfSize,
+    //     Boss->GetActorRotation().Quaternion(),
+    //     bHit ? FColor::Red : FColor::Green,
+    //     false, 0.05f, 0, 2.0f
+    // );
 
     if (!bHit) return;
     

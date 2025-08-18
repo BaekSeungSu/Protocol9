@@ -256,10 +256,10 @@ FVector AMonsterBase::GetTargetMonsterLocation() const
 		{
 			return NavLocation.Location;
 		}
-		UE_LOG(LogTemp, Warning, TEXT("NavSys is NULL"));
+		//UE_LOG(LogTemp, Warning, TEXT("NavSys is NULL"));
 		return TargetLocation;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("TargetPlayer is NULL"));
+	//UE_LOG(LogTemp, Warning, TEXT("TargetPlayer is NULL"));
 	return GetActorLocation();
 }
 
@@ -459,15 +459,14 @@ float AMonsterBase::TakeDamage(float DamageAmount, struct FDamageEvent const& Da
                                class AController* EventInstigator, AActor* DamageCauser)
 {
 	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	UE_LOG(LogTemp, Warning, TEXT("Damage Type : %s , Damage Amount: %f"), *DamageEvent.DamageTypeClass->GetName(),
-	       ActualDamage);
+	//UE_LOG(LogTemp, Warning, TEXT("Damage Type : %s , Damage Amount: %f"), *DamageEvent.DamageTypeClass->GetName(),ActualDamage);
 	if (DamageEvent.IsOfType(FPointDamageEvent::ClassID))
 	{
 		const FPointDamageEvent* PointEvent = static_cast<const FPointDamageEvent*>(&DamageEvent);
-		UE_LOG(LogTemp, Warning, TEXT("Hit Bone: %s"), *PointEvent->HitInfo.BoneName.ToString());
+		//UE_LOG(LogTemp, Warning, TEXT("Hit Bone: %s"), *PointEvent->HitInfo.BoneName.ToString());
 		if (*PointEvent->HitInfo.BoneName.ToString() == FName("head") || *PointEvent->HitInfo.BoneName.ToString() == FName("neck_01"))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("★★★★★★★★★★ Head Shot! ★★★★★★★★★★"));
+			//UE_LOG(LogTemp, Warning, TEXT("★★★★★★★★★★ Head Shot! ★★★★★★★★★★"));
 			ActualDamage *= 2.0f;
 		}
 	}
