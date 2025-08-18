@@ -58,7 +58,7 @@ void AMainCharacter::InitCharacterInfo()
 	Attack = BasetAttack; 
 	CurrentAttack = Attack;
 	Exp = 0;
-	MaxExp = 100;
+	MaxExp = 1000;
 	CharacterLevel = 1;
 	LevelIncreasedEXP = 250;
 }
