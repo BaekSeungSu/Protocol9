@@ -159,7 +159,7 @@ public:
 	int GetExp() const {return Exp;}
 	int GetCharacterLevel() const {return CharacterLevel;}
 
-	void SetAttack(int NewAttack);
+	void SetAttack(float NewAttack);
 	void SetExp(int Exp);
 	void SetLevel(int Level);
 	void AddExp(int NewExp);

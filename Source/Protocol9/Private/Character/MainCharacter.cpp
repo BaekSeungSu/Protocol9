@@ -54,7 +54,7 @@ AMainCharacter::AMainCharacter()
 void AMainCharacter::InitCharacterInfo()
 {
 	BasetAttack = 20.0f;
-	LevelUpAttack = 1.2f;
+	//LevelUpAttack = 1.2f;
 	Attack = BasetAttack; 
 	CurrentAttack = Attack;
 	Exp = 0;
@@ -352,11 +352,11 @@ void AMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	}
 }
 
-void AMainCharacter::SetAttack(int NewAttack)
+void AMainCharacter::SetAttack(float NewAttack)
 {
 	if (NewAttack > 0)
 	{
-		Attack = NewAttack;
+		CurrentAttack  = NewAttack;
 	}
 }
 
@@ -409,8 +409,6 @@ void AMainCharacter::LevelUp()
 	{
 		UE_LOG(LogTemp, Display, TEXT("Current Level :  %d"), CharacterLevel);
 		CharacterLevel++;
-
-		Attack += LevelUpAttack;
 
 		Exp -= MaxExp;
 
