@@ -17,6 +17,8 @@ public:
 	UPROPERTY(meta=(BindWidget)) class UButton* Btn_Restart;
 	UPROPERTY(meta=(BindWidget)) class UButton* Btn_Return;
 
+	UPROPERTY(meta=(BindWidget)) class UButton* Btn_Quit;
+
 protected:
 	virtual void NativeConstruct() override;
 
