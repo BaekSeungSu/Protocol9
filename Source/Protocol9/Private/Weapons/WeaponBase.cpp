@@ -334,7 +334,10 @@ void AWeaponBase::FireProjectile()
 	ABaseProjectile* SpawnedProjectile = GetWorld()->SpawnActor<ABaseProjectile>(CurrentWeaponData->ProjectileClass, MuzzleLocation, ProjectileRotation, SpawnParams);
 	if (SpawnedProjectile)
 	{
-		SpawnedProjectile->SetDamage(CurrentWeaponData->Damage);
+		const float BaseDamage = CurrentWeaponData->Damage;
+		const float AttackBonus = OwningCharacter->GetAttackBonus();
+		const float FinalDamage = BaseDamage * (1.0f + AttackBonus);
+		SpawnedProjectile->SetDamage(FinalDamage);
 		SpawnedProjectile->FireInDirection(FireDirection);
 	}
 	
@@ -346,7 +349,11 @@ void AWeaponBase::ProcessHit(const FHitResult& HitResult, const FVector& ShotDir
 	if (HitActor)
 	{
 		AController* OwnerController = GetOwner()->GetInstigatorController();
-		UGameplayStatics::ApplyPointDamage(HitActor, CurrentWeaponData->Damage, ShotDirection, HitResult, OwnerController, this, UDamageType::StaticClass());
+		const float BaseDamage = CurrentWeaponData->Damage;
+		const float AttackBonus = OwningCharacter->GetAttackBonus();
+		const float FinalDamage = BaseDamage * (1.0f + AttackBonus);
+		UGameplayStatics::ApplyPointDamage(HitActor, FinalDamage, ShotDirection, HitResult, OwnerController, this, UDamageType::StaticClass());
+		UE_LOG(LogTemp, Log, TEXT("Damage Dealt: %f (Base: %f, Bonus: %.2f%%)"), FinalDamage, BaseDamage, AttackBonus * 100.0f);
 	}
 
 	if (CurrentWeaponData->HitParticle)

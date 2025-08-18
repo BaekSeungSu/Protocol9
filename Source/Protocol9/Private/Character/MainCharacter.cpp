@@ -356,7 +356,7 @@ void AMainCharacter::SetAttack(float NewAttack)
 {
 	if (NewAttack > 0)
 	{
-		CurrentAttack  = NewAttack;
+		CurrentAttack = NewAttack;
 	}
 }
 
@@ -409,6 +409,8 @@ void AMainCharacter::LevelUp()
 	{
 		UE_LOG(LogTemp, Display, TEXT("Current Level :  %d"), CharacterLevel);
 		CharacterLevel++;
+
+		//Attack += LevelUpAttack;
 
 		Exp -= MaxExp;
 

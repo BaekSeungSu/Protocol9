@@ -33,45 +33,45 @@ void ULevelUpComponent::BeginPlay()
 		StaminaComp = MyCharacter->FindComponentByClass<UStaminaComponent>();
 		PlayerUIComp= MyCharacter->FindComponentByClass<UPlayerUIComponent>(); 
 
-		// Ä³¸¯ÅÍÀÇ ·¹º§¾÷ ÀÌº¥Æ®¿¡ ÇöÀç ÄÄÆ÷³ÍÆ®ÀÇ OnCharacterLeveledUp ÇÔ¼ö¸¦ ¹ÙÀÎµù
+		// Ä³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìºï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ OnCharacterLeveledUp ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Îµï¿½
 		MyCharacter->LevelUPEvent.AddDynamic(this, &ULevelUpComponent::OnCharacterLeveledUp);
 	}
 
-	//½ºÅÈ ·¹º§ ÃÊ±âÈ­ 
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­ 
 	StatLevels.Add(TEXT("Speed Bonus"),   0);
 	StatLevels.Add(TEXT("Damage Bonus"),  0);
 	StatLevels.Add(TEXT("Health Bonus"),  0);
 	StatLevels.Add(TEXT("CDDash"),  0);
 
-	// bIsLevelUpOpen: ÇöÀç ·¹º§¾÷ UI°¡ ¶° ÀÖ´ÂÁö
-	// PendingLevelUps: UI°¡ ¿­¸° µ¿¾È Ãß°¡·Î µé¾î¿Â ·¹º§¾÷ °³¼ö
+	// bIsLevelUpOpen: ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ UIï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´ï¿½ï¿½ï¿½
+	// PendingLevelUps: UIï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	bIsLevelUpOpen = false;
 	PendingLevelUps = 0;
 }
 
 int32 ULevelUpComponent::GetStatLevel(FName StatName) const
 {
-	// ÇöÀç ½ºÅÈ °­È­ ·¹º§ Á¶È¸. Å°°¡ ¾øÀ¸¸é 0 ¸®ÅÏ
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È­ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¸. Å°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 0 ï¿½ï¿½ï¿½ï¿½
 	if (const int32* Found = StatLevels.Find(StatName)) return *Found;
 	return 0;
 }
 
 void ULevelUpComponent::IncrementStatLevel(const FName& StatName)
 {
-	// ÇØ´ç ½ºÅÈ ·¹º§ +1 (»óÇÑ 10)
+	// ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ +1 (ï¿½ï¿½ï¿½ï¿½ 10)
 	int32& Lvl = StatLevels.FindOrAdd(StatName);
 	Lvl = FMath::Clamp(Lvl + 1, 0, 10);
 }
 
 void ULevelUpComponent::OnCharacterLeveledUp(int32 CharacterLevel)
 {
-	//ÀÌ¹Ì UI°¡ ¶°ÀÖÀ¸¸é ´ë±âÄ«¿îÆ®¸¸ Áõ°¡ 
+	//ï¿½Ì¹ï¿½ UIï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ä«ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 
 	if (bIsLevelUpOpen)
 	{
 		++PendingLevelUps;
 		return;
 	}
-	//ÃÖÃÊ ÇÑ¹ø¸¸ ÀÏ½ÃÁ¤Áö
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½Ñ¹ï¿½ï¿½ï¿½ ï¿½Ï½ï¿½ï¿½ï¿½ï¿½ï¿½
 	if (UWorld* World = GetWorld())
 	{
 		if (AWorldSettings* WS = World->GetWorldSettings())
@@ -79,7 +79,7 @@ void ULevelUpComponent::OnCharacterLeveledUp(int32 CharacterLevel)
 			WS->SetTimeDilation(0.0f);
 		}
 	}
-	//·¹º§¾÷ UI ÇÔ¼ö È£Ãâ
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ UI ï¿½Ô¼ï¿½ È£ï¿½ï¿½
 	ShowLevelUpUI();
 }
 
@@ -90,13 +90,13 @@ void ULevelUpComponent::ShowLevelUpUI()
        UE_LOG(LogTemp, Error, TEXT("LevelUpDataTable or LevelUpUserWidgetClass is not set."));
        return;
     }
-	if (PlayerUIComp) { PlayerUIComp->HideCrosshair(); }        //Å©·Î½ºÇì¾î ¼û±è 
-	// µ¥ÀÌÅÍ Å×ÀÌºí¿¡¼­ ¸ðµç ·¹º§¾÷ ¿É¼Ç °¡Á®¿À±â
+	if (PlayerUIComp) { PlayerUIComp->HideCrosshair(); }        //Å©ï¿½Î½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìºï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½É¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     TArray<FLevelUpRow*> AllRows;
     static const FString ContextString = TEXT("LevelUp");
     LevelUpDataTable->GetAllRows<FLevelUpRow>(ContextString, AllRows);
 
-	// À¯È¿ÇÑ ¿É¼Ç¸¸ ¸®½ºÆ®¿¡ ÀúÀå
+	// ï¿½ï¿½È¿ï¿½ï¿½ ï¿½É¼Ç¸ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     TArray<FLevelUpRow> AvailableOptions;
     for (FLevelUpRow* Row : AllRows)
     {
@@ -106,7 +106,7 @@ void ULevelUpComponent::ShowLevelUpUI()
     	}
     }
 
-	// ·£´ýÇÏ°Ô ÃÖ´ë 3°³ÀÇ ¿É¼ÇÀ» »Ì±â
+	// ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Ö´ï¿½ 3ï¿½ï¿½ï¿½ï¿½ ï¿½É¼ï¿½ï¿½ï¿½ ï¿½Ì±ï¿½
     TArray<FLevelUpRow> ChosenOptions;
     int32 OptionsToChoose = FMath::Min(3, AvailableOptions.Num());
 	if (AvailableOptions.Num() > 0)
@@ -119,17 +119,17 @@ void ULevelUpComponent::ShowLevelUpUI()
 		}
 	}
 
-	// ÇÃ·¹ÀÌ¾î ÄÁÆ®·Ñ·¯ °¡Á®¿À±â
+	// ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½Æ®ï¿½Ñ·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	if (PlayerController)
 	{
-		//³²¾ÆÀÖ´ø À§Á¬ Á¤¸®
+		//ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		if (IsValid(LevelUpUserWidget))
 		{
 			LevelUpUserWidget->RemoveFromRoot();
 			LevelUpUserWidget = nullptr;
 		}
-		// ½ÇÁ¦ ·¹º§¾÷ À§Á¬ »ý¼º
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		ULevelUpUserWidget* Widget = CreateWidget<ULevelUpUserWidget>(PlayerController, LevelUpUserWidgetClass);
 		if (Widget)
 		{
@@ -139,7 +139,7 @@ void ULevelUpComponent::ShowLevelUpUI()
 			PlayerController->SetInputMode(FInputModeUIOnly());
 			PlayerController->bShowMouseCursor = true;
 
-			// ¸â¹ö¿¡ º¸°ü(Àç»ç¿ë/Á¦°Å/°Ë»ç¿ë)
+			// ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½/ï¿½Ë»ï¿½ï¿½)
 			LevelUpUserWidget = Widget;
 			bIsLevelUpOpen = true;
 		}
@@ -166,39 +166,39 @@ void ULevelUpComponent::ApplyLevelUpChoice(FLevelUpRow ChosenOption)
     }
 	IncrementStatLevel(ChosenOption.Name);
 
-	//Ui°¡ ¶° ÀÖ´Â µ¿¾È Ãß°¡ ·¹º§¾÷ÀÌ ÀÖ´Â °æ¿ì
+	//Uiï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½
 	if (PendingLevelUps>0)
 	{
-		// UI´Â ´ÝÁö ¸»°í °°Àº À§Á¬¿¡ ¡°»õ ¿É¼Ç¸¸¡± ´Ù½Ã Ã¤¿ö¼­ ÇÑ ¹ø ´õ °í¸£°Ô ÇÔ
+		// UIï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½É¼Ç¸ï¿½ï¿½ï¿½ ï¿½Ù½ï¿½ Ã¤ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
 		--PendingLevelUps;
-		BuildAndSendOptions();   //»õ·Î¿î ¿É¼ÇÀ» »Ì¾Æ À§Á¬¿¡ ¼¼ÆÃÇÏ´Â ÇÔ¼ö 
+		BuildAndSendOptions();   //ï¿½ï¿½ï¿½Î¿ï¿½ ï¿½É¼ï¿½ï¿½ï¿½ ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½ 
 		return;
 	}
-	if (UWorld* World = GetWorld()) // GetWorld()°¡ À¯È¿ÇÑÁö È®ÀÎ
+	if (UWorld* World = GetWorld()) // GetWorld()ï¿½ï¿½ ï¿½ï¿½È¿ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
 	{
 		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(World, 0);
 		if(PlayerController)
 		{
-			// À§Á¬ Á¦°Å
+			// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			if (IsValid(LevelUpUserWidget))
 			{
 				LevelUpUserWidget->RemoveFromParent();
 				LevelUpUserWidget = nullptr;
 			}
 
-			// ÀÔ·Â ¸ðµå º¹±¸
+			// ï¿½Ô·ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 			PlayerController->SetInputMode(FInputModeGameOnly());
 			PlayerController->bShowMouseCursor = false;
 		}
     
-		// GetWorldSettings()¸¦ »ç¿ëÇÏ±â Àü¿¡ GetWorld()°¡ À¯È¿ÇÑÁö È®ÀÎ
+		// GetWorldSettings()ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ GetWorld()ï¿½ï¿½ ï¿½ï¿½È¿ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½
 		if (AWorldSettings* WorldSettings = World->GetWorldSettings())
 		{
 			WorldSettings->SetTimeDilation(1.0f);
 			UE_LOG(LogTemp, Display, TEXT("LevelUp Level Up Event END!!"));
 		}
 	}
-	if (PlayerUIComp) { PlayerUIComp->ShowCrosshair(); }  // Å©·Î½ºÇì¾î ´Ù½Ã Ç¥½Ã
+	if (PlayerUIComp) { PlayerUIComp->ShowCrosshair(); }  // Å©ï¿½Î½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù½ï¿½ Ç¥ï¿½ï¿½
 	bIsLevelUpOpen = false;
 }
 

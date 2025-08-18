@@ -46,8 +46,8 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
 	float BasetAttack;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
-	float LevelUpAttack;
+	/*UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
+	float LevelUpAttack;*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
 	float Attack;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
@@ -155,7 +155,8 @@ public:
 	void SetupDeathCamera();
 	void ResetCameraToDefault();
 	
-	int GetAttack() const{return Attack;}
+	float GetAttack() const{return CurrentAttack;}
+	float GetAttackBonus() const { return (CurrentAttack/5.f) * 0.1f;}
 	int GetExp() const {return Exp;}
 	int GetCharacterLevel() const {return CharacterLevel;}
 
