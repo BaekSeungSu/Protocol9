@@ -39,6 +39,5 @@ void APulseProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, U
 	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), HitSound, GetActorLocation());
 	}
-	DrawDebugSphere(GetWorld(), GetActorLocation(), DamageRadius, 10, FColor::Red, false, 1.0f);	
 	Destroy();
 }
