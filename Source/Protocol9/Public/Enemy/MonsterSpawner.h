@@ -58,4 +58,7 @@ protected:
 	void DeleteAllMonsters();
 private:
 	TMap<TSubclassOf<AMonsterBase>, int32> SpawnedCount;
+	FTimerHandle FirstSpawnTimerHandle;
+	UFUNCTION()
+	void FirstSpawn();
 };

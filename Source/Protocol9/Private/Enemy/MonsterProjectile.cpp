@@ -133,6 +133,8 @@ void AMonsterProjectile::Explode(FVector ExplosionLocation)
     
     AddNearbyMonstersToIgnoreList(IgnoredActors, ExplosionLocation);
 
+    DrawDebugSphere(GetWorld(), ExplosionLocation, ExplosionRadius, 32, FColor::Red, false, 3.0f, 0, 2.0f );
+    
     UGameplayStatics::ApplyRadialDamageWithFalloff(
         GetWorld(),
         ExplosionDamage,        
