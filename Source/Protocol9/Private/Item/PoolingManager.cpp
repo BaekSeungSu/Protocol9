@@ -4,6 +4,8 @@
 #include "Item/ItemBox.h"
 #include "Enemy/MonsterSpawner.h"
 #include "Item/ObjectPoolingComponent.h"
+#include "Engine/World.h"
+#include "Map/Tile/TileBase.h"
 
 
 APoolingManager::APoolingManager()
@@ -36,14 +38,29 @@ void APoolingManager::BeginPlay()
 		}
 	}
 	// 월드에 있는 모든 AItemBox 액터를 찾습니다.
-	TArray<AActor*> FoundeBox;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AItemBox::StaticClass(), FoundeBox);
-	for (AActor* FoundeBoxActor : FoundeBox)
+	TArray<AActor*> FoundBoxes;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AItemBox::StaticClass(), FoundBoxes);
+	for (AActor* A : FoundBoxes)
 	{
-		AItemBox* Box = Cast<AItemBox>(FoundeBoxActor);
-		if (Box)
+		auto* Box = Cast<AItemBox>(A);
+		if (!IsValid(Box)) continue;
+
+		
+		AActor* BoxOwner  = Box->GetOwner();
+		if (!BoxOwner  || !BoxOwner ->IsA(ATileBase::StaticClass()))
+			continue;
+
+		if (!Box->OnBoxDestroyedLocation.IsAlreadyBound(this, &APoolingManager::BoxDestroyedLocation))
+			Box->OnBoxDestroyedLocation.AddDynamic(this, &APoolingManager::BoxDestroyedLocation);
+	}
+
+	if (HasAuthority())
+	{
+		if (UWorld* World = GetWorld())
 		{
-			Box->OnBoxDestroyedLocation.AddDynamic(this,&APoolingManager::BoxDestroyedLocation);
+			ActorSpawnedHandle = World->AddOnActorSpawnedHandler(
+				FOnActorSpawned::FDelegate::CreateUObject(this, &APoolingManager::HandleActorSpawned)
+			);
 		}
 	}
 }
@@ -71,11 +88,31 @@ void APoolingManager::MonsterDeathLocation(FVector Location)
 	}
 }
 
+void APoolingManager::HandleActorSpawned(AActor* SpawnedActor)
+{
+	if (!HasAuthority() || !IsValid(SpawnedActor)) return;
+
+	// 1) 박스 클래스만
+	if (!SpawnedActor->IsA(AItemBox::StaticClass())) return;
+
+	// 2) 소유자(owner)가 타일일 때만 (무한맵 방어)
+	AActor* BoxOwner  = SpawnedActor->GetOwner();
+	if (!BoxOwner  || !BoxOwner ->IsA(ATileBase::StaticClass()))
+		return;
+	AItemBox* NewBox = CastChecked<AItemBox>(SpawnedActor);
+	if (!NewBox->OnBoxDestroyedLocation.IsAlreadyBound(this, &APoolingManager::BoxDestroyedLocation))
+	{
+		NewBox->OnBoxDestroyedLocation.AddDynamic(this, &APoolingManager::BoxDestroyedLocation);
+	}
+}
+
+
 void APoolingManager::BoxDestroyedLocation(FVector Location)
 {
-	UObjectPoolingComponent* PoolingComp = FindComponentByClass<UObjectPoolingComponent>();
-	if (!PoolingComp) return;
+	if (!HasAuthority() || !ObjectPoolingComponent) return;
 
-	PoolingComp -> SpawnRandomItem(Location);
+
+	ObjectPoolingComponent->SpawnRandomItem(Location);
 }
+
 

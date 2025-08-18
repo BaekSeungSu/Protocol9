@@ -53,7 +53,6 @@ void AWeaponBase::Reload_Implementation()
 	StopFire_Implementation();
 	
 	StateMachine->SetState(ECharacterState::Reload);
-	UE_LOG(LogTemp, Warning, TEXT("Reload"));
 
 	UAnimMontage* ReloadMontage = GetReloadMontage();
 	if (ReloadMontage)
@@ -191,7 +190,6 @@ bool AWeaponBase::CanFire() const
 {
 	if (CurrentAmmo <=0 || CurrentWeaponData == nullptr)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Can not Fire"));
 		return false;
 	}
 
@@ -264,8 +262,7 @@ void AWeaponBase::FireHitScan()
 	}
 	else
 	{
-		DrawDebugLine(GetWorld(), MuzzleLocation, TraceEnd, FColor::Red, false, 2.0f, 0, 2.0f);
-		UE_LOG(LogTemp, Error, TEXT("Miss"));
+
 	}
 	
 }
@@ -353,7 +350,6 @@ void AWeaponBase::ProcessHit(const FHitResult& HitResult, const FVector& ShotDir
 		const float AttackBonus = OwningCharacter->GetAttackBonus();
 		const float FinalDamage = BaseDamage * (1.0f + AttackBonus);
 		UGameplayStatics::ApplyPointDamage(HitActor, FinalDamage, ShotDirection, HitResult, OwnerController, this, UDamageType::StaticClass());
-		UE_LOG(LogTemp, Log, TEXT("Damage Dealt: %f (Base: %f, Bonus: %.2f%%)"), FinalDamage, BaseDamage, AttackBonus * 100.0f);
 	}
 
 	if (CurrentWeaponData->HitParticle)
@@ -398,7 +394,6 @@ void AWeaponBase::FinishReload()
 	if (!CurrentWeaponData) return;
 
 	CurrentAmmo = CurrentWeaponData->MagazineSize;
-	UE_LOG(LogTemp, Warning, TEXT("Reload Finish"));
 	// UI 추가
 	if (AMainGameMode* GM = Cast<AMainGameMode>(UGameplayStatics::GetGameMode(this)))
 	{
@@ -415,7 +410,3 @@ void AWeaponBase::CancelReload()
 		OwningCharacter->GetStateMachine()->SetState(ECharacterState::Idle);
 	}
 }
-
-
-
-

@@ -186,10 +186,6 @@ void UControlComponent::MeleeAttack()
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(GetOwner());
 	
-#if ENABLE_DRAW_DEBUG
-	DrawDebugBox(GetWorld(), End, MeleeBoxHalfSize, BoxRotation.Quaternion(), FColor::Red, false, 1.0f);
-#endif
-
 	bool bHit = GetWorld()->SweepMultiByObjectType(
 		HitResults,
 		Start,
@@ -228,9 +224,6 @@ void UControlComponent::MeleeAttack()
 				}
 			}
 		}
-		
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("MeleeAttack Complete"));
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("%d"), HitActors.Num()));
 
 	}
 

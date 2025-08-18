@@ -60,12 +60,7 @@ void UStaminaComponent::UseStamina()
 {
 	CurrentStaminaCount--;
 	StaminaChanged.Broadcast(CurrentStaminaCount);
-	
-	GEngine->AddOnScreenDebugMessage(-1,
-			2.0f,
-			FColor::Green,
-			FString::Printf(TEXT("Current Stamina %d"), CurrentStaminaCount));
-	
+
 	if (!GetOwner()->GetWorldTimerManager().IsTimerActive(StaminaChargeTimer))
 	{
 		GetOwner()->GetWorldTimerManager().SetTimer(
@@ -83,11 +78,6 @@ void UStaminaComponent::ChargeStamina()
 	{
 		CurrentStaminaCount++;
 		StaminaChanged.Broadcast(CurrentStaminaCount);
-		
-		GEngine->AddOnScreenDebugMessage(-1,
-					2.0f,
-					FColor::Green,
-					FString::Printf(TEXT("Current Stamina %d"), CurrentStaminaCount));
 		
 		GetOwner()->GetWorldTimerManager().SetTimer(
 		StaminaChargeTimer,
