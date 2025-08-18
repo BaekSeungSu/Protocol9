@@ -7,6 +7,7 @@
 #include "Enemy/MonsterSpawner.h"
 #include "PoolingManager.generated.h"
 
+
 class UObjectPoolingComponent;
 
 UCLASS()
@@ -32,4 +33,7 @@ protected:
 	UFUNCTION()
 	void BoxDestroyedLocation(FVector Location);
 
+	void HandleActorSpawned(AActor* SpawnedActor);
+
+	FDelegateHandle ActorSpawnedHandle;
 };
