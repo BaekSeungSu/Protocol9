@@ -79,6 +79,7 @@ bool APickup_Weapon::TryConsume(AMainCharacter* Interactor)
 		if (bAdded)
 		{
 			bConsumed = true;
+			OnConsumed.Broadcast(this);
 			Destroy();
 			return true;
 		}
