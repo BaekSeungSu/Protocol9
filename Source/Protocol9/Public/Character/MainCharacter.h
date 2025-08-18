@@ -52,10 +52,12 @@ protected:
 	float Attack;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
 	float CurrentAttack;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Exp")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Exp")
 	int Exp;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Exp")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Exp")
 	int MaxExp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Exp")
+	int LevelIncreasedEXP;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Exp")
 	int CharacterLevel;
 	

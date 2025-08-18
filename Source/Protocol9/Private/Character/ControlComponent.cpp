@@ -69,12 +69,19 @@ void UControlComponent::Move(const FInputActionValue& Value)
 	
 	if (!FMath::IsNearlyZero(MoveInput.X))
 	{
-		//FVector direction = FRotationMatrix(Owner->GetControlRotation()).GetScaledAxis(EAxis::X);
 		FVector direction = Owner->GetActorForwardVector();
 
+		
 		direction = FVector(direction.X, direction.Y, 0.f).GetSafeNormal();
 		
-		Owner->AddMovementInput(direction, MoveInput.X);
+		if ( MoveInput.X < 0 )
+		{
+			Owner->AddMovementInput(direction, MoveInput.X * 0.85f);
+		}
+		else
+		{
+			Owner->AddMovementInput(direction, MoveInput.X);
+		}
 	}
 	
 	if (!FMath::IsNearlyZero(MoveInput.Y))
