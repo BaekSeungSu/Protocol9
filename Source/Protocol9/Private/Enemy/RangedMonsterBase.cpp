@@ -19,7 +19,7 @@ void ARangedMonsterBase::PerformAttack()
 	
 	if (AttackMontage && GetMesh() && GetMesh()->GetAnimInstance())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Montage Played"));
+		//UE_LOG(LogTemp, Warning, TEXT("Montage Played"));
 		GetMesh()->GetAnimInstance()->Montage_Play(AttackMontage);
 	}
 }

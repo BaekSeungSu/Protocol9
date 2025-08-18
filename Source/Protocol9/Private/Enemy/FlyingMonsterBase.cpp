@@ -33,11 +33,11 @@ FVector AFlyingMonsterBase::GetTargetMonsterLocation() const
 	if (TargetPlayer.IsValid())
 	{
 		FVector PlayerLocation = TargetPlayer->GetActorLocation();
-		UE_LOG(LogTemp, Log, TEXT("PlayerLocation : %s"), *PlayerLocation.ToString());
+		//UE_LOG(LogTemp, Log, TEXT("PlayerLocation : %s"), *PlayerLocation.ToString());
 		PlayerLocation.Z += FlyingHeight; // 플레이어 위 일정 높이
 		return PlayerLocation;
 	}
-	UE_LOG(LogTemp, Log, TEXT("TargetPlayer is NULL"));
+	//UE_LOG(LogTemp, Log, TEXT("TargetPlayer is NULL"));
 	return GetActorLocation();
 }
 

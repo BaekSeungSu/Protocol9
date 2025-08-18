@@ -12,7 +12,7 @@ void UFlyingProjectileSpawnNotify::Notify(USkeletalMeshComponent* MeshComp, UAni
 	}
 	if (AFlyingMonsterBase* FlyingMonster = Cast<AFlyingMonsterBase>(MeshComp->GetOwner()))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Spawn Projectile"));
+		//UE_LOG(LogTemp, Warning, TEXT("Spawn Projectile"));
 		FlyingMonster->SpawnProjectile();
 	}
 }

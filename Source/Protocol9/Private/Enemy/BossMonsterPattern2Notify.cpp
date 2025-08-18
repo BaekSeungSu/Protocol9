@@ -18,23 +18,23 @@ void UBossMonsterPattern2Notify::Notify(USkeletalMeshComponent* MeshComp, UAnimS
                                       const FAnimNotifyEventReference& EventReference)
 {
 	Super::Notify(MeshComp, Animation, EventReference);
-	UE_LOG(LogTemp, Warning, TEXT("Notify Called"));
+	//UE_LOG(LogTemp, Warning, TEXT("Notify Called"));
 	if (!MeshComp)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("MeshComp is null"));
+		//UE_LOG(LogTemp, Warning, TEXT("MeshComp is null"));
 		return;
 	}
 		
 	AActor* Owner = MeshComp->GetOwner();
 	if (!Owner)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Owner is null"));
+		//UE_LOG(LogTemp, Warning, TEXT("Owner is null"));
 		return;
 	}
 	ABossMonsterBase* Boss = Cast<ABossMonsterBase>(Owner);
 	if (!Boss)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Boss is null"));
+		//UE_LOG(LogTemp, Warning, TEXT("Boss is null"));
 		return;
 	}
 	
@@ -48,7 +48,7 @@ void UBossMonsterPattern2Notify::Notify(USkeletalMeshComponent* MeshComp, UAnimS
 	
 	TArray<AActor*> OverlappedActors;
 
-	UE_LOG(LogTemp, Warning, TEXT("BoxOverlapActors"));
+	//UE_LOG(LogTemp, Warning, TEXT("BoxOverlapActors"));
 	bool bHit = UKismetSystemLibrary::BoxOverlapActors(
 		Boss,                
 		BoxCenter,          
@@ -59,20 +59,20 @@ void UBossMonsterPattern2Notify::Notify(USkeletalMeshComponent* MeshComp, UAnimS
 		OverlappedActors    
 	);
 	const FColor Color = bHit ? FColor::Red : FColor::Green;
-	DrawDebugBox(
-		Boss->GetWorld(),                
-		BoxCenter,                      
-		BoxTraceHalfSize,                   
-		Boss->GetActorRotation().Quaternion(), 
-		Color,
-		false,                     
-		1.0f,                     
-		0,                               
-		2.0f                         
-	);
+	// DrawDebugBox(
+	// 	Boss->GetWorld(),                
+	// 	BoxCenter,                      
+	// 	BoxTraceHalfSize,                   
+	// 	Boss->GetActorRotation().Quaternion(), 
+	// 	Color,
+	// 	false,                     
+	// 	1.0f,                     
+	// 	0,                               
+	// 	2.0f                         
+	// );
 	if (bHit)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Overlap Hit: %d"), OverlappedActors.Num());
+		//UE_LOG(LogTemp, Warning, TEXT("Overlap Hit: %d"), OverlappedActors.Num());
 
 		TSet<AActor*> DamagedActors;
 		for (AActor* HitActor : OverlappedActors)
@@ -87,9 +87,7 @@ void UBossMonsterPattern2Notify::Notify(USkeletalMeshComponent* MeshComp, UAnimS
 					Boss,
 					UDamageType::StaticClass()
 				);
-				UE_LOG(LogTemp, Warning, TEXT("%s에게 %f의 데미지를 입혔습니다!"),
-					   *PlayerCharacter->GetName(), Damage);
-				DamagedActors.Add(PlayerCharacter);
+				//UE_LOG(LogTemp, Warning, TEXT("%s에게 %f의 데미지를 입혔습니다!"),*PlayerCharacter->GetName(), Damage);DamagedActors.Add(PlayerCharacter);
 			}
 		}
 	}
