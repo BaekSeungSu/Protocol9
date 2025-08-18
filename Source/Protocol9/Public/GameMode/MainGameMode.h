@@ -78,6 +78,9 @@ public:
     UFUNCTION(BlueprintCallable) void OnBossSpawned(class ABossMonsterBase* Boss);
     UFUNCTION(BlueprintCallable) void UpdateBossHPUI(float Current, float Max);
     UFUNCTION(BlueprintCallable) void ShowBossHP(bool bVisible);
+
+    UFUNCTION()
+    void OnQuitClicked();
 private:
     UPROPERTY() UUserWidget* CurrentWidget = nullptr;
     UPROPERTY() UUWBP_HUD*   HUDWidget     = nullptr;

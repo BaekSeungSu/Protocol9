@@ -355,6 +355,7 @@ void AMonsterBase::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted
 
 void AMonsterBase::OnDeath()
 {
+
 	if (CurrentState == EMonsterState::Dead)
 	{
 		return;

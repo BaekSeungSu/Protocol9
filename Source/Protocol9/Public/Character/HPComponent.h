@@ -69,5 +69,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "HP")
 	void UnlockHealth();
 	
-	
+	int32 InvincibleRefCount = 0;
+	bool IsInvincible() const { return InvincibleRefCount > 0; }
 };

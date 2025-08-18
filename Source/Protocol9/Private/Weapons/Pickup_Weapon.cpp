@@ -1,5 +1,5 @@
 #include "Weapons/Pickup_Weapon.h"
-
+#include "Particles/ParticleSystemComponent.h"
 #include "Character/CharacterStateMachine.h"
 #include "Weapons/WeaponBase.h"
 #include "Character/MainCharacter.h"
@@ -10,17 +10,20 @@ APickup_Weapon::APickup_Weapon()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
-	SetRootComponent(WeaponMesh);
-	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
 	SphereCollision = CreateDefaultSubobject<USphereComponent>(TEXT("SphereCollision"));
-	SphereCollision->SetupAttachment(GetRootComponent());
+	SetRootComponent(SphereCollision);
 	SphereCollision->InitSphereRadius(120.f);
 	SphereCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	SphereCollision->SetCollisionResponseToAllChannels(ECR_Ignore);
 	SphereCollision->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 
+	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
+	WeaponMesh->SetupAttachment(GetRootComponent());
+	WeaponMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	
+	PickupEffect = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("PickupEffect"));
+	PickupEffect->SetupAttachment(GetRootComponent());
+	
 	OverlappingCharacter = nullptr;
 	bConsumed = false;
 }

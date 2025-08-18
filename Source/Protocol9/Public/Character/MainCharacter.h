@@ -46,8 +46,8 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
 	float BasetAttack;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
-	float LevelUpAttack;
+	/*UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
+	float LevelUpAttack;*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
 	float Attack;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Attack")
@@ -139,6 +139,8 @@ public:
 	//아이템 공격력 증가 리셋 함수
 	UFUNCTION()
 	void ResetAttack();
+
+	int32 AttactBoostRefCount = 0;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	UAnimMontage* MeleeMontage;
@@ -155,11 +157,12 @@ public:
 	void SetupDeathCamera();
 	void ResetCameraToDefault();
 	
-	int GetAttack() const{return Attack;}
+	float GetAttack() const{return CurrentAttack;}
+	float GetAttackBonus() const { return (CurrentAttack/5.f) * 0.1f;}
 	int GetExp() const {return Exp;}
 	int GetCharacterLevel() const {return CharacterLevel;}
 
-	void SetAttack(int NewAttack);
+	void SetAttack(float NewAttack);
 	void SetExp(int Exp);
 	void SetLevel(int Level);
 	void AddExp(int NewExp);

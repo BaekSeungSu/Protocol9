@@ -131,6 +131,12 @@ void AMainGameMode::ShowMainMenu()
         HelpBtn->OnClicked.AddDynamic(this, &AMainGameMode::OnHelpButtonClicked);
         HelpBtn->SetClickMethod(EButtonClickMethod::PreciseClick);
     }
+    if (UButton* QuitBtn = Cast<UButton>(CurrentWidget->GetWidgetFromName(TEXT("Btn_Quit"))))
+    {
+        QuitBtn->OnClicked.Clear();
+        QuitBtn->OnClicked.AddDynamic(this, &AMainGameMode::OnQuitClicked);
+        QuitBtn->SetClickMethod(EButtonClickMethod::PreciseClick);
+    }
 
     if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
     {
@@ -399,6 +405,12 @@ void AMainGameMode::ShowResultStats()
             Stats->Btn_Return->OnClicked.AddDynamic(this, &AMainGameMode::OnReturnMenuClicked);
             Stats->Btn_Return->SetClickMethod(EButtonClickMethod::PreciseClick);
         }
+        if (Stats->Btn_Quit)
+        {
+            Stats->Btn_Quit->OnClicked.Clear();
+            Stats->Btn_Quit->OnClicked.AddDynamic(this, &AMainGameMode::OnQuitClicked);
+            Stats->Btn_Quit->SetClickMethod(EButtonClickMethod::PreciseClick);
+        }
 
         if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
         {
@@ -572,4 +584,11 @@ void AMainGameMode::ShowBossHP(bool bVisible)
 void AMainGameMode::OnBossDied()
 {
     HandleBossDefeated(); 
+}
+void AMainGameMode::OnQuitClicked()
+{
+    if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+    {
+        UKismetSystemLibrary::QuitGame(this, PC, EQuitPreference::Quit, true);
+    }
 }

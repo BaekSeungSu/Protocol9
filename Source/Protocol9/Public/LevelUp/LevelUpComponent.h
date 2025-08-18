@@ -25,6 +25,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category="LevelUp")
 	int32 GetStatLevel(FName StatName) const;
 
+	
 protected:
 	
 	virtual void BeginPlay() override;
@@ -48,7 +49,7 @@ private:
 	TSubclassOf<UUserWidget> LevelUpUserWidgetClass; 
 	// 생성된 위젯 인스턴스를 저장하는 변수
 	UPROPERTY()
-	class UUserWidget* LevelUpUserWidget;
+	class ULevelUpUserWidget* LevelUpUserWidget = nullptr;
 
 	void IncrementStatLevel(const FName& StatName);
 	
@@ -68,5 +69,10 @@ private:
 	void ApplySpeedStat(float Value);
 	
 	UPROPERTY()
-	UPlayerUIComponent* PlayerUIComp = nullptr; 
+	UPlayerUIComponent* PlayerUIComp = nullptr;
+
+	bool bIsLevelUpOpen = false;
+	int32 PendingLevelUps = 0 ;
+	
+	void BuildAndSendOptions();
 };
