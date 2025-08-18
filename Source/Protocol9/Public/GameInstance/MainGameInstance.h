@@ -48,6 +48,13 @@ private:
 
 	// 같은 곡일 때 재시작/깜빡임 방지
 	UPROPERTY(Transient) USoundBase* CurrentCue = nullptr;
+	void RegisterAudioToWorld(UWorld* World);
+	void UnregisterAudioFromWorld(UWorld* World);
+
+	// ★ 맵 로드/월드 정리 델리게이트
+	void OnPreLoadMap(const FString& MapName);
+	void OnPostLoadMap(UWorld* LoadedWorld);
+	void OnWorldCleanup(UWorld* World, bool bSessionEnded, bool bCleanupResources);
 
 public: // 에디터에서 지정
 	UPROPERTY(EditDefaultsOnly, Category="BGM") USoundBase* BGM_Menu    = nullptr; // PressAnyKey, MainMenu, Help 공통
