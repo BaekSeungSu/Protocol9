@@ -148,8 +148,6 @@ void UControlComponent::Melee(const FInputActionValue& Value)
 				
 				float duration = AnimInstance->Montage_Play(Owner->MeleeMontage);
 				
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Melee"));
-	
 				FOnMontageEnded MeleeEnded;
 				MeleeEnded.BindLambda([this](UAnimMontage* Montage, bool bInterrupted)
 				{
