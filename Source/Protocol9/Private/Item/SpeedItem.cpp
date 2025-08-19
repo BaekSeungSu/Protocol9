@@ -17,6 +17,7 @@ void ASpeedItem::ActivateItem(AActor* Activator)
 	SetActorHiddenInGame(true);
 	SetActorEnableCollision(false);
 	Super::ActivateItem(Activator);
+	GetWorld()->GetTimerManager().ClearTimer(ItemLIfeTimerHandle);
 	if (Activator && Activator ->ActorHasTag("Player"))
 	{
 		AMainCharacter* MyCharacter = Cast<AMainCharacter>(Activator);

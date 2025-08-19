@@ -123,29 +123,31 @@ AItemBase* UObjectPoolingComponent::GetPooledObjectByClass(TSubclassOf<AItemBase
 	// 풀(ObjectPool)을 순회하며 비활성화된 아이템을 찾음
     for (AItemBase* PooledItem : ObjectPool)
     {
+    	if (!IsValid(PooledItem)) continue;
+
+    	if (AActor* AsActor = Cast<AActor>(PooledItem))
+    	{
+    		if (AsActor->IsActorBeingDestroyed())      // 파괴 진행 중인 액터
+    			continue;
+    	}
+    	
     	// 아이템이 유효하고, 숨겨져 있으며, 원하는 클래스와 일치하는지 확인
-        if (PooledItem && PooledItem->IsHidden() && PooledItem->GetClass() == ItemClass)
-        {
-        	// 아이템을 활성화 상태로 변경
-            PooledItem->SetActorHiddenInGame(false);
-            PooledItem->SetActorEnableCollision(true);
-        	PooledItem->OwningPool = this;
-        	UE_LOG(LogTemp, Log, TEXT("Pool :Item '%s' spawned."), *PooledItem->GetClass()->GetName());
-            return PooledItem;
-        }
+    	if (PooledItem->bAvailableInPool && PooledItem->IsA(ItemClass))
+    	{
+    		PooledItem->OwningPool = this;
+    		PooledItem->OnAcquireFromPool(); // ★ 상태 초기화 & 표시
+    		return PooledItem;
+    	}
     }
-	UE_LOG(LogTemp, Warning, TEXT("'%s' Pool is Empty!"), *ItemClass->GetName());
     return nullptr;
 }
 
 // 사용이 끝난 아이템을 풀로 되돌리는 함수
 void UObjectPoolingComponent::ReturnObjectToPool(AItemBase* ObjectToReturn)
 {
-    if (ObjectToReturn)
+    if (IsValid(ObjectToReturn))
     {
-        ObjectToReturn->SetActorHiddenInGame(true);
-        ObjectToReturn->SetActorEnableCollision(false);
+    	ObjectToReturn->OnReturnToPool(); 
     	ObjectToReturn->OwningPool = nullptr;
-    	UE_LOG(LogTemp, Log, TEXT("'%s' Return to pool."), *ObjectToReturn->GetClass()->GetName());
     }
 }
