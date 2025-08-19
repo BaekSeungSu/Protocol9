@@ -4,6 +4,7 @@
 #include "Item/ObjectPoolingComponent.h"
 #include "Kismet/GameplayStatics.h"
 
+
 AIncreaseDamageItem::AIncreaseDamageItem()
 : AffectedPlayer(nullptr)
 {
@@ -17,6 +18,7 @@ void AIncreaseDamageItem::ActivateItem(AActor* Activator)
 	SetActorHiddenInGame(true);
 	SetActorEnableCollision(false);
 	Super::ActivateItem(Activator);
+	GetWorld()->GetTimerManager().ClearTimer(ItemLIfeTimerHandle);
 	if (Activator && Activator ->ActorHasTag("Player"))
 	{
 		AMainCharacter* MyCharacter = Cast<AMainCharacter>(Activator);
@@ -51,7 +53,7 @@ void AIncreaseDamageItem::EndEffect()
 			2.0f,
 			FColor::Red,
 			FString::Printf(TEXT("Increase Damage Effect End! ")));
-			AffectedPlayer->ResetAttack();							//������ ���� �Լ� ���� 
+			AffectedPlayer->ResetAttack();							
 	}
 	
 	GetWorld()->GetTimerManager().ClearTimer(EffectTimerHandle);

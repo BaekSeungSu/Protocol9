@@ -27,6 +27,12 @@ public:
 	UFUNCTION()
 	void ReturnToPool();
 
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
+	bool bAvailableInPool = true;
+
+	virtual void OnAcquireFromPool(); 
+	virtual void OnReturnToPool();
+
 protected:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Item")
 	FName ItemType;

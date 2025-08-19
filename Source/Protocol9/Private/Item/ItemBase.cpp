@@ -23,6 +23,57 @@ AItemBase::AItemBase()
 	ItemLifeDuration = 30.0f;
 }
 
+void AItemBase::OnAcquireFromPool()
+{
+	bAvailableInPool = false;
+
+	// 시각/충돌 리셋
+	SetActorHiddenInGame(false);
+	SetActorEnableCollision(true);
+	if (Collision) {
+		Collision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		Collision->SetGenerateOverlapEvents(true);
+	}
+
+	// 나이아가라 재시작
+	if (NiagaraComp) {
+		NiagaraComp->Deactivate();
+		// 엔진 버전에 따라 ResetSystem() 또는 ReinitializeSystem() 사용
+#if ENGINE_MAJOR_VERSION >= 5
+		NiagaraComp->ReinitializeSystem();
+#else
+		NiagaraComp->ResetSystem();
+#endif
+		NiagaraComp->Activate(true); // 0초 상태에서 재생
+	}
+
+	// 수명 타이머 재시작
+	GetWorld()->GetTimerManager().ClearTimer(ItemLIfeTimerHandle);
+	if (ItemLifeDuration > 0.f) {
+		GetWorld()->GetTimerManager().SetTimer(
+			ItemLIfeTimerHandle, this, &AItemBase::ReturnToPool, ItemLifeDuration, false);
+	}
+}
+
+void AItemBase::OnReturnToPool()
+{
+	// 타이머 정리
+	GetWorld()->GetTimerManager().ClearTimer(ItemLIfeTimerHandle);
+
+	// 나이아가라/충돌 끄기
+	if (NiagaraComp) NiagaraComp->Deactivate();
+	if (Collision) {
+		Collision->SetGenerateOverlapEvents(false);
+		Collision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+
+	// 숨김 처리
+	SetActorHiddenInGame(true);
+	SetActorEnableCollision(false);
+
+	bAvailableInPool = true;
+}
+
 void AItemBase::OnItemOverlap(
 	UPrimitiveComponent* OverlappedComp,
 	AActor* OtherActor,
