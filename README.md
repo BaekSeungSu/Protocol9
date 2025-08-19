@@ -6,7 +6,11 @@ UE5(5.6.0) 기반 1인칭 서바이벌 FPS. 웨이브를 버티며 성장하고,
 ---
 ##  시연 영상
 
-[![시연 영상 썸네일](https://img.youtube.com/vi/YEZT9bc304U/0.jpg)](https://youtu.be/YEZT9bc304U)
+<div align="center">
+  <a href="https://youtu.be/YEZT9bc304U">
+    <img src="https://img.youtube.com/vi/YEZT9bc304U/0.jpg" alt="시연 영상" width="720"/>
+  </a>
+</div>
 
 ##  프로젝트 문서 모음
 
