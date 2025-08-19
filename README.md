@@ -61,11 +61,11 @@ UE5(5.6.0) 기반 1인칭 서바이벌 FPS. 웨이브를 버티며 성장하고,
 ## 조작법 (Controls)
 
 - **이동**: W / A / S / D  
-- **사격**: 마우스 오른쪽 클릭  
+- **사격**: 마우스 왼쪽 클릭  
 - **재장전**: R  
 - **무기 교체**: E  
 - **점프**: SpaceBar  
-- **대시**: Shift  
+- **대시**: SpaceBar + Shift  
 - **근접 공격**: V
 
 ---
@@ -101,7 +101,8 @@ UE5(5.6.0) 기반 1인칭 서바이벌 FPS. 웨이브를 버티며 성장하고,
   * `UWBP_GameOver`, `UWBP_ResultStats`, `UWBP_HelpAccordion`, `PlayerUIComponent`, `CrosshairWidget`
 * **World Utility**
 
-  * `TileManager`, `FogManager`, `MinimapCapture`
+  * `TileBase`, `TileManager`, `FogManager`, `MinimapCapture`
+  오브젝트 생성, 캐릭터 위치와 타일 동기화, 미니맵 기능
 
 ---
 
