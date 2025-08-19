@@ -28,6 +28,7 @@ void UHPComponent::SetMaxHP(float NewMaxHP)
 {
 	MaxHP = NewMaxHP;
 	CurrentHP = NewMaxHP;
+	HPChanged.Broadcast(CurrentHP); //UI : 레벨업 체력 반영
 }
 
 void UHPComponent::SetCurrentHP(float NewCurrentHP)

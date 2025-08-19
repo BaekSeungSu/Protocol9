@@ -29,7 +29,7 @@ void UMonsterBaseAnimInstance::NativeInitializeAnimation()
         MonsterOwner = Cast<AMonsterBase>(OwnerPawn);
         if (!MonsterOwner)
         {
-            UE_LOG(LogTemp, Warning, TEXT("AnimInstance: Failed to cast pawn to MonsterBase"));
+            //UE_LOG(LogTemp, Warning, TEXT("AnimInstance: Failed to cast pawn to MonsterBase"));
         }
     }
     AnimationStartOffset = FMath::RandRange(0.0f, 1.0f);
@@ -112,7 +112,8 @@ void UMonsterBaseAnimInstance::UpdateCombatProperties()
 
 void UMonsterBaseAnimInstance::AnimNotify_AttackCheck() const
 {
-    UE_LOG(LogTemp,Warning, TEXT("AnimNotify"));
+    //
+    //UE_LOG(LogTemp,Warning, TEXT("AnimNotify"));
     APawn* OwnerPawn = TryGetPawnOwner();
     
     AMeleeMonsterBase* MeleeMonster = Cast<AMeleeMonsterBase>(OwnerPawn);

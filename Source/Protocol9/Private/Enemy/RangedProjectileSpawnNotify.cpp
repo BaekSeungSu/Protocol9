@@ -12,7 +12,7 @@ void URangedProjectileSpawnNotify::Notify(USkeletalMeshComponent* MeshComp, UAni
 		}
 		if (ARangedMonsterBase* RangedMonster = Cast<ARangedMonsterBase>(MeshComp->GetOwner()))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Spawn Projectile"));
+			//UE_LOG(LogTemp, Warning, TEXT("Spawn Projectile"));
 			RangedMonster->SpawnProjectile();
 		}
 	}

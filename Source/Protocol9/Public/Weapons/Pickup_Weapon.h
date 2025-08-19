@@ -10,6 +10,9 @@ class AWeaponBase;
 class UStaticMeshComponent;
 class USphereComponent;
 
+class APickup_Weapon; 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPickupConsumed, APickup_Weapon*);
+
 UCLASS()
 class PROTOCOL9_API APickup_Weapon : public AActor
 {
@@ -21,6 +24,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon")
 	TSubclassOf<AWeaponBase> WeaponClass;
 
+	FOnPickupConsumed OnConsumed;
 	bool TryConsume(AMainCharacter* Interactor);
 	
 protected:
