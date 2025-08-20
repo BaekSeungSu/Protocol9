@@ -22,12 +22,7 @@ void AInvincibilityItem::ActivateItem(AActor* Activator)
 		AffectedPlayer = Activator;   
 		UHPComponent* HPComponent = Activator->FindComponentByClass<UHPComponent>();
 		if (HPComponent)
-		{
-			GEngine->AddOnScreenDebugMessage(-1,
-			2.0f,
-			FColor::Blue,
-			FString::Printf(TEXT("Invincibility Time! ")));				
-			
+		{			
 			HPComponent->LockHealth();								//���� ���� �߰�
 
 			//UI : 아이템 아이콘 점등 기능 추가
@@ -54,13 +49,8 @@ void AInvincibilityItem::EndEffect()
 		UHPComponent* HPComponent = AffectedPlayer->FindComponentByClass<UHPComponent>();
 		if (HPComponent)
 		{
-			GEngine->AddOnScreenDebugMessage(
-			-1,
-			2.0f,
-			FColor::Red,
-			FString::Printf(TEXT("Invincibility Time End! ")));
 			HPComponent->UnlockHealth();
-		}		// ���� off ���� �߰�                         
+		}		                
 	}
 	
 	GetWorld()->GetTimerManager().ClearTimer(EffectTimerHandle);

@@ -23,12 +23,7 @@ void AIncreaseDamageItem::ActivateItem(AActor* Activator)
 	{
 		AMainCharacter* MyCharacter = Cast<AMainCharacter>(Activator);
 		if (MyCharacter)
-		{
-			GEngine->AddOnScreenDebugMessage(-1,
-			2.0f,
-			FColor::Blue,
-			FString::Printf(TEXT("Increase Damage ")));				
-			
+		{		
 			MyCharacter->AddAttack(MultiDamage);
 
 			MyCharacter->HandleAttackBoostEffect(); //UI : 아이템 아이콘 점등 기능 추가

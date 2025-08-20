@@ -26,11 +26,6 @@ void ASpeedItem::ActivateItem(AActor* Activator)
 			UControlComponent* ControlComp= MyCharacter->FindComponentByClass<UControlComponent>();
 			if (ControlComp)
 			{
-				GEngine->AddOnScreenDebugMessage(-1,
-					2.0f,
-					FColor::Blue,
-					FString::Printf(TEXT("Speed Up"))
-					);
 				ControlComp->AddSpeed(MultiSpeed);
 				AffectedPlayer = ControlComp;
 				MyCharacter->HandleSpeedBoostEffect(); //UI : 아이템 아이콘 점등 기능 추가
@@ -49,11 +44,6 @@ void ASpeedItem::EndEffect()
 {
 	if (AffectedPlayer)
 	{
-		GEngine->AddOnScreenDebugMessage(
-			-1,
-			2.0f,
-			FColor::Red,
-			FString::Printf(TEXT("Speed Up Effect End! ")));
 		AffectedPlayer->ResetSpeed();
 	}
 	
