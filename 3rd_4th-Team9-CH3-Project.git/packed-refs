@@ -1,0 +1,10 @@
+# pack-refs with: peeled fully-peeled sorted 
+071b0a4b1cab7fa0b1b04b9edd7ad321f17a666b refs/heads/develop
+49b3df842a05c9eec7a815183c742e723360f450 refs/heads/feature/Character
+a223c1136f879d4547b9a3abbe49d6c359770632 refs/heads/feature/Item
+87b467ed561e5b0be6c638adeb4409d5f84e3a09 refs/heads/feature/Monster
+0f778e357d01b45b4d4a55562b343dea670dbd10 refs/heads/feature/UI
+5b0aa68caa3a08fa32e72989ec4da86b8741cf1a refs/heads/feature/level
+12091b62a20c82aea95dee58e9ebfeeb6e47223b refs/heads/feature/projectile
+d4e13cc4e15e56811df594d983bb8bd20ff74b12 refs/heads/feature/weapon
+5217ecf888793acb58a302ea6280504f7c24358a refs/heads/main
